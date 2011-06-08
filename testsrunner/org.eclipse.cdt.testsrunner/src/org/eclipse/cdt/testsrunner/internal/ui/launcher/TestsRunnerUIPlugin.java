@@ -8,7 +8,7 @@
  * Contributors:
  *     Anton Gorenkov - initial API and implementation
  *******************************************************************************/
-package org.eclipse.cdt.testsrunner.ui.internal;
+package org.eclipse.cdt.testsrunner.internal.ui.launcher;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
