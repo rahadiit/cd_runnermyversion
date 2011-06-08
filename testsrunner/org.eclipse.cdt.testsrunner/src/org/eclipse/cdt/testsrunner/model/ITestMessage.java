@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.model;
 
-import org.eclipse.cdt.testsrunner.internal.model.ModelVisitor;
-
 /**
  * TODO: Add descriptions
  * 
@@ -35,6 +33,6 @@ public interface ITestMessage {
 
 	String getText();
 
-	void visit(ModelVisitor visitor);
+	void visit(IModelVisitor visitor);
 
 }

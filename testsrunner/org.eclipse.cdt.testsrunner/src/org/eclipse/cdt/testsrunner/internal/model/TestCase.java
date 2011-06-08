@@ -13,6 +13,7 @@ package org.eclipse.cdt.testsrunner.internal.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
 
 /**
@@ -58,7 +59,7 @@ public class TestCase extends TestItem implements ITestCase {
 		testMessages.add(testMessage);
 	}
 
-	public void visit(ModelVisitor visitor) {
+	public void visit(IModelVisitor visitor) {
 		visitor.visit(this);
 		for (TestMessage message : testMessages) {
 			message.visit(visitor);
