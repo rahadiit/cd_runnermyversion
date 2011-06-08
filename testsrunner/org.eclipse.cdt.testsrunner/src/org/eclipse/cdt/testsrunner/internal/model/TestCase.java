@@ -58,4 +58,11 @@ public class TestCase extends TestItem implements ITestCase {
 		testMessages.add(testMessage);
 	}
 
+	public void visit(ModelVisitor visitor) {
+		visitor.visit(this);
+		for (TestMessage message : testMessages) {
+			message.visit(visitor);
+		}
+	}
+
 }

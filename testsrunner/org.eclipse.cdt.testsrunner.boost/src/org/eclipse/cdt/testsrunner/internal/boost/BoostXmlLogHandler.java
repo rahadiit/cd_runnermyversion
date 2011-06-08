@@ -4,8 +4,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.cdt.testsrunner.model.IModelBuilder;
+import org.eclipse.cdt.testsrunner.model.IModelManager;
+import org.eclipse.cdt.testsrunner.model.ITestCase;
 import org.eclipse.cdt.testsrunner.model.ITestMessage;
+import org.eclipse.cdt.testsrunner.model.ITestCase.Status;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -46,24 +48,26 @@ public class BoostXmlLogHandler extends DefaultHandler {
         STRING_TO_MESSAGE_LEVEL = Collections.unmodifiableMap(aMap);
     }
 
-	private IModelBuilder modelBuilder;
+	private IModelManager modelManager;
 	private String elementData;
 	private String fileName;
 	private int lineNumber;
+	private ITestCase.Status testStatus;
 	
-	BoostXmlLogHandler(IModelBuilder modelBuilder) {
-		this.modelBuilder = modelBuilder;
+	BoostXmlLogHandler(IModelManager modelBuilder) {
+		this.modelManager = modelBuilder;
 	}
 	
 	public void startElement(String namespaceURI, String localName, String qName, Attributes attrs) throws SAXException {
 		
 		if (qName == XML_NODE_TEST_SUITE) {
 			String testSuiteName = attrs.getValue(XML_ATTR_TEST_SUITE_NAME);
-			modelBuilder.enterTestSuite(testSuiteName);
+			modelManager.enterTestSuite(testSuiteName);
 
 		} else if (qName == XML_NODE_TEST_CASE) {
 			String testCaseName = attrs.getValue(XML_ATTR_TEST_CASE_NAME);
-			modelBuilder.enterTestCase(testCaseName);
+			modelManager.enterTestCase(testCaseName);
+			testStatus = Status.Passed;
 
 		} else if (STRING_TO_MESSAGE_LEVEL.containsKey(qName)
 				|| qName == XML_NODE_LAST_CHECKPOINT) {
@@ -92,22 +96,31 @@ public class BoostXmlLogHandler extends DefaultHandler {
 			Activator.logErrorMessage(message);
 			throw new SAXException(message);
 		}
-		modelBuilder.addTestMessage(fileName, lineNumber, level, elementData);
+		modelManager.addTestMessage(fileName, lineNumber, level, elementData);
 		elementData = null;
 		fileName = null;
 		lineNumber = -1;
+		if (level == ITestMessage.Level.Error) {
+			if (testStatus != ITestCase.Status.Aborted) {
+				testStatus = ITestCase.Status.Failed;
+			}
+			
+		} else if (level == ITestMessage.Level.FatalError || level == ITestMessage.Level.Exception) {
+			testStatus = ITestCase.Status.Aborted;
+		}
 	}
 
 	public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
 
 		if (qName == XML_NODE_TEST_SUITE) {
-			modelBuilder.exitTestSuite();
+			modelManager.exitTestSuite();
 
 		} else if (qName == XML_NODE_TEST_CASE) {
-			modelBuilder.exitTestCase();
+			modelManager.setTestStatus(testStatus);
+			modelManager.exitTestCase();
 		
 		} else if (qName == XML_NODE_TESTING_TIME) {
-			modelBuilder.setTestingTime(Integer.parseInt(elementData.trim()));
+			modelManager.setTestingTime(Integer.parseInt(elementData.trim()));
 
 		} else if (STRING_TO_MESSAGE_LEVEL.containsKey(qName)) {
 			addCurrentMessage(STRING_TO_MESSAGE_LEVEL.get(qName));

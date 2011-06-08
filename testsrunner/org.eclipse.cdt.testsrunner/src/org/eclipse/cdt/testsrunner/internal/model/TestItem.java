@@ -16,7 +16,7 @@ import org.eclipse.cdt.testsrunner.model.ITestItem;
  * TODO: Add descriptions
  * 
  */
-public class TestItem implements ITestItem {
+public abstract class TestItem implements ITestItem {
 
 	private final ITestItem[] NO_CHILDREN= new ITestItem[0];
 

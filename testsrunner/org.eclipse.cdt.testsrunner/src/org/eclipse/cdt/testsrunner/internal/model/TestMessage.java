@@ -42,4 +42,8 @@ public class TestMessage implements ITestMessage {
 	public String getText() {
 		return text;
 	}
+
+	public void visit(ModelVisitor visitor) {
+		visitor.visit(this);
+	}
 }

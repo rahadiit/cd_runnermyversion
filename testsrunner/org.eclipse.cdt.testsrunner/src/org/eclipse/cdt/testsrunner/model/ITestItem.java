@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.model;
 
+import org.eclipse.cdt.testsrunner.internal.model.ModelVisitor;
+
 /**
  * TODO: Add descriptions
  * 
@@ -25,5 +27,7 @@ public interface ITestItem {
 	boolean hasChildren();
 
 	ITestItem[] getChildren();
+	
+	void visit(ModelVisitor visitor);
 
 }

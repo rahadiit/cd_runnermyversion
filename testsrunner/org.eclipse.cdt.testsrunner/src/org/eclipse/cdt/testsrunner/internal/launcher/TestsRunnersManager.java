@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.launcher;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,6 +74,12 @@ public class TestsRunnersManager {
 			loadTestsRunners();
 		}
 		return testsRunners.toArray(new TestsRunnerInfo[testsRunners.size()]);
+	}
+
+	public void run(InputStream inputStream) {
+		// TODO: Review test runners selection!!!
+		TestsRunnerInfo testsRunner = getTestsRunnersInfo()[0];
+		testsRunner.testsRunner.run(Activator.getDefault().getModelManager(), inputStream);
 	}
 
 }
