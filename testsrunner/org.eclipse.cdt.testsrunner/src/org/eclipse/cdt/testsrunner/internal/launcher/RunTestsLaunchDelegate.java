@@ -136,6 +136,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 						ICDTLaunchConfigurationConstants.USE_TERMINAL_DEFAULT);
 				monitor.worked(5);
 				String testsRunnerId = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String)null);
+				commandArray = Activator.getDefault().getTestsRunnersManager().configureLaunchParameters(testsRunnerId, commandArray);
 				Process process = exec(commandArray, getEnvironment(config), wd, usePty, testsRunnerId);
 				monitor.worked(3);
 				DebugPlugin.newProcess(launch, process, renderProcessLabel(commandArray[0]));

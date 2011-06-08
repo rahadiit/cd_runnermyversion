@@ -95,6 +95,11 @@ public class TestsRunnersManager {
 		}
 		return null;
 	}
+	
+	public String[] configureLaunchParameters(String testsRunnerId, String[] parameters) {
+		TestsRunnerInfo testsRunner = findTestsRunner(testsRunnerId);
+		return testsRunner.getTestsRunner().configureLaunchParameters(parameters);
+	}
 
 	public void run(String testsRunnerId, InputStream inputStream) {
 		TestsRunnerInfo testsRunner = findTestsRunner(testsRunnerId);

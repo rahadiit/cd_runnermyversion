@@ -13,6 +13,19 @@ import org.xml.sax.SAXException;
 
 public class BoostTestsRunner implements ITestsRunner {
 
+	public String[] configureLaunchParameters(String[] commandLine) {
+		final String[] boostParameters = {
+			"--output_format=xml", //$NON-NLS-1$
+			"--log_level=all", //$NON-NLS-1$
+			"--report_level=no" //$NON-NLS-1$
+		};
+
+		String[] result = new String[commandLine.length+boostParameters.length];
+		System.arraycopy(commandLine, 0, result, 0, commandLine.length);
+		System.arraycopy(boostParameters, 0, result, commandLine.length, boostParameters.length);
+		return result;
+	}
+	
 	public void run(IModelManager modelBuilder, InputStream inputStream) {
 		try {
 			SAXParserFactory spf = SAXParserFactory.newInstance();
