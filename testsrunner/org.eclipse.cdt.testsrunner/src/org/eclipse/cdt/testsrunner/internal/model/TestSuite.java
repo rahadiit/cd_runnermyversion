@@ -49,6 +49,34 @@ public class TestSuite extends TestItem implements ITestSuite {
 		return testCases.values().toArray(new TestCase[testCases.size()]);
 	}
 
+	public Status getStatus() {
+		Status result = Status.Passed;
+		for (TestSuite testSuite : testSuites.values()) {
+			Status childStatus = testSuite.getStatus();
+			if (result.compareTo(childStatus) < 0) {
+				result = childStatus;
+			}
+		}
+		for (TestCase testCase : testCases.values()) {
+			Status childStatus = testCase.getStatus();
+			if (result.compareTo(childStatus) < 0) {
+				result = childStatus;
+			}
+		}
+		return result;
+	}
+
+	public int getTestingTime() {
+		int result = 0;
+		for (TestSuite testSuite : testSuites.values()) {
+			result += testSuite.getTestingTime();
+		}
+		for (TestCase testCase : testCases.values()) {
+			result += testCase.getTestingTime();
+		}
+		return result;
+	}
+	
 	public boolean hasChildren() {
 		return !testSuites.isEmpty() || !testCases.isEmpty();
 	}

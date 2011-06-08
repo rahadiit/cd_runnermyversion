@@ -10,16 +10,25 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal;
 
+import java.net.URL;
+
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager;
 import org.eclipse.cdt.testsrunner.internal.model.ModelManager;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 public class Activator extends AbstractUIPlugin {
 
 	public static final String PLUGIN_ID = "org.eclipse.cdt.testsrunner"; //$NON-NLS-1$
+	private static final IPath ICONS_PATH= new Path("$nl$/icons"); //$NON-NLS-1$
 
 	/**
 	 * Launch UI plug-in instance
@@ -39,7 +48,7 @@ public class Activator extends AbstractUIPlugin {
 		super();
 		plugin = this;
 	}
-
+	
 	/**
 	 * Returns the Java Debug UI plug-in instance
 	 * 
@@ -119,4 +128,49 @@ public class Activator extends AbstractUIPlugin {
 		return modelManager;
 	}
 
+	public ImageDescriptor getImageDescriptor(String relativePath) {
+		IPath path= ICONS_PATH.append(relativePath);
+		return createImageDescriptor(getDefault().getBundle(), path, true);
+	}
+
+	public static Image createAutoImage(String path) {
+		return getDefault().createAutoImageImpl(path);
+	}
+
+
+	private Image createAutoImageImpl(String path) {
+		Image image = getImageRegistry().get(path);
+		if (image == null) {
+			image = getImageDescriptor(path).createImage();
+			getImageRegistry().put(path, image);
+		}
+		return image;
+	}
+
+	/**
+	 * Creates an image descriptor for the given path in a bundle. The path can
+	 * contain variables like $NL$. If no image could be found,
+	 * <code>useMissingImageDescriptor</code> decides if either the 'missing
+	 * image descriptor' is returned or <code>null</code>.
+	 *
+	 * @param bundle a bundle
+	 * @param path path in the bundle
+	 * @param useMissingImageDescriptor if <code>true</code>, returns the shared image descriptor
+	 *            for a missing image. Otherwise, returns <code>null</code> if the image could not
+	 *            be found
+	 * @return an {@link ImageDescriptor}, or <code>null</code> iff there's
+	 *         no image at the given location and
+	 *         <code>useMissingImageDescriptor</code> is <code>true</code>
+	 */
+	private ImageDescriptor createImageDescriptor(Bundle bundle, IPath path, boolean useMissingImageDescriptor) {
+		URL url= FileLocator.find(bundle, path, null);
+		if (url != null) {
+			return ImageDescriptor.createFromURL(url);
+		}
+		if (useMissingImageDescriptor) {
+			return ImageDescriptor.getMissingImageDescriptor();
+		}
+		return null;
+	}
+	
 }

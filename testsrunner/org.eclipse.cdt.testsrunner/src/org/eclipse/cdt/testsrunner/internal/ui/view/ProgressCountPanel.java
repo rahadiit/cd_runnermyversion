@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
-import org.eclipse.cdt.testsrunner.model.ITestCase;
+import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -56,7 +56,7 @@ public class ProgressCountPanel extends Composite {
 		progressBar.restart(0);
 	}
 	
-	public void updateCounters(ITestCase.Status testStatus) {
+	public void updateCounters(ITestItem.Status testStatus) {
 		counterPanel.updateCounters(testStatus);
 		progressBar.updateCounters(testStatus);
 	}

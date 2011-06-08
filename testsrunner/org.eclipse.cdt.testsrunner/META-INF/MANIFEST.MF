@@ -16,6 +16,7 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Import-Package: org.eclipse.cdt.launch,
  org.eclipse.cdt.launch.internal.ui,
- org.eclipse.cdt.launch.ui
+ org.eclipse.cdt.launch.ui,
+ org.eclipse.cdt.internal.ui.viewsupport
 Export-Package: org.eclipse.cdt.testsrunner.launcher,
  org.eclipse.cdt.testsrunner.model

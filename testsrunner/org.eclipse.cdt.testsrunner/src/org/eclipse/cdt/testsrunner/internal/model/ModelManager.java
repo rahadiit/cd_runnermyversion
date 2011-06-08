@@ -17,7 +17,7 @@ import java.util.Stack;
 import org.eclipse.cdt.testsrunner.model.IModelManager;
 import org.eclipse.cdt.testsrunner.model.IModelManagerListener;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
-import org.eclipse.cdt.testsrunner.model.ITestCase.Status;
+import org.eclipse.cdt.testsrunner.model.ITestItem.Status;
 import org.eclipse.cdt.testsrunner.model.ITestMessage.Level;
 
 /**

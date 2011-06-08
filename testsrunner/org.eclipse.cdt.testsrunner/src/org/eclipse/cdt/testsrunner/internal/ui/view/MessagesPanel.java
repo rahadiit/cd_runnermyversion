@@ -60,7 +60,11 @@ public class MessagesPanel {
 		ITestMessage[] testMessages;
 		
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
-			collectMessages((ITestItem[]) newInput);
+			if (newInput != null) {
+				collectMessages((ITestItem[]) newInput);
+			} else {
+				testMessages = new ITestMessage[0];
+			}
 		}
 		public void dispose() {
 		}

@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.cdt.testsrunner.model.IModelManager;
-import org.eclipse.cdt.testsrunner.model.ITestCase;
+import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestMessage;
-import org.eclipse.cdt.testsrunner.model.ITestCase.Status;
+import org.eclipse.cdt.testsrunner.model.ITestItem.Status;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -52,7 +52,7 @@ public class QtXmlLogHandler extends DefaultHandler {
 	private String elementData;
 	private String fileName;
 	private int lineNumber;
-	private ITestCase.Status testStatus;
+	private ITestItem.Status testStatus;
 	
 	QtXmlLogHandler(IModelManager modelBuilder) {
 		this.modelManager = modelBuilder;
@@ -100,12 +100,12 @@ public class QtXmlLogHandler extends DefaultHandler {
 		fileName = null;
 		lineNumber = -1;
 		if (level == ITestMessage.Level.Error) {
-			if (testStatus != ITestCase.Status.Aborted) {
-				testStatus = ITestCase.Status.Failed;
+			if (testStatus != ITestItem.Status.Aborted) {
+				testStatus = ITestItem.Status.Failed;
 			}
 			
 		} else if (level == ITestMessage.Level.FatalError || level == ITestMessage.Level.Exception) {
-			testStatus = ITestCase.Status.Aborted;
+			testStatus = ITestItem.Status.Aborted;
 		}
 	}
 
