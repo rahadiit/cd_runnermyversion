@@ -10,31 +10,26 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.model;
 
-import org.eclipse.cdt.testsrunner.internal.model.ModelVisitor;
-
 /**
  * TODO: Add descriptions
  * 
  * @noextend This interface is not intended to be extended by clients.
  * @noimplement This interface is not intended to be implemented by clients.
  */
-public interface ITestMessage {
+public interface IModelManagerListener {
 
-	enum Level {
-		Info,
-		Message,
-		Warning,
-		Error,
-		FatalError,
-		Exception,
-	}
+	void enterTestSuite(ITestSuite testSuite);
 	
-	ITestLocation getLocation();
+	void exitTestSuite(ITestSuite testSuite);
+	
+	void enterTestCase(ITestCase testCase);
+	
+	void exitTestCase(ITestCase testCase);
 
-	Level getLevel();
-
-	String getText();
-
-	void visit(ModelVisitor visitor);
-
+	void addTestSuite(ITestSuite parent, ITestSuite child);
+	
+	void addTestCase(ITestSuite parent, ITestCase child);
+	
+	void refreshModel();
+	
 }

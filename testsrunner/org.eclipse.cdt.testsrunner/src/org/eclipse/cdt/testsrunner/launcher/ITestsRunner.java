@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.launcher;
 
-import org.eclipse.cdt.testsrunner.model.IModelBuilder;
+import java.io.InputStream;
+
+import org.eclipse.cdt.testsrunner.model.IModelManager;
 
 
 /**
@@ -21,6 +23,6 @@ import org.eclipse.cdt.testsrunner.model.IModelBuilder;
  */
 public interface ITestsRunner {
 
-	void run(IModelBuilder modelBuilder);
+	void run(IModelManager modelBuilder, InputStream inputStream);
 	
 }

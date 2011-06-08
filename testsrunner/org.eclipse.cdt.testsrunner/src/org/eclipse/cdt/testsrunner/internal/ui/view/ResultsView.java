@@ -11,16 +11,6 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
-import org.eclipse.cdt.testsrunner.internal.Activator;
-import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager;
-import org.eclipse.cdt.testsrunner.internal.model.ModelBuilder;
-import org.eclipse.cdt.testsrunner.model.ITestItem;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 
@@ -30,111 +20,45 @@ import org.eclipse.ui.part.ViewPart;
  */
 public class ResultsView extends ViewPart {
 	
-	TreeViewer treeViewer;
-
+	TestsHierarchyViewer testsHierarchyViewer;
 	
-	public class TestTreeContentProvider implements ITreeContentProvider {
 
-		private final Object[] NO_CHILDREN= new Object[0];
 
-		public void dispose() {
-		}
-
-		public Object[] getChildren(Object parentElement) {
-			return ((ITestItem) parentElement).getChildren();
-		}
-
-		public Object[] getElements(Object object) {
-			return getChildren(object);
-		}
-
-		public Object getParent(Object object) {
-			return ((ITestItem) object).getParent();
-		}
-
-		public boolean hasChildren(Object object) {
-			return ((ITestItem) object).hasChildren();
-		}
-
-		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-		}
-		
-	}
-	
-	
-	public class TestLabelProvider extends LabelProvider implements ILabelProvider {
-
-		@Override
-		public String getText(Object element) {
-			return ((ITestItem)element).getName();
-		}
-
-//		@Override
-//		public Image getImage(Object element) {
-//			if (element instanceof TestCaseElement) {
-//				TestCaseElement testCaseElement= ((TestCaseElement) element);
-//				if (testCaseElement.isIgnored())
-//					return fTestRunnerPart.fTestIgnoredIcon;
-//
-//				Status status=testCaseElement.getStatus();
-//				if (status.isNotRun())
-//					return fTestRunnerPart.fTestIcon;
-//				else if (status.isRunning())
-//					return fTestRunnerPart.fTestRunningIcon;
-//				else if (status.isError())
-//					return fTestRunnerPart.fTestErrorIcon;
-//				else if (status.isFailure())
-//					return fTestRunnerPart.fTestFailIcon;
-//				else if (status.isOK())
-//					return fTestRunnerPart.fTestOkIcon;
-//				else
-//					throw new IllegalStateException(element.toString());
-//
-//			} else if (element instanceof TestSuiteElement) {
-//				Status status= ((TestSuiteElement) element).getStatus();
-//				if (status.isNotRun())
-//					return fTestRunnerPart.fSuiteIcon;
-//				else if (status.isRunning())
-//					return fTestRunnerPart.fSuiteRunningIcon;
-//				else if (status.isError())
-//					return fTestRunnerPart.fSuiteErrorIcon;
-//				else if (status.isFailure())
-//					return fTestRunnerPart.fSuiteFailIcon;
-//				else if (status.isOK())
-//					return fTestRunnerPart.fSuiteOkIcon;
-//				else
-//					throw new IllegalStateException(element.toString());
-//
-//			} else {
-//				throw new IllegalArgumentException(String.valueOf(element));
-//			}
-//		}
-
-	}
-	
-	
 	@Override
 	public void createPartControl(Composite parent) {
-		ModelBuilder builder = new ModelBuilder();
-
-		// TODO: Remove this!
-		StringBuilder sb = new StringBuilder();
-		for (TestsRunnersManager.TestsRunnerInfo tr : Activator.getDefault().getTestsRunnersManager().getTestsRunnersInfo()) {
-			sb.append(" - "+tr.getName()); //$NON-NLS-1$
-			tr.getTestsRunner().run(builder); 
-		}
-		System.out.print(sb.toString());
-		
-		treeViewer = new TreeViewer(parent, SWT.V_SCROLL | SWT.SINGLE);
-		treeViewer.setContentProvider(new TestTreeContentProvider());
-		treeViewer.setLabelProvider(new TestLabelProvider());
-		treeViewer.setInput(builder.getRootSuite());
+		testsHierarchyViewer = new TestsHierarchyViewer(parent);
 	}
+	
+// TODO: Remove!
+//	public void updateFrom(InputStream inputStream) {
+//		modelManager = new ModelManager();
+//
+//		// TODO: Remove this!
+//		StringBuilder sb = new StringBuilder();
+//		for (TestsRunnersManager.TestsRunnerInfo tr : Activator.getDefault().getTestsRunnersManager().getTestsRunnersInfo()) {
+//			sb.append(" - "+tr.getName()); //$NON-NLS-1$
+//			tr.getTestsRunner().run(modelManager, inputStream); 
+//		}
+//		System.out.print(sb.toString());
+//		
+//		treeViewer.setInput(modelManager.getRootSuite());
+//		treeViewer.refresh();
+//		treeViewer.addDoubleClickListener(new IDoubleClickListener(){
+//			public void doubleClick(DoubleClickEvent event) {
+//				modelManager.enterTestSuite("TestBoostDemo");
+//				modelManager.enterTestSuite("s2");
+//				modelManager.enterTestCase("!!!newCase!!!");
+//				Object tsObj = modelManager.testSuitesStack.peek();
+//				Object csObj = modelManager.currentTestCase;
+//				modelManager.exitTestSuite();
+//				treeViewer.add(tsObj, csObj);
+//			}
+//		});
+//	}
 
 	@Override
 	public void setFocus() {
 		
 	}
-
 
 }

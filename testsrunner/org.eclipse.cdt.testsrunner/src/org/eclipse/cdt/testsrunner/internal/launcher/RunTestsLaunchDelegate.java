@@ -10,45 +10,48 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.launcher;
 
-//import java.io.File;
-//import java.io.IOException;
-//import java.util.ArrayList;
-//import java.util.Arrays;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
-//import org.eclipse.cdt.core.IBinaryParser.IBinaryObject;
-//import org.eclipse.cdt.core.model.ICProject;
-//import org.eclipse.cdt.debug.core.CDIDebugModel;
-//import org.eclipse.cdt.debug.core.CDebugUtils;
-//import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
-//import org.eclipse.cdt.debug.core.ICDebugConfiguration;
-//import org.eclipse.cdt.debug.core.cdi.CDIException;
-//import org.eclipse.cdt.debug.core.cdi.ICDISession;
-//import org.eclipse.cdt.debug.core.cdi.model.ICDIRuntimeOptions;
-//import org.eclipse.cdt.debug.core.cdi.model.ICDITarget;
+import org.eclipse.cdt.core.IBinaryParser.IBinaryObject;
+import org.eclipse.cdt.core.model.ICProject;
+import org.eclipse.cdt.debug.core.CDIDebugModel;
+import org.eclipse.cdt.debug.core.CDebugUtils;
+import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
+import org.eclipse.cdt.debug.core.ICDebugConfiguration;
+import org.eclipse.cdt.debug.core.cdi.CDIException;
+import org.eclipse.cdt.debug.core.cdi.ICDISession;
+import org.eclipse.cdt.debug.core.cdi.model.ICDIRuntimeOptions;
+import org.eclipse.cdt.debug.core.cdi.model.ICDITarget;
 import org.eclipse.cdt.launch.AbstractCLaunchDelegate;
 import org.eclipse.cdt.testsrunner.internal.Activator;
-//import org.eclipse.cdt.launch.internal.ui.LaunchMessages;
-//import org.eclipse.cdt.launch.internal.ui.LaunchUIPlugin;
-//import org.eclipse.cdt.utils.pty.PTY;
-//import org.eclipse.cdt.utils.spawner.ProcessFactory;
+import org.eclipse.cdt.launch.internal.ui.LaunchMessages;
+import org.eclipse.cdt.launch.internal.ui.LaunchUIPlugin;
+import org.eclipse.cdt.utils.pty.PTY;
+import org.eclipse.cdt.utils.spawner.ProcessFactory;
 import org.eclipse.core.runtime.CoreException;
-//import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-//import org.eclipse.core.runtime.IStatus;
-//import org.eclipse.core.runtime.NullProgressMonitor;
-//import org.eclipse.core.runtime.Status;
-//import org.eclipse.core.runtime.SubProgressMonitor;
-//import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-//import org.eclipse.debug.core.ILaunchManager;
-//import org.eclipse.debug.core.IStatusHandler;
-//import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.debug.core.IStatusHandler;
+import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.PartInitException;
 
 public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 
 	public void launch(ILaunchConfiguration config, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
-		/*IBinaryObject exeFile = null;
+		IBinaryObject exeFile = null;
 		if (monitor == null) {
 			monitor = new NullProgressMonitor();
 		}
@@ -138,7 +141,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			}
 		} finally {
 			monitor.done();
-		}*/
+		}
 	}
 
 	/**
@@ -157,7 +160,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 	 *         cancelled
 	 * @see Runtime
 	 */
-	/*protected Process exec(String[] cmdLine, String[] environ, File workingDirectory, boolean usePty) throws CoreException {
+	protected Process exec(String[] cmdLine, String[] environ, File workingDirectory, boolean usePty) throws CoreException {
 		Process p = null;
 		try {
 			if (workingDirectory == null) {
@@ -165,6 +168,19 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			} else {
 				if (usePty && PTY.isSupported()) {
 					p = ProcessFactory.getFactory().exec(cmdLine, environ, workingDirectory, new PTY());
+					Display.getDefault().syncExec(new Runnable() {
+						public void run() {
+							IViewPart view;
+							try {
+								view = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.eclipse.cdt.testsrunner.resultsview");
+								Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
+							} catch (PartInitException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+					});
+		        	Activator.getDefault().getTestsRunnersManager().run(p.getInputStream());
 				} else {
 					p = ProcessFactory.getFactory().exec(cmdLine, environ, workingDirectory);
 				}
@@ -193,7 +209,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			}
 		}
 		return p;
-	}*/
+	}
 
 	protected String getPluginID() {
 		return Activator.getUniqueIdentifier();

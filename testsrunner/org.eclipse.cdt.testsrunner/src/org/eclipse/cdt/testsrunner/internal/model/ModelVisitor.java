@@ -8,7 +8,7 @@
  * Contributors:
  *     Anton Gorenkov - initial API and implementation
  *******************************************************************************/
-package org.eclipse.cdt.testsrunner.model;
+package org.eclipse.cdt.testsrunner.internal.model;
 
 /**
  * TODO: Add descriptions
@@ -16,22 +16,13 @@ package org.eclipse.cdt.testsrunner.model;
  * @noextend This interface is not intended to be extended by clients.
  * @noimplement This interface is not intended to be implemented by clients.
  */
-public interface IModelBuilder {
+// TODO: Need this (and all visit() methods)?
+public interface ModelVisitor {
 
-	void enterTestSuite(String name);
+	void visit(TestSuite testSuite);
 	
-	void exitTestSuite();
+	void visit(TestCase testCase);
 	
-
-	void enterTestCase(String name);
-	
-	void setTestStatus(ITestCase.Status status);
-	
-	void setTestingTime(int testingTime);
-	
-	void exitTestCase();
-
-	
-	void addTestMessage(String file, int line, ITestMessage.Level level, String text);
+	void visit(TestMessage testMessage);
 	
 }

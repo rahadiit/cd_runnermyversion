@@ -11,6 +11,7 @@
 package org.eclipse.cdt.testsrunner.internal;
 
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager;
+import org.eclipse.cdt.testsrunner.internal.model.ModelManager;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -27,6 +28,8 @@ public class Activator extends AbstractUIPlugin {
 	
 	private TestsRunnersManager testsRunnersManager = new TestsRunnersManager();
 
+	private ModelManager modelManager = new ModelManager();
+	
 	/**
 	 * Constructor for LaunchUIPlugin.
 	 * 
@@ -110,6 +113,10 @@ public class Activator extends AbstractUIPlugin {
 
 	public TestsRunnersManager getTestsRunnersManager() {
 		return testsRunnersManager;
+	}
+
+	public ModelManager getModelManager() {
+		return modelManager;
 	}
 
 }

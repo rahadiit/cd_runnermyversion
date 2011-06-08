@@ -67,4 +67,14 @@ public class TestSuite extends TestItem implements ITestSuite {
 		testCases.put(testCase.getName(), testCase);
 	}
 
+	public void visit(ModelVisitor visitor) {
+		visitor.visit(this);
+		for (TestSuite testSuite : testSuites.values()) {
+			testSuite.visit(visitor);
+		}
+		for (TestCase testCase : testCases.values()) {
+			testCase.visit(visitor);
+		}
+	}
+
 }
