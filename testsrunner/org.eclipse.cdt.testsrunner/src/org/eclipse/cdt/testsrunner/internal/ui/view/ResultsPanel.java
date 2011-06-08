@@ -17,6 +17,7 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ViewForm;
 import org.eclipse.swt.graphics.Point;
@@ -54,11 +55,12 @@ public class ResultsPanel {
 
 		// Configure test messages viewer
 		ViewForm bottom= new ViewForm(sashForm, SWT.NONE);
-		// TODO: Uncomment or kill this later!
-		//CLabel label = new CLabel(bottom, SWT.NONE);
-		//label.setText(JUnitMessages.TestRunnerViewPart_label_failure);
+		CLabel label = new CLabel(bottom, SWT.NONE);
+		label.setText("Messages");
+		// TODO: Review this later!
 		//label.setImage(fStackViewIcon);
-		//bottom.setTopLeft(label);
+		bottom.setTopLeft(label);
+		// TODO: Review this later!
 		//ToolBar failureToolBar = new ToolBar(bottom, SWT.FLAT | SWT.WRAP);
 		//bottom.setTopCenter(failureToolBar);
 		messagesPanel = new MessagesPanel(bottom);
