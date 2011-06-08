@@ -29,8 +29,8 @@ public class ProgressCountPanel extends Composite {
 	public ProgressCountPanel(Composite parent, ResultsView.Orientation currOrientation) {
 		super(parent, SWT.NONE);
 		GridLayout layout = new GridLayout();
-		layout.numColumns = (currOrientation == ResultsView.Orientation.Horizontal) ? 2 : 1;
 		setLayout(layout);
+		setPanelOrientation(currOrientation);
 
 		counterPanel = new CounterPanel(this);
 		counterPanel.setLayoutData(
@@ -59,6 +59,10 @@ public class ProgressCountPanel extends Composite {
 	public void updateCounters(ITestItem.Status testStatus) {
 		counterPanel.updateCounters(testStatus);
 		progressBar.updateCounters(testStatus);
+	}
+
+	public void setPanelOrientation(ResultsView.Orientation currentOrientation) {
+		((GridLayout)getLayout()).numColumns = (currentOrientation == ResultsView.Orientation.Horizontal) ? 2 : 1;
 	}
 	
 }

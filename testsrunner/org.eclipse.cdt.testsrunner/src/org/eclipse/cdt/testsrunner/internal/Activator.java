@@ -128,7 +128,11 @@ public class Activator extends AbstractUIPlugin {
 		return modelManager;
 	}
 
-	public ImageDescriptor getImageDescriptor(String relativePath) {
+	static public ImageDescriptor getImageDescriptor(String relativePath) {
+		return getDefault().getImageDescriptorImpl(relativePath);
+	}
+
+	private ImageDescriptor getImageDescriptorImpl(String relativePath) {
 		IPath path= ICONS_PATH.append(relativePath);
 		return createImageDescriptor(getDefault().getBundle(), path, true);
 	}
@@ -136,7 +140,6 @@ public class Activator extends AbstractUIPlugin {
 	public static Image createAutoImage(String path) {
 		return getDefault().createAutoImageImpl(path);
 	}
-
 
 	private Image createAutoImageImpl(String path) {
 		Image image = getImageRegistry().get(path);
