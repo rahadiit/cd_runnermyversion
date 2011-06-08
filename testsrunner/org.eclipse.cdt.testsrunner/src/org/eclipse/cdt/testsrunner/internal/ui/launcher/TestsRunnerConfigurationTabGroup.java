@@ -8,7 +8,7 @@
  * Contributors:
  *    Elliott Baron <ebaron@redhat.com> - initial API and implementation
  *******************************************************************************/ 
-package org.eclipse.cdt.testsrunner.ui.internal;
+package org.eclipse.cdt.testsrunner.internal.ui.launcher;
 
 import java.util.ArrayList;
 

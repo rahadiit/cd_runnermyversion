@@ -26,7 +26,7 @@ package org.eclipse.cdt.testsrunner.internal;
 //import org.eclipse.cdt.debug.core.cdi.model.ICDIRuntimeOptions;
 //import org.eclipse.cdt.debug.core.cdi.model.ICDITarget;
 import org.eclipse.cdt.launch.AbstractCLaunchDelegate;
-import org.eclipse.cdt.testsrunner.ui.internal.TestsRunnerUIPlugin;
+import org.eclipse.cdt.testsrunner.internal.ui.launcher.TestsRunnerUIPlugin;
 //import org.eclipse.cdt.launch.internal.ui.LaunchMessages;
 //import org.eclipse.cdt.launch.internal.ui.LaunchUIPlugin;
 //import org.eclipse.cdt.utils.pty.PTY;
