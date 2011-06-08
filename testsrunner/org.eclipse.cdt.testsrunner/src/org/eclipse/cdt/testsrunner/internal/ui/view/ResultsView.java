@@ -11,6 +11,8 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
+import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager;
 import org.eclipse.cdt.testsrunner.internal.model.ModelBuilder;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -114,23 +116,14 @@ public class ResultsView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		ModelBuilder builder = new ModelBuilder();
-		builder.enterTestSuite("Master Suite");
-		builder.enterTestSuite("Suite 1");
-		builder.enterTestCase("Case 1.1");
-		builder.enterTestCase("Case 1.2");
-		builder.enterTestCase("Case 1.3");
-		builder.exitTestSuite();         
-		builder.enterTestSuite("Suite 2");
-		builder.enterTestCase("Case 2.1");
-		builder.enterTestCase("Case 2.2");
-		builder.enterTestCase("Case 2.3");
-		builder.exitTestSuite();         
-		builder.enterTestSuite("Suite 3");
-		builder.enterTestCase("Case 3.1");
-		builder.enterTestCase("Case 3.2");
-		builder.enterTestCase("Case 3.3");
-		builder.exitTestSuite();
-		builder.exitTestSuite();
+
+		// TODO: Remove this!
+		StringBuilder sb = new StringBuilder();
+		for (TestsRunnersManager.TestsRunnerInfo tr : Activator.getDefault().getTestsRunnersManager().getTestsRunnersInfo()) {
+			sb.append(" - "+tr.getName()); //$NON-NLS-1$
+			tr.getTestsRunner().run(builder); 
+		}
+		System.out.print(sb.toString());
 		
 		treeViewer = new TreeViewer(parent, SWT.V_SCROLL | SWT.SINGLE);
 		treeViewer.setContentProvider(new TestTreeContentProvider());
