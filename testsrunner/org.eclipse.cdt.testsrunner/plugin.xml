@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
 <plugin>
+   <extension-point id="TestsRunner" name="Provides additional tests runner" schema="schema/TestsRunner.exsd"/>
    <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
-            delegate="org.eclipse.cdt.testsrunner.internal.RunTestsLaunchDelegate"
+            delegate="org.eclipse.cdt.testsrunner.internal.launcher.RunTestsLaunchDelegate"
             id="org.eclipse.cdt.testsrunner.launch.testsRunner"
             modes="debug,run"
             name="Run C/C++ Tests"
@@ -27,16 +28,6 @@
       <view
             category="org.eclipse.cdt.ui.views"
             class="org.eclipse.cdt.testsrunner.internal.ui.view.ResultsView"
-            id="org.eclipse.cdt.testsrunner.resultsview"
-            name="C++ Test Results"
-            restorable="true">
-      </view>
-   </extension>
-   <extension
-         point="org.eclipse.ui.views">
-      <view
-            category="org.eclipse.cdt.ui.views"
-            class="org.eclipse.cdt.testsrunner.ViewPart1"
             id="org.eclipse.cdt.testsrunner.resultsview"
             name="C++ Test Results"
             restorable="true">

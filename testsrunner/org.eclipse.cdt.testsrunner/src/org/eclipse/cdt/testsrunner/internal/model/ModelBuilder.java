@@ -8,7 +8,7 @@
  * Contributors:
  *     Anton Gorenkov - initial API and implementation
  *******************************************************************************/
-package org.eclipse.cdt.testsrunner.model.internal;
+package org.eclipse.cdt.testsrunner.internal.model;
 
 import java.util.Stack;
 

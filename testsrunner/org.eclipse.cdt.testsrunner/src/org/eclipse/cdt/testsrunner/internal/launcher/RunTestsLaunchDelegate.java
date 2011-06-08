@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2010 QNX Software Systems and others.
+ * Copyright (c) 2011 Anton Gorenkov.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,7 +8,7 @@
  * Contributors:
  *     Anton Gorenkov - initial API and implementation
  *******************************************************************************/
-package org.eclipse.cdt.testsrunner.internal;
+package org.eclipse.cdt.testsrunner.internal.launcher;
 
 //import java.io.File;
 //import java.io.IOException;
@@ -26,7 +26,7 @@ package org.eclipse.cdt.testsrunner.internal;
 //import org.eclipse.cdt.debug.core.cdi.model.ICDIRuntimeOptions;
 //import org.eclipse.cdt.debug.core.cdi.model.ICDITarget;
 import org.eclipse.cdt.launch.AbstractCLaunchDelegate;
-import org.eclipse.cdt.testsrunner.internal.ui.launcher.TestsRunnerUIPlugin;
+import org.eclipse.cdt.testsrunner.internal.Activator;
 //import org.eclipse.cdt.launch.internal.ui.LaunchMessages;
 //import org.eclipse.cdt.launch.internal.ui.LaunchUIPlugin;
 //import org.eclipse.cdt.utils.pty.PTY;
@@ -196,6 +196,6 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 	}*/
 
 	protected String getPluginID() {
-		return TestsRunnerUIPlugin.getUniqueIdentifier();
+		return Activator.getUniqueIdentifier();
 	}
 }

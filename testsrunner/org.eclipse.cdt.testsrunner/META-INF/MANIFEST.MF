@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: %pluginName
 Bundle-SymbolicName: org.eclipse.cdt.testsrunner;singleton:=true
 Bundle-Version: 7.0.0.qualifier
-Bundle-Activator: org.eclipse.cdt.testsrunner.internal.ui.launcher.TestsRunnerUIPlugin
+Bundle-Activator: org.eclipse.cdt.testsrunner.internal.Activator
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui,
@@ -14,3 +14,5 @@ Import-Package: org.eclipse.cdt.launch,
  org.eclipse.cdt.launch.ui,
  org.eclipse.debug.core,
  org.eclipse.debug.ui
+Export-Package: org.eclipse.cdt.testsrunner.launcher,
+ org.eclipse.cdt.testsrunner.model

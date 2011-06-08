@@ -11,9 +11,8 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
-import org.eclipse.cdt.testsrunner.model.ITestCase;
+import org.eclipse.cdt.testsrunner.internal.model.ModelBuilder;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
-import org.eclipse.cdt.testsrunner.model.internal.ModelBuilder;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;

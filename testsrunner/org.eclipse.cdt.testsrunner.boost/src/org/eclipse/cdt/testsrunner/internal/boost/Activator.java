@@ -8,28 +8,29 @@
  * Contributors:
  *     Anton Gorenkov - initial API and implementation
  *******************************************************************************/
-package org.eclipse.cdt.testsrunner.internal.ui.launcher;
+package org.eclipse.cdt.testsrunner.internal.boost;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
-public class TestsRunnerUIPlugin extends AbstractUIPlugin {
+
+public class Activator extends Plugin {
 
 	public static final String PLUGIN_ID = "org.eclipse.cdt.testsrunner"; //$NON-NLS-1$
 
 	/**
 	 * Launch UI plug-in instance
 	 */
-	private static TestsRunnerUIPlugin plugin;
+	private static Activator plugin;
 
 	/**
 	 * Constructor for LaunchUIPlugin.
 	 * 
 	 * @param descriptor
 	 */
-	public TestsRunnerUIPlugin() {
+	public Activator() {
 		super();
 		plugin = this;
 	}
@@ -39,7 +40,7 @@ public class TestsRunnerUIPlugin extends AbstractUIPlugin {
 	 * 
 	 * @return the Java Debug UI plug-in instance
 	 */
-	public static TestsRunnerUIPlugin getDefault() {
+	public static Activator getDefault() {
 		return plugin;
 	}
 

@@ -8,42 +8,38 @@
  * Contributors:
  *     Anton Gorenkov - initial API and implementation
  *******************************************************************************/
-package org.eclipse.cdt.testsrunner.model.internal;
+package org.eclipse.cdt.testsrunner.internal.model;
 
-import org.eclipse.cdt.testsrunner.model.ITestItem;
+import org.eclipse.cdt.testsrunner.model.ITestMessage;
 
 /**
  * TODO: Add descriptions
  * 
  */
-public class TestItem implements ITestItem {
+public class TestMessage implements ITestMessage {
 
-	private final ITestItem[] NO_CHILDREN= new ITestItem[0];
+	private TestLocation location;
 
-	private final String name;
+	private Level level;
+
+	private String text;
+
 	
-	private TestSuite parent;
-
-	
-	public TestItem(String name, TestSuite parent) {
-		this.name = name;
-		this.parent = parent;
+	public TestMessage(TestLocation location, Level level, String text) {
+		this.location = location;
+		this.level = level;
+		this.text = text;
 	}
 
-	public String getName() {
-		return name;
+	public TestLocation getLocation() {
+		return location;
 	}
 
-	public TestSuite getParent() {
-		return parent;
+	public Level getLevel() {
+		return level;
 	}
 
-	public boolean hasChildren() {
-		return false;
+	public String getText() {
+		return text;
 	}
-
-	public ITestItem[] getChildren() {
-		return NO_CHILDREN;
-	}
-
 }
