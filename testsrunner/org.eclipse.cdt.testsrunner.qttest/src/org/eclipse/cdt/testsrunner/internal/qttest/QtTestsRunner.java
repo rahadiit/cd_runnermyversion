@@ -13,15 +13,18 @@ import org.xml.sax.SAXException;
 
 public class QtTestsRunner implements ITestsRunner {
 
-	public QtTestsRunner() {
-		// TODO Auto-generated constructor stub
-	}
-
 	public String[] configureLaunchParameters(String[] commandLine) {
-		// TODO: Implement Qt-specific options addition
-		return commandLine;
-	}
+		final String[] qtParameters = {
+			"-xml", //$NON-NLS-1$
+			"-flush", //$NON-NLS-1$
+		};
 
+		String[] result = new String[commandLine.length+qtParameters.length];
+		System.arraycopy(commandLine, 0, result, 0, commandLine.length);
+		System.arraycopy(qtParameters, 0, result, commandLine.length, qtParameters.length);
+		return result;
+	}
+	
 	public void run(IModelManager modelBuilder, InputStream inputStream) {
 		try {
 			SAXParserFactory spf = SAXParserFactory.newInstance();
