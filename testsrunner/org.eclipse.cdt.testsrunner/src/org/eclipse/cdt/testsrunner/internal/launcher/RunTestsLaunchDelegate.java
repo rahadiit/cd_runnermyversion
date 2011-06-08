@@ -137,7 +137,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 				monitor.worked(5);
 				String testsRunnerId = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String)null);
 				commandArray = Activator.getDefault().getTestsRunnersManager().configureLaunchParameters(testsRunnerId, commandArray);
-				Process process = exec(commandArray, getEnvironment(config), wd, usePty, testsRunnerId, config);
+				Process process = exec(commandArray, getEnvironment(config), wd, usePty, testsRunnerId, launch);
 				monitor.worked(3);
 				DebugPlugin.newProcess(launch, process, renderProcessLabel(commandArray[0]));
 			}
@@ -163,7 +163,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 	 *         cancelled
 	 * @see Runtime
 	 */
-	protected Process exec(String[] cmdLine, String[] environ, File workingDirectory, boolean usePty, String testsRunnerId, ILaunchConfiguration config) throws CoreException {
+	protected Process exec(String[] cmdLine, String[] environ, File workingDirectory, boolean usePty, String testsRunnerId, ILaunch launch) throws CoreException {
 		Process p = null;
 		try {
 			if (workingDirectory == null) {
@@ -184,7 +184,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 						}
 					});
 					// TODO: Handle incorrect tests runner somehow
-		        	Activator.getDefault().getTestsRunnersManager().run(testsRunnerId, p.getInputStream(), config);
+		        	Activator.getDefault().getTestsRunnersManager().run(testsRunnerId, p.getInputStream(), launch);
 				} else {
 					p = ProcessFactory.getFactory().exec(cmdLine, environ, workingDirectory);
 				}
@@ -208,7 +208,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			if (handler != null) {
 				Object result = handler.handleStatus(status, this);
 				if (result instanceof Boolean && ((Boolean) result).booleanValue()) {
-					p = exec(cmdLine, environ, null, usePty, testsRunnerId, config);
+					p = exec(cmdLine, environ, null, usePty, testsRunnerId, launch);
 				}
 			}
 		}

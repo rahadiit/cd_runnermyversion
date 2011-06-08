@@ -64,7 +64,7 @@ public class ResultsPanel {
 		//ToolBar failureToolBar = new ToolBar(bottom, SWT.FLAT | SWT.WRAP);
 		//bottom.setTopCenter(failureToolBar);
 		messagesPanel = new MessagesPanel(bottom);
-		bottom.setContent(messagesPanel.getControl());
+		bottom.setContent(messagesPanel.getTableViewer().getControl());
 
 		sashForm.setWeights(new int[]{50, 50});
 	
@@ -80,6 +80,10 @@ public class ResultsPanel {
 	
 	public TestsHierarchyViewer getTestsHierarchyViewer() {
 		return testsHierarchyViewer;
+	}
+
+	public MessagesPanel getMessagesPanel() {
+		return messagesPanel;
 	}
 
 	private void handleTestItemSelected() {

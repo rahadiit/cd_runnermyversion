@@ -14,9 +14,13 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.cdt.debug.core;bundle-version="7.1.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
-Import-Package: org.eclipse.cdt.launch,
+Import-Package: org.eclipse.cdt.internal.ui.viewsupport,
+ org.eclipse.cdt.launch,
  org.eclipse.cdt.launch.internal.ui,
  org.eclipse.cdt.launch.ui,
- org.eclipse.cdt.internal.ui.viewsupport
+ org.eclipse.core.filesystem,
+ org.eclipse.jface.text,
+ org.eclipse.ui.ide,
+ org.eclipse.ui.texteditor
 Export-Package: org.eclipse.cdt.testsrunner.launcher,
  org.eclipse.cdt.testsrunner.model
