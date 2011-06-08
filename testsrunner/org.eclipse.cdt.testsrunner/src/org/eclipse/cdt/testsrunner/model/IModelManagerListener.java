@@ -30,6 +30,8 @@ public interface IModelManagerListener {
 	
 	void addTestCase(ITestSuite parent, ITestCase child);
 	
-	void refreshModel();
+	void testingStarted(boolean restartPrevious);
+
+	void testingFinished();
 	
 }

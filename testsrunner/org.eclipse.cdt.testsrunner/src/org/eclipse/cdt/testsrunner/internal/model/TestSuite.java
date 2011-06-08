@@ -50,7 +50,7 @@ public class TestSuite extends TestItem implements ITestSuite {
 	}
 
 	public Status getStatus() {
-		Status result = Status.Passed;
+		Status result = Status.NotRun;
 		for (TestSuite testSuite : testSuites.values()) {
 			Status childStatus = testSuite.getStatus();
 			if (result.compareTo(childStatus) < 0) {
@@ -95,7 +95,20 @@ public class TestSuite extends TestItem implements ITestSuite {
 	public void addTestCase(TestCase testCase) {
 		testCases.put(testCase.getName(), testCase);
 	}
+	
+	public void clear() {
+		testSuites.clear();
+		testCases.clear();
+	}
 
+	public void removeTestSuite(String testSuiteName) {
+		testSuites.remove(testSuiteName);
+	}
+
+	public void removeTestCase(String testCaseName) {
+		testCases.remove(testCaseName);
+	}
+	
 	public void visit(IModelVisitor visitor) {
 		visitor.visit(this);
 		for (TestSuite testSuite : testSuites.values()) {

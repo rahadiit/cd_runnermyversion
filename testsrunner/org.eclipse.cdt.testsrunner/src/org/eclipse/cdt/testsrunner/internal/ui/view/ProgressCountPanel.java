@@ -51,14 +51,18 @@ public class ProgressCountPanel extends Composite {
 		return progressBar;
 	}
 	
-	public void restart() {
+	public void restart(int totalTestsCount) {
 		counterPanel.restart();
-		progressBar.restart(0);
+		progressBar.restart(totalTestsCount);
 	}
 	
 	public void updateCounters(ITestItem.Status testStatus) {
 		counterPanel.updateCounters(testStatus);
 		progressBar.updateCounters(testStatus);
+	}
+	
+	public void testingFinished() {
+		progressBar.testingFinished();
 	}
 
 	public void setPanelOrientation(ResultsView.Orientation currentOrientation) {

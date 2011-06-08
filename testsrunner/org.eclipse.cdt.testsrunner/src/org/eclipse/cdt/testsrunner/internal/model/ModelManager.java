@@ -11,7 +11,9 @@
 package org.eclipse.cdt.testsrunner.internal.model;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 
 import org.eclipse.cdt.testsrunner.model.IModelManager;
@@ -31,29 +33,67 @@ public class ModelManager implements IModelManager {
 	private TestCase currentTestCase = null;
 	
 	private List<IModelManagerListener> changesListeners = new ArrayList<IModelManagerListener>();
+	
+	private Set<TestSuite> usedTestSuites = new HashSet<TestSuite>();
 
 	
 	public ModelManager() {
 		testSuitesStack.push(new TestSuite("<root>", null)); //$NON-NLS-1$
 	}
 	
-	public void startTesting() {
+
+	public void testingStarted(boolean restartPrevious) {
+		if (restartPrevious) {
+			// Mark all tests as NotRun before testing
+			getRootSuite().visit(new ModelVisitor() {
+				
+				public void visit(TestMessage testMessage) {}
+				
+				public void visit(TestCase testCase) {
+					testCase.setStatus(TestCase.Status.NotRun);
+				}
+				
+				public void visit(TestSuite testSuite) {}
+			});
+		} else {
+			// Start a new session
+			getRootSuite().clear();
+		}
+		usedTestSuites.clear();
+		
+		// Notify listeners
+		for (IModelManagerListener listener : changesListeners) {
+			listener.testingStarted(restartPrevious);
+		}
+	}
+
+	public void testingFinished() {
+		// Remove all NotRun-tests and not used test suites (probably they were removed from test module)
 		getRootSuite().visit(new ModelVisitor() {
 			
 			public void visit(TestMessage testMessage) {}
 			
-			public void visit(TestCase testCase) {
-				testCase.setStatus(TestCase.Status.Skipped);
-			}
+			public void visit(TestCase testCase) {}
 			
 			public void visit(TestSuite testSuite) {
-				testSuite.visit(this);
+				for (TestSuite childTestSuite : testSuite.getTestSuites()) {
+					if (!usedTestSuites.contains(childTestSuite)) {
+						testSuite.removeTestSuite(childTestSuite.getName());
+					}
+				}
+				for (TestCase testCase : testSuite.getTestCases()) {
+					if (testCase.getStatus() == ITestItem.Status.NotRun) {
+						testSuite.removeTestCase(testCase.getName());
+					}
+				}
 			}
 		});
-	}
-
-	public void finishTesting() {
-		// TODO: Remove Skipped test cases. Problem: what to do with TS?
+		usedTestSuites.clear();
+		
+		// Notify listeners
+		for (IModelManagerListener listener : changesListeners) {
+			listener.testingFinished();
+		}
 	}
 	
 	public void enterTestSuite(String name) {
@@ -68,6 +108,8 @@ public class ModelManager implements IModelManager {
 			}
 		}
 		testSuitesStack.push(newTestSuite);
+		usedTestSuites.add(newTestSuite);
+		
 		// Notify listeners
 		for (IModelManagerListener listener : changesListeners) {
 			listener.enterTestSuite(newTestSuite);
@@ -94,6 +136,7 @@ public class ModelManager implements IModelManager {
 				listener.addTestCase(currTestSuite, currentTestCase);
 			}
 		}
+		currentTestCase.setStatus(ITestItem.Status.Skipped);
 		// Notify listeners
 		for (IModelManagerListener listener : changesListeners) {
 			listener.enterTestCase(currentTestCase);
