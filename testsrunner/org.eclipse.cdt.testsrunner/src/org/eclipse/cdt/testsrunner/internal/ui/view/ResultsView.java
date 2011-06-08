@@ -30,13 +30,13 @@ public class ResultsView extends ViewPart {
 	private ProgressCountPanel progressCountPanel;
 	private ResultsPanel resultsPanel;
 	private ModelSynchronizer modelSynchronizer;
-
+	
 
 	@Override
 	public void createPartControl(Composite parent) {
-		GridLayout gridLayout= new GridLayout();
-		gridLayout.marginWidth= 0;
-		gridLayout.marginHeight= 0;
+		GridLayout gridLayout = new GridLayout();
+		gridLayout.marginWidth = 0;
+		gridLayout.marginHeight = 0;
 		parent.setLayout(gridLayout);
 
 		progressCountPanel = new ProgressCountPanel(parent, Orientation.Horizontal);

@@ -29,7 +29,7 @@ public interface IModelManager {
 
 	void enterTestCase(String name);
 	
-	void setTestStatus(ITestCase.Status status);
+	void setTestStatus(ITestItem.Status status);
 	
 	void setTestingTime(int testingTime);
 	

@@ -11,10 +11,9 @@
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 
-import org.eclipse.cdt.testsrunner.model.ITestCase;
+import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -37,11 +36,8 @@ public class CounterPanel extends Composite {
 	protected int abortedCounter;
 	protected int skippedCounter;
 
-// TODO: Create icons (and uncomment dispose!)
-//	private final Image errorIcon= JUnitPlugin.createImage("ovr16/error_ovr.gif"); //$NON-NLS-1$
-//	private final Image failureIcon= JUnitPlugin.createImage("ovr16/failed_ovr.gif"); //$NON-NLS-1$
-	private final Image errorIcon = null;
-	private final Image failureIcon = null;
+	private final Image errorIcon= Activator.createAutoImage("ovr16/failed_counter.gif"); //$NON-NLS-1$
+	private final Image failureIcon= Activator.createAutoImage("ovr16/aborted_counter.gif"); //$NON-NLS-1$
 
 	public CounterPanel(Composite parent) {
 		super(parent, SWT.WRAP);
@@ -55,14 +51,6 @@ public class CounterPanel extends Composite {
 		failedCounterLabel = createLabel("Errors: ", errorIcon);
 		abortedCounterLabel = createLabel("Failures: ", failureIcon);
 		restart(); // Just fill labels
-
-		addDisposeListener(new DisposeListener() {
-			public void widgetDisposed(DisposeEvent e) {
-				// TODO : Uncomment dispose after creating items
-//				errorIcon.dispose();
-//				failureIcon.dispose();
-			}
-		});
 	}
 
 	private Label createLabel(String name, Image image) {
@@ -93,7 +81,7 @@ public class CounterPanel extends Composite {
 		redraw();
 	}
 	
-	public void updateCounters(ITestCase.Status testStatus) {
+	public void updateCounters(ITestItem.Status testStatus) {
 		// Update special counters
 		switch (testStatus) {
 			case Skipped:

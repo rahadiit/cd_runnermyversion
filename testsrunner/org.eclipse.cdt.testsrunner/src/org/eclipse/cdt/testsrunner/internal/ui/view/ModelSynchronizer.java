@@ -26,13 +26,11 @@ public class ModelSynchronizer implements IModelManagerListener {
 	private ProgressCountPanel progressCountPanel;
 	
 
-	class AddObjectRunnable implements Runnable {
-		TreeViewer treeViewer;
+	class AddTestItemRunnable implements Runnable {
 		Object parent;
 		Object child;
 
-		AddObjectRunnable(TreeViewer treeViewer, Object parent, Object child) {
-			this.treeViewer = treeViewer;
+		AddTestItemRunnable(Object parent, Object child) {
 			this.parent = parent;
 			this.child = child;
 		}
@@ -42,42 +40,38 @@ public class ModelSynchronizer implements IModelManagerListener {
 		}
 	}
 
-	class ExpandRunnable implements Runnable {
-		TreeViewer treeViewer;
+	class EnterTestItemRunnable implements Runnable {
 		Object object;
 
-		ExpandRunnable(TreeViewer treeViewer, Object object) {
-			this.treeViewer = treeViewer;
+		EnterTestItemRunnable(Object object) {
 			this.object = object;
 		}
 
 		public void run() {
 			// TODO: Update only necessary properties!
-			// treeViewer.update(testCase, null);
+			treeViewer.update(object, null);
 			treeViewer.reveal(object);
 		}
 	}
 
-	class CollapseAllRunnable implements Runnable {
-		TreeViewer treeViewer;
+	class ExitTestSuiteRunnable implements Runnable {
+		Object object;
 
-		CollapseAllRunnable(TreeViewer treeViewer) {
-			this.treeViewer = treeViewer;
+		ExitTestSuiteRunnable(Object object) {
+			this.object = object;
 		}
 
 		public void run() {
 			// TODO: Update only necessary properties!
-			// treeViewer.update(testSuite, null);
 			treeViewer.collapseAll();
+			treeViewer.update(object, null);
 		}
 	}
 
 	class ExitTestCaseRunnable implements Runnable {
-		TreeViewer treeViewer;
 		ITestCase testCase;
 
-		ExitTestCaseRunnable(TreeViewer treeViewer, ITestCase testCase) {
-			this.treeViewer = treeViewer;
+		ExitTestCaseRunnable(ITestCase testCase) {
 			this.testCase = testCase;
 		}
 
@@ -85,18 +79,6 @@ public class ModelSynchronizer implements IModelManagerListener {
 			// TODO: Update only necessary properties!
 			treeViewer.update(testCase, null);
 			progressCountPanel.updateCounters(testCase.getStatus());
-		}
-	}
-
-	class RefreshRunnable implements Runnable {
-		TreeViewer treeViewer;
-
-		RefreshRunnable(TreeViewer treeViewer) {
-			this.treeViewer = treeViewer;
-		}
-
-		public void run() {
-			treeViewer.refresh();
 		}
 	}
 
@@ -108,36 +90,40 @@ public class ModelSynchronizer implements IModelManagerListener {
 
 	public void enterTestSuite(ITestSuite testSuite) {
 		Display.getDefault().syncExec(
-				new ExpandRunnable(treeViewer, testSuite));
+				new EnterTestItemRunnable(testSuite));
 	}
 
 	public void exitTestSuite(ITestSuite testSuite) {
-		Display.getDefault().syncExec(new CollapseAllRunnable(treeViewer));
+		Display.getDefault().syncExec(new ExitTestSuiteRunnable(testSuite));
 	}
 
 	public void enterTestCase(ITestCase testCase) {
 		Display.getDefault().syncExec(
-				new ExpandRunnable(treeViewer, testCase));
+				new EnterTestItemRunnable(testCase));
 	}
 
 	public void exitTestCase(ITestCase testCase) {
-		// treeViewer.update(testCase, null);
 		Display.getDefault().syncExec(
-				new ExitTestCaseRunnable(treeViewer, testCase));
+				new ExitTestCaseRunnable(testCase));
 	}
 
 	public void addTestSuite(ITestSuite parent, ITestSuite child) {
 		Display.getDefault().syncExec(
-				new AddObjectRunnable(treeViewer, parent, child));
+				new AddTestItemRunnable(parent, child));
 	}
 
 	public void addTestCase(ITestSuite parent, ITestCase child) {
 		Display.getDefault().syncExec(
-				new AddObjectRunnable(treeViewer, parent, child));
+				new AddTestItemRunnable(parent, child));
 	}
 
 	public void refreshModel() {
-		Display.getDefault().syncExec(new RefreshRunnable(treeViewer));
+		Display.getDefault().syncExec(new Runnable() {
+			
+			public void run() {
+				treeViewer.refresh();
+			}
+		});
 	}
 
 }

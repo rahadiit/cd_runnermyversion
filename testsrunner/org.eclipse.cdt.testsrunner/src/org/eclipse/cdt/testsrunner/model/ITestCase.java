@@ -18,18 +18,6 @@ package org.eclipse.cdt.testsrunner.model;
  */
 public interface ITestCase extends ITestItem {
 
-	// NOTE: Order of values is significant (cause enum values comparison is necessary)
-	enum Status {
-		Skipped,
-		Passed,
-		Failed,
-		Aborted,
-	}
-	
-	Status getStatus();
-
-	int getTestingTime();
-
 	ITestMessage[] getTestMessages();
 
 }
