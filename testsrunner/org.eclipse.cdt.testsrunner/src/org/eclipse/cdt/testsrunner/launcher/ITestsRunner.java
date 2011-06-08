@@ -18,11 +18,11 @@ import org.eclipse.cdt.testsrunner.model.IModelManager;
 /**
  * TODO: Add descriptions
  * 
- * @noextend This interface is not intended to be extended by clients.
- * @noimplement This interface is not intended to be implemented by clients.
  */
 public interface ITestsRunner {
 
+	String[] configureLaunchParameters(String[] commandLine);
+	
 	void run(IModelManager modelBuilder, InputStream inputStream);
 	
 }

@@ -17,6 +17,11 @@ public class QtTestsRunner implements ITestsRunner {
 		// TODO Auto-generated constructor stub
 	}
 
+	public String[] configureLaunchParameters(String[] commandLine) {
+		// TODO: Implement Qt-specific options addition
+		return commandLine;
+	}
+
 	public void run(IModelManager modelBuilder, InputStream inputStream) {
 		try {
 			SAXParserFactory spf = SAXParserFactory.newInstance();
