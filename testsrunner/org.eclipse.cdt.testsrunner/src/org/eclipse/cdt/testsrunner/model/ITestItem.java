@@ -20,6 +20,7 @@ public interface ITestItem {
 
 	// NOTE: Order of values is significant (cause enum values comparison is necessary)
 	enum Status {
+		NotRun,
 		Skipped,
 		Passed,
 		Failed,

@@ -7,7 +7,7 @@
       <launchConfigurationType
             delegate="org.eclipse.cdt.testsrunner.internal.launcher.RunTestsLaunchDelegate"
             id="org.eclipse.cdt.testsrunner.launch.testsRunner"
-            modes="debug,run"
+            modes="run"
             name="Run C/C++ Tests"
             public="true"
             sourceLocatorId="org.eclipse.cdt.debug.core.sourceLocator"

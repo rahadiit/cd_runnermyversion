@@ -12,8 +12,11 @@ package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 import org.eclipse.cdt.testsrunner.internal.Activator;
 import org.eclipse.cdt.testsrunner.internal.model.ModelManager;
+import org.eclipse.cdt.testsrunner.internal.model.TestSuite;
 import org.eclipse.cdt.testsrunner.model.IModelManagerListener;
+import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
+import org.eclipse.cdt.testsrunner.model.ITestMessage;
 import org.eclipse.cdt.testsrunner.model.ITestSuite;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Display;
@@ -28,6 +31,49 @@ public class ModelSynchronizer {
 	private ProgressCountPanel progressCountPanel;
 	private IModelManagerListener actualSynchronizer;
 
+	class TestingStartedRunnable implements Runnable {
+		
+		boolean restartPrevious;
+		TestingStartedRunnable(boolean restartPrevious) {
+			this.restartPrevious = restartPrevious;
+		}
+
+		class TestCasesCounter implements IModelVisitor {
+			
+			public int result = 0;
+			
+			public void visit(ITestMessage testMessage) {}
+			
+			public void visit(ITestCase testCase) {
+				++result;
+			}
+			
+			public void visit(ITestSuite testSuite) {}
+		}
+		
+		public void run() {
+			int totalTestsCount = 0;
+			if (restartPrevious) {
+				// TODO: Finish Test case counting!
+				TestSuite rootTestSuite = Activator.getDefault().getModelManager().getRootSuite();
+				TestCasesCounter testCasesCounter = new TestCasesCounter();
+				rootTestSuite.visit(testCasesCounter);
+				totalTestsCount = testCasesCounter.result;
+			}
+			progressCountPanel.restart(totalTestsCount);
+			treeViewer.refresh();
+		}
+	}
+	
+	class TestingFinishedRunnable implements Runnable {
+
+		public void run() {
+			treeViewer.refresh();
+			progressCountPanel.testingFinished();
+			treeViewer.expandToLevel(2);
+		}
+	}
+	
 	class SilentModelSynchronizer implements IModelManagerListener {
 
 		class CountersUpdaterRunnable implements Runnable {
@@ -57,7 +103,14 @@ public class ModelSynchronizer {
 
 		public void addTestCase(ITestSuite parent, ITestCase child) {}
 
-		public void refreshModel() {}
+		public void testingStarted(boolean restartPrevious) {
+			Display.getDefault().syncExec(new TestingStartedRunnable(restartPrevious));
+		}
+
+		public void testingFinished() {
+			Display.getDefault().syncExec(new TestingFinishedRunnable());
+		}
+		
 	}
 	
 	
@@ -119,7 +172,6 @@ public class ModelSynchronizer {
 			}
 		}
 	
-		
 		public void enterTestSuite(ITestSuite testSuite) {
 			Display.getDefault().syncExec(new EnterTestItemRunnable(testSuite));
 		}
@@ -144,14 +196,14 @@ public class ModelSynchronizer {
 			Display.getDefault().syncExec(new AddTestItemRunnable(parent, child));
 		}
 	
-		public void refreshModel() {
-			Display.getDefault().syncExec(new Runnable() {
-				
-				public void run() {
-					treeViewer.refresh();
-				}
-			});
+		public void testingStarted(boolean restartPrevious) {
+			Display.getDefault().syncExec(new TestingStartedRunnable(restartPrevious));
 		}
+
+		public void testingFinished() {
+			Display.getDefault().syncExec(new TestingFinishedRunnable());
+		}
+
 	}
 
 	

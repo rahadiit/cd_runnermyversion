@@ -18,9 +18,9 @@ package org.eclipse.cdt.testsrunner.model;
  */
 public interface IModelManager {
 
-	void startTesting();
+	void testingStarted(boolean restartPrevious);
 	
-	void finishTesting();
+	void testingFinished();
 	
 	void enterTestSuite(String name);
 	

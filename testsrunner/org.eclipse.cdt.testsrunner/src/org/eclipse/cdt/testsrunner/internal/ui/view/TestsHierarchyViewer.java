@@ -40,8 +40,6 @@ public class TestsHierarchyViewer {
 	
 	class TestTreeContentProvider implements ITreeContentProvider {
 
-		private final Object[] NO_CHILDREN = new Object[0];
-
 		public Object[] getChildren(Object parentElement) {
 			return ((ITestItem) parentElement).getChildren();
 		}
@@ -70,6 +68,7 @@ public class TestsHierarchyViewer {
 
 		private Map<ITestItem.Status, Image> testCaseImages = new HashMap<ITestItem.Status, Image>();
 		{
+			testCaseImages.put(ITestItem.Status.NotRun, Activator.createAutoImage("obj16/test_notrun.gif")); //$NON-NLS-1$
 			testCaseImages.put(ITestItem.Status.Skipped, Activator.createAutoImage("obj16/test_skipped.gif")); //$NON-NLS-1$
 			testCaseImages.put(ITestItem.Status.Passed, Activator.createAutoImage("obj16/test_passed.gif")); //$NON-NLS-1$
 			testCaseImages.put(ITestItem.Status.Failed, Activator.createAutoImage("obj16/test_failed.gif")); //$NON-NLS-1$
@@ -80,7 +79,9 @@ public class TestsHierarchyViewer {
 
 		private Map<ITestItem.Status, Image> testSuiteImages = new HashMap<ITestItem.Status, Image>();
 		{
-			testSuiteImages.put(ITestItem.Status.Skipped, Activator.createAutoImage("obj16/tsuite_passed.gif")); //$NON-NLS-1$
+			// NOTE: There is no skipped-icon for test suite, but it seems it is not a problem
+			testSuiteImages.put(ITestItem.Status.NotRun, Activator.createAutoImage("obj16/tsuite_notrun.gif")); //$NON-NLS-1$
+			testSuiteImages.put(ITestItem.Status.Skipped, Activator.createAutoImage("obj16/tsuite_notrun.gif")); //$NON-NLS-1$
 			testSuiteImages.put(ITestItem.Status.Passed, Activator.createAutoImage("obj16/tsuite_passed.gif")); //$NON-NLS-1$
 			testSuiteImages.put(ITestItem.Status.Failed, Activator.createAutoImage("obj16/tsuite_failed.gif")); //$NON-NLS-1$
 			testSuiteImages.put(ITestItem.Status.Aborted, Activator.createAutoImage("obj16/tsuite_aborted.gif")); //$NON-NLS-1$

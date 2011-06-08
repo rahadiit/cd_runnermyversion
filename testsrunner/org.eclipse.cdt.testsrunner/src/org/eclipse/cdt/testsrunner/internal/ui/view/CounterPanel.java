@@ -97,8 +97,9 @@ public class CounterPanel extends Composite {
 			case Aborted:
 				setAbortedCounter(abortedCounter+1);
 				break;
+			case NotRun:
 			case Passed:
-				// Do nothing, just avoid warning
+				// Do nothing, just avoid compiler's warning
 				break;
 		}
 		// Update current counter

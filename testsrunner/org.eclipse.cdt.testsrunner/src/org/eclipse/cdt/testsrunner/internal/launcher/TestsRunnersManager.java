@@ -15,10 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.model.ModelManager;
 import org.eclipse.cdt.testsrunner.launcher.ITestsRunner;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.debug.core.ILaunchConfiguration;
 
 /**
  * TODO: Add descriptions
@@ -32,6 +34,10 @@ public class TestsRunnersManager {
 	private static final String TESTS_RUNNER_CLASS_ATTRIBUTE = "class"; //$NON-NLS-1$
 	private static final String TESTS_RUNNER_DESCRIPTION_ATTRIBUTE = "description"; //$NON-NLS-1$
 
+	private TestsRunnerInfo[] testsRunners = null;
+	ILaunchConfiguration lastLaunchConfiguration = null;	
+
+	
 	public class TestsRunnerInfo {
 		private ITestsRunner testsRunner;
 		private IConfigurationElement element;
@@ -67,8 +73,7 @@ public class TestsRunnersManager {
 			return testsRunner;
 		}
 	}
-
-	private TestsRunnerInfo[] testsRunners = null;
+	
 
 	public TestsRunnersManager() {
 	}
@@ -101,9 +106,13 @@ public class TestsRunnersManager {
 		return testsRunner.getTestsRunner().configureLaunchParameters(parameters);
 	}
 
-	public void run(String testsRunnerId, InputStream inputStream) {
+	public void run(String testsRunnerId, InputStream inputStream, ILaunchConfiguration config) {
 		TestsRunnerInfo testsRunner = findTestsRunner(testsRunnerId);
-		testsRunner.getTestsRunner().run(Activator.getDefault().getModelManager(), inputStream);
+		ModelManager modelManager = Activator.getDefault().getModelManager();
+		modelManager.testingStarted(lastLaunchConfiguration==config);
+		testsRunner.getTestsRunner().run(modelManager, inputStream);
+		modelManager.testingFinished();
+		lastLaunchConfiguration = config;
 	}
 
 }

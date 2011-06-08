@@ -89,15 +89,13 @@ public class ProgressBar extends Canvas {
 			case Aborted:
 				hasErrors = true;
 				break;
+			case NotRun:
 			case Skipped:
 			case Passed:
-				// Do nothing, just avoid warning
+				// Do nothing, just avoid compiler's warning
 				break;
 		}
 		++currentCounter;
-		if (totalCounter < currentCounter) {
-			totalCounter = currentCounter;
-		}
 		recalculateColorBarWidth();
 		redraw();
 	}
@@ -106,14 +104,11 @@ public class ProgressBar extends Canvas {
 		wasStopped = true;
 		redraw();
 	}
-
-	private void paintStep(int startX, int endX) {
-		GC gc = new GC(this);
-		setStatusColor(gc);
-		Rectangle rect = getClientArea();
-		startX = Math.max(1, startX);
-		gc.fillRectangle(startX, 1, endX-startX, rect.height-2);
-		gc.dispose();
+	
+	public void testingFinished() {
+		totalCounter = currentCounter;
+		recalculateColorBarWidth();
+		redraw();
 	}
 
 	private void setStatusColor(GC gc) {
@@ -126,14 +121,14 @@ public class ProgressBar extends Canvas {
 	}
 
 	private void recalculateColorBarWidth() {
+		Rectangle r = getClientArea();
+		int newColorBarWidth;
 		if (totalCounter > 0) {
-			Rectangle r = getClientArea();
-			if (r.width != 0) {
-				colorBarWidth = Math.max(0, currentCounter*(r.width-2)/totalCounter);
-				return;
-			}
+			newColorBarWidth = currentCounter*(r.width-2)/totalCounter;
+		} else {
+			newColorBarWidth = currentCounter == 0 ? 0 : (r.width-2)/2;
 		}
-		colorBarWidth = currentCounter;
+		colorBarWidth = Math.max(0, newColorBarWidth);
 	}
 
 	private void drawBevelRect(GC gc, int x, int y, int w, int h, Color topleft, Color bottomright) {
