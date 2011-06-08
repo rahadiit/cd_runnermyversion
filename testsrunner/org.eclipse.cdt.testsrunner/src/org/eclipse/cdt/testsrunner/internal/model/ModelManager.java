@@ -121,7 +121,8 @@ public class ModelManager implements IModelManager {
 	}
 
 	public void addTestMessage(String file, int line, Level level, String text) {
-		currentTestCase.addTestMessage(new TestMessage(new TestLocation(file, line), level, text));
+		TestLocation location = (file == null || file.isEmpty() || line == 0) ? null : new TestLocation(file, line);
+		currentTestCase.addTestMessage(new TestMessage(location, level, text));
 	}
 	
 	public boolean isCurrentlyRunning(ITestItem item) {
