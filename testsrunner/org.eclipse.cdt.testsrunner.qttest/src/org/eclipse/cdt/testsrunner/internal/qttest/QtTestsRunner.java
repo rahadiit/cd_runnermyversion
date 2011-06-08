@@ -1,4 +1,4 @@
-package org.eclipse.cdt.testsrunner.internal.boost;
+package org.eclipse.cdt.testsrunner.internal.qttest;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,13 +11,17 @@ import org.eclipse.cdt.testsrunner.launcher.ITestsRunner;
 import org.eclipse.cdt.testsrunner.model.IModelManager;
 import org.xml.sax.SAXException;
 
-public class BoostTestsRunner implements ITestsRunner {
+public class QtTestsRunner implements ITestsRunner {
+
+	public QtTestsRunner() {
+		// TODO Auto-generated constructor stub
+	}
 
 	public void run(IModelManager modelBuilder, InputStream inputStream) {
 		try {
 			SAXParserFactory spf = SAXParserFactory.newInstance();
 			SAXParser sp = spf.newSAXParser();
-			sp.parse(inputStream, new BoostXmlLogHandler(modelBuilder));
+			sp.parse(inputStream, new QtXmlLogHandler(modelBuilder));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
