@@ -20,7 +20,7 @@ import org.eclipse.cdt.testsrunner.launcher.ITestsRunner;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunch;
 
 /**
  * TODO: Add descriptions
@@ -35,7 +35,7 @@ public class TestsRunnersManager {
 	private static final String TESTS_RUNNER_DESCRIPTION_ATTRIBUTE = "description"; //$NON-NLS-1$
 
 	private TestsRunnerInfo[] testsRunners = null;
-	ILaunchConfiguration lastLaunchConfiguration = null;	
+	ILaunch currLaunch = null;	
 
 	
 	public class TestsRunnerInfo {
@@ -106,13 +106,18 @@ public class TestsRunnersManager {
 		return testsRunner.getTestsRunner().configureLaunchParameters(parameters);
 	}
 
-	public void run(String testsRunnerId, InputStream inputStream, ILaunchConfiguration config) {
+	public void run(String testsRunnerId, InputStream inputStream, ILaunch launch) {
+		boolean restartPrevious = currLaunch == null ? false : (currLaunch.getLaunchConfiguration() == launch.getLaunchConfiguration());
+		currLaunch = launch;
 		TestsRunnerInfo testsRunner = findTestsRunner(testsRunnerId);
 		ModelManager modelManager = Activator.getDefault().getModelManager();
-		modelManager.testingStarted(lastLaunchConfiguration==config);
+		modelManager.testingStarted(restartPrevious);
 		testsRunner.getTestsRunner().run(modelManager, inputStream);
 		modelManager.testingFinished();
-		lastLaunchConfiguration = config;
+	}
+	
+	public ILaunch getCurrentLaunch() {
+		return currLaunch;
 	}
 
 }

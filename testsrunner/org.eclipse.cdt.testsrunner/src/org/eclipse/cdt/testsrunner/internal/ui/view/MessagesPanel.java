@@ -20,25 +20,28 @@ import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestLocation;
 import org.eclipse.cdt.testsrunner.model.ITestMessage;
 import org.eclipse.cdt.testsrunner.model.ITestSuite;
+import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 
 
 /**
  * TODO: Fix description
+ * TODO: Rename MessagesPanel => MessagesViewer (for consistency)
  */
 public class MessagesPanel {
 
 	private TableViewer tableViewer;
+	private OpenInEditorAction openInEditorAction;
 
 	
 	class MessagesCollector implements IModelVisitor {
@@ -189,10 +192,18 @@ public class MessagesPanel {
 		tableViewer = new TableViewer(parent, SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
 		tableViewer.setLabelProvider(new MessagesLabelProvider());
 		tableViewer.setContentProvider(new MessagesContentProvider());
+		
+		openInEditorAction = new OpenInEditorAction(tableViewer);
+		tableViewer.addOpenListener(new IOpenListener() {
+			
+			public void open(OpenEvent event) {
+				openInEditorAction.run();
+			}
+		});
 	}
 
-	public Control getControl() {
-		return tableViewer.getControl();
+	public TableViewer getTableViewer() {
+		return tableViewer;
 	}
 	
 	public void showItemsMessages(ITestItem[] testItems) {
