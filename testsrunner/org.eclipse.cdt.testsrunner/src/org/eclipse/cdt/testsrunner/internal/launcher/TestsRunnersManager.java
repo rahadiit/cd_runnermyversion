@@ -27,59 +27,78 @@ import org.eclipse.core.runtime.Platform;
 public class TestsRunnersManager {
 	
 	private static final String TESTS_RUNNER_EXTENSION_POINT_ID = "org.eclipse.cdt.testsrunner.TestsRunner"; //$NON-NLS-1$
+	private static final String TESTS_RUNNER_ID_ATTRIBUTE = "id"; //$NON-NLS-1$
 	private static final String TESTS_RUNNER_NAME_ATTRIBUTE = "name"; //$NON-NLS-1$
 	private static final String TESTS_RUNNER_CLASS_ATTRIBUTE = "class"; //$NON-NLS-1$
+	private static final String TESTS_RUNNER_DESCRIPTION_ATTRIBUTE = "description"; //$NON-NLS-1$
 
 	public class TestsRunnerInfo {
-		private final String name;
 		private ITestsRunner testsRunner;
+		private IConfigurationElement element;
 		
-		public TestsRunnerInfo(String name, ITestsRunner testsRunner) {
-			this.name = name;
-			this.testsRunner = testsRunner;
+		public TestsRunnerInfo(IConfigurationElement element) {
+			this.element = element;
 		}
 
 		public String getName() {
-			return name;
+			return element.getAttribute(TESTS_RUNNER_NAME_ATTRIBUTE);
+		}
+
+		public String getId() {
+			return element.getAttribute(TESTS_RUNNER_ID_ATTRIBUTE);
+		}
+
+		public String getDescription() {
+			String result = element.getAttribute(TESTS_RUNNER_DESCRIPTION_ATTRIBUTE);
+			return result == null ? "" : result; //$NON-NLS-1$
 		}
 
 		public ITestsRunner getTestsRunner() {
+			if (testsRunner == null) {
+				try {
+					Object object = element.createExecutableExtension(TESTS_RUNNER_CLASS_ATTRIBUTE);
+					if (object instanceof ITestsRunner) {
+						testsRunner = (ITestsRunner)object;
+					}
+				} catch (CoreException e) {
+					Activator.log(e);
+				}
+			}
 			return testsRunner;
 		}
 	}
 
-	private List<TestsRunnerInfo> testsRunners = null;
+	private TestsRunnerInfo[] testsRunners = null;
 
 	public TestsRunnersManager() {
 	}
 
-	private void loadTestsRunners() {
-		testsRunners = new ArrayList<TestsRunnerInfo>();
-		IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(TESTS_RUNNER_EXTENSION_POINT_ID);
-		try {
-			for (IConfigurationElement element : config) {
-				final String name = element.getAttribute(TESTS_RUNNER_NAME_ATTRIBUTE);
-				final Object object = element.createExecutableExtension(TESTS_RUNNER_CLASS_ATTRIBUTE);
-				if (object instanceof ITestsRunner) {
-					testsRunners.add(new TestsRunnerInfo(name, (ITestsRunner) object));
-				}
-			}
-		} catch (CoreException ex) {
-			Activator.log(ex);
-		}
-	}
-	
 	public TestsRunnerInfo[] getTestsRunnersInfo() {
 		if (testsRunners == null) {
-			loadTestsRunners();
+			// Initialize tests runners info
+			List<TestsRunnerInfo> testsRunnersList = new ArrayList<TestsRunnerInfo>();
+			for (IConfigurationElement element : Platform.getExtensionRegistry().getConfigurationElementsFor(TESTS_RUNNER_EXTENSION_POINT_ID)) {
+				testsRunnersList.add(new TestsRunnerInfo(element));
+			}
+			testsRunners = testsRunnersList.toArray(new TestsRunnerInfo[testsRunnersList.size()]);
 		}
-		return testsRunners.toArray(new TestsRunnerInfo[testsRunners.size()]);
+		return testsRunners;
+	}
+	
+	private TestsRunnerInfo findTestsRunner(String testsRunnerId) {
+		if (testsRunnerId!=null) {
+			for (TestsRunnerInfo testsRunner : getTestsRunnersInfo()) {
+				if (testsRunner.getId().equals(testsRunnerId)) {
+					return testsRunner;
+				}
+			}
+		}
+		return null;
 	}
 
-	public void run(InputStream inputStream) {
-		// TODO: Review test runners selection!!!
-		TestsRunnerInfo testsRunner = getTestsRunnersInfo()[0];
-		testsRunner.testsRunner.run(Activator.getDefault().getModelManager(), inputStream);
+	public void run(String testsRunnerId, InputStream inputStream) {
+		TestsRunnerInfo testsRunner = findTestsRunner(testsRunnerId);
+		testsRunner.getTestsRunner().run(Activator.getDefault().getModelManager(), inputStream);
 	}
 
 }

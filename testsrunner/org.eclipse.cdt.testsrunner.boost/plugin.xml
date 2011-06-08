@@ -5,6 +5,8 @@
          point="org.eclipse.cdt.testsrunner.TestsRunner">
       <runner
             class="org.eclipse.cdt.testsrunner.internal.boost.BoostTestsRunner"
+            description="Tests runner for a test module based on Boost.Test library"
+            id="org.eclipse.cdt.testsrunner.boost"
             name="Boost Tests Runner">
       </runner>
    </extension>

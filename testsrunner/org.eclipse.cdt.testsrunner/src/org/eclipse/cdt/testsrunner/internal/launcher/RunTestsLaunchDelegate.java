@@ -135,7 +135,8 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 				boolean usePty = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_USE_TERMINAL,
 						ICDTLaunchConfigurationConstants.USE_TERMINAL_DEFAULT);
 				monitor.worked(5);
-				Process process = exec(commandArray, getEnvironment(config), wd, usePty);
+				String testsRunnerId = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String)null);
+				Process process = exec(commandArray, getEnvironment(config), wd, usePty, testsRunnerId);
 				monitor.worked(3);
 				DebugPlugin.newProcess(launch, process, renderProcessLabel(commandArray[0]));
 			}
@@ -156,11 +157,12 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 	 *            the command line
 	 * @param workingDirectory
 	 *            the working directory, or <code>null</code>
+	 * @param testsRunnerId 
 	 * @return the resulting process or <code>null</code> if the exec is
 	 *         cancelled
 	 * @see Runtime
 	 */
-	protected Process exec(String[] cmdLine, String[] environ, File workingDirectory, boolean usePty) throws CoreException {
+	protected Process exec(String[] cmdLine, String[] environ, File workingDirectory, boolean usePty, String testsRunnerId) throws CoreException {
 		Process p = null;
 		try {
 			if (workingDirectory == null) {
@@ -180,7 +182,8 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 							}
 						}
 					});
-		        	Activator.getDefault().getTestsRunnersManager().run(p.getInputStream());
+					// TODO: Handle incorrect tests runner somehow
+		        	Activator.getDefault().getTestsRunnersManager().run(testsRunnerId, p.getInputStream());
 				} else {
 					p = ProcessFactory.getFactory().exec(cmdLine, environ, workingDirectory);
 				}
@@ -204,7 +207,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			if (handler != null) {
 				Object result = handler.handleStatus(status, this);
 				if (result instanceof Boolean && ((Boolean) result).booleanValue()) {
-					p = exec(cmdLine, environ, null, usePty);
+					p = exec(cmdLine, environ, null, usePty, testsRunnerId);
 				}
 			}
 		}
