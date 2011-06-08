@@ -8,38 +8,16 @@
  * Contributors:
  *     Anton Gorenkov - initial API and implementation
  *******************************************************************************/
-package org.eclipse.cdt.testsrunner.model.internal;
-
-import org.eclipse.cdt.testsrunner.model.ITestMessage;
+package org.eclipse.cdt.testsrunner.launcher;
 
 /**
  * TODO: Add descriptions
  * 
+ * @noextend This interface is not intended to be extended by clients.
+ * @noimplement This interface is not intended to be implemented by clients.
  */
-public class TestMessage implements ITestMessage {
+public interface ITestsRunner {
 
-	private TestLocation location;
-
-	private Level level;
-
-	private String text;
-
+	String run(String test);
 	
-	public TestMessage(TestLocation location, Level level, String text) {
-		this.location = location;
-		this.level = level;
-		this.text = text;
-	}
-
-	public TestLocation getLocation() {
-		return location;
-	}
-
-	public Level getLevel() {
-		return level;
-	}
-
-	public String getText() {
-		return text;
-	}
 }
