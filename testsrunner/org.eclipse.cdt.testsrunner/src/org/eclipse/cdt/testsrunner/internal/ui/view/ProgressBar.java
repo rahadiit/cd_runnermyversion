@@ -1,16 +1,16 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * Copyright (c) 2011 Anton Gorenkov 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Stephan Michels, stephan@apache.org - 104944 [JUnit] Unnecessary code in JUnitProgressBar
+ *     Anton Gorenkov - initial API and implementation
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
+import org.eclipse.cdt.testsrunner.model.ITestCase;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
@@ -29,18 +29,20 @@ import org.eclipse.swt.widgets.Display;
 /**
  * A progress bar with a red/green indication for success or failure.
  */
+// TODO: Fix description
+// TODO: Refactor for C/C++ unit tests
 public class ProgressBar extends Canvas {
 	private static final int DEFAULT_WIDTH = 160;
 	private static final int DEFAULT_HEIGHT = 18;
 
-	private int fCurrentTickCount= 0;
-	private int fMaxTickCount= 0;
-	private int fColorBarWidth= 0;
-	private Color fOKColor;
-	private Color fFailureColor;
-	private Color fStoppedColor;
-	private boolean fError;
-	private boolean fStopped= false;
+	private int currentCounter;
+	private int totalCounter;
+	private int colorBarWidth;
+	private Color okColor;
+	private Color failureColor;
+	private Color stoppedColor;
+	private boolean hasErrors;
+	private boolean wasStopped;
 
 	public ProgressBar(Composite parent) {
 		super(parent, SWT.NONE);
@@ -48,7 +50,7 @@ public class ProgressBar extends Canvas {
 		addControlListener(new ControlAdapter() {
 			@Override
 			public void controlResized(ControlEvent e) {
-				fColorBarWidth= scale(fCurrentTickCount);
+				recalculateColorBarWidth();
 				redraw();
 			}
 		});
@@ -57,73 +59,81 @@ public class ProgressBar extends Canvas {
 				paint(e);
 			}
 		});
+
+		// Manage progress bar colors
+		Display display= parent.getDisplay();
+		failureColor= new Color(display, 159, 63, 63);
+		okColor= new Color(display, 95, 191, 95);
+		stoppedColor= new Color(display, 120, 120, 120);
 		addDisposeListener(new DisposeListener() {
 			public void widgetDisposed(DisposeEvent e) {
-				fFailureColor.dispose();
-				fOKColor.dispose();
-				fStoppedColor.dispose();
+				failureColor.dispose();
+				okColor.dispose();
+				stoppedColor.dispose();
 			}
 		});
-		Display display= parent.getDisplay();
-		fFailureColor= new Color(display, 159, 63, 63);
-		fOKColor= new Color(display, 95, 191, 95);
-		fStoppedColor= new Color(display, 120, 120, 120);
 	}
-
-	public void setMaximum(int max) {
-		fMaxTickCount= max;
-	}
-
-	public void reset() {
-		fError= false;
-		fStopped= false;
-		fCurrentTickCount= 0;
-		fMaxTickCount= 0;
-		fColorBarWidth= 0;
+	
+	public void restart(int totalTestsCount) {
+		currentCounter = 0;
+		totalCounter = totalTestsCount;
+		colorBarWidth = 0;
+		hasErrors = false;
+		wasStopped = false;
 		redraw();
 	}
-
-	public void reset(boolean hasErrors, boolean stopped, int ticksDone, int maximum) {
-		boolean noChange= fError == hasErrors && fStopped == stopped && fCurrentTickCount == ticksDone && fMaxTickCount == maximum;
-		fError= hasErrors;
-		fStopped= stopped;
-		fCurrentTickCount= ticksDone;
-		fMaxTickCount= maximum;
-		fColorBarWidth= scale(ticksDone);
-		if (! noChange)
-			redraw();
+	
+	public void updateCounters(ITestCase.Status testStatus) {
+		switch (testStatus) {
+			case Failed:
+			case Aborted:
+				hasErrors = true;
+				break;
+			case Skipped:
+			case Passed:
+				// Do nothing, just avoid warning
+				break;
+		}
+		++currentCounter;
+		if (totalCounter < currentCounter) {
+			totalCounter = currentCounter;
+		}
+		recalculateColorBarWidth();
+		redraw();
+	}
+	
+	public void setStopped() {
+		wasStopped = true;
+		redraw();
 	}
 
 	private void paintStep(int startX, int endX) {
 		GC gc = new GC(this);
 		setStatusColor(gc);
-		Rectangle rect= getClientArea();
-		startX= Math.max(1, startX);
+		Rectangle rect = getClientArea();
+		startX = Math.max(1, startX);
 		gc.fillRectangle(startX, 1, endX-startX, rect.height-2);
 		gc.dispose();
 	}
 
 	private void setStatusColor(GC gc) {
-		if (fStopped)
-			gc.setBackground(fStoppedColor);
-		else if (fError)
-			gc.setBackground(fFailureColor);
+		if (wasStopped)
+			gc.setBackground(stoppedColor);
+		else if (hasErrors)
+			gc.setBackground(failureColor);
 		else
-			gc.setBackground(fOKColor);
+			gc.setBackground(okColor);
 	}
 
-	public void stopped() {
-		fStopped= true;
-		redraw();
-	}
-
-	private int scale(int value) {
-		if (fMaxTickCount > 0) {
-			Rectangle r= getClientArea();
-			if (r.width != 0)
-				return Math.max(0, value*(r.width-2)/fMaxTickCount);
+	private void recalculateColorBarWidth() {
+		if (totalCounter > 0) {
+			Rectangle r = getClientArea();
+			if (r.width != 0) {
+				colorBarWidth = Math.max(0, currentCounter*(r.width-2)/totalCounter);
+				return;
+			}
 		}
-		return value;
+		colorBarWidth = currentCounter;
 	}
 
 	private void drawBevelRect(GC gc, int x, int y, int w, int h, Color topleft, Color bottomright) {
@@ -140,44 +150,27 @@ public class ProgressBar extends Canvas {
 		GC gc = event.gc;
 		Display disp= getDisplay();
 
-		Rectangle rect= getClientArea();
+		Rectangle rect = getClientArea();
 		gc.fillRectangle(rect);
 		drawBevelRect(gc, rect.x, rect.y, rect.width-1, rect.height-1,
 			disp.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW),
 			disp.getSystemColor(SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW));
 
 		setStatusColor(gc);
-		fColorBarWidth= Math.min(rect.width-2, fColorBarWidth);
-		gc.fillRectangle(1, 1, fColorBarWidth, rect.height-2);
+		colorBarWidth = Math.min(rect.width-2, colorBarWidth);
+		gc.fillRectangle(1, 1, colorBarWidth, rect.height-2);
 	}
 
 	@Override
 	public Point computeSize(int wHint, int hHint, boolean changed) {
 		checkWidget();
 		Point size= new Point(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-		if (wHint != SWT.DEFAULT) size.x= wHint;
-		if (hHint != SWT.DEFAULT) size.y= hHint;
+		if (wHint != SWT.DEFAULT) {
+			size.x = wHint;
+		}
+		if (hHint != SWT.DEFAULT) {
+			size.y = hHint;
+		}
 		return size;
 	}
-
-	public void step(int failures) {
-		fCurrentTickCount++;
-		int x= fColorBarWidth;
-
-		fColorBarWidth= scale(fCurrentTickCount);
-
-		if (!fError && failures > 0) {
-			fError= true;
-			x= 1;
-		}
-		if (fCurrentTickCount == fMaxTickCount)
-			fColorBarWidth= getClientArea().width-1;
-		paintStep(x, fColorBarWidth);
-	}
-
-	public void refresh(boolean hasErrors) {
-		fError= hasErrors;
-		redraw();
-	}
-
 }

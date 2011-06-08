@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestSuite;
 
@@ -67,7 +68,7 @@ public class TestSuite extends TestItem implements ITestSuite {
 		testCases.put(testCase.getName(), testCase);
 	}
 
-	public void visit(ModelVisitor visitor) {
+	public void visit(IModelVisitor visitor) {
 		visitor.visit(this);
 		for (TestSuite testSuite : testSuites.values()) {
 			testSuite.visit(visitor);

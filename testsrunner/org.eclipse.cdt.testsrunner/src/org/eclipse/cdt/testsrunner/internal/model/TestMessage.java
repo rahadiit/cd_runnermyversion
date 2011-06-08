@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.model;
 
+import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestMessage;
 
 /**
@@ -43,7 +44,7 @@ public class TestMessage implements ITestMessage {
 		return text;
 	}
 
-	public void visit(ModelVisitor visitor) {
+	public void visit(IModelVisitor visitor) {
 		visitor.visit(this);
 	}
 }

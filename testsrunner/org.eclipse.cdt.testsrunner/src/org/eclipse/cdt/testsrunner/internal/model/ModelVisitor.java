@@ -10,6 +10,11 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.model;
 
+import org.eclipse.cdt.testsrunner.model.IModelVisitor;
+import org.eclipse.cdt.testsrunner.model.ITestCase;
+import org.eclipse.cdt.testsrunner.model.ITestMessage;
+import org.eclipse.cdt.testsrunner.model.ITestSuite;
+
 /**
  * TODO: Add descriptions
  * 
@@ -17,12 +22,24 @@ package org.eclipse.cdt.testsrunner.internal.model;
  * @noimplement This interface is not intended to be implemented by clients.
  */
 // TODO: Need this (and all visit() methods)?
-public interface ModelVisitor {
+public abstract class ModelVisitor implements IModelVisitor {
 
-	void visit(TestSuite testSuite);
+	public void visit(ITestSuite testSuite) {
+		visit((TestSuite)testSuite);
+	}
 	
-	void visit(TestCase testCase);
+	public void visit(ITestCase testCase) {
+		visit((TestCase)testCase);
+	}
 	
-	void visit(TestMessage testMessage);
+	public void visit(ITestMessage testMessage) {
+		visit((TestMessage)testMessage);
+	}
+
+	abstract void visit(TestSuite testSuite);
+	
+	abstract void visit(TestCase testCase);
+	
+	abstract void visit(TestMessage testMessage);
 	
 }

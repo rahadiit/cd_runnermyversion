@@ -51,7 +51,7 @@ public class ModelManager implements IModelManager {
 			}
 		});
 	}
-	
+
 	public void finishTesting() {
 		// TODO: Remove Skipped test cases. Problem: what to do with TS?
 	}

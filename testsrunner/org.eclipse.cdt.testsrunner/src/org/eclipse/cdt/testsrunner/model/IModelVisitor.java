@@ -13,19 +13,13 @@ package org.eclipse.cdt.testsrunner.model;
 /**
  * TODO: Add descriptions
  * 
- * @noextend This interface is not intended to be extended by clients.
- * @noimplement This interface is not intended to be implemented by clients.
  */
-public interface ITestItem {
+public interface IModelVisitor {
 
-	String getName();
+	void visit(ITestSuite testSuite);
 	
-	ITestSuite getParent();
+	void visit(ITestCase testCase);
 	
-	boolean hasChildren();
-
-	ITestItem[] getChildren();
+	void visit(ITestMessage testMessage);
 	
-	void visit(IModelVisitor visitor);
-
 }
