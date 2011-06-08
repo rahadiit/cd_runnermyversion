@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="org.eclipse.cdt.testsrunner.internal.RunTestsLaunchDelegate"
+            id="org.eclipse.cdt.testsrunner.launch.testsRunner"
+            modes="debug,run"
+            name="Run C/C++ Tests"
+            public="true"
+            sourceLocatorId="org.eclipse.cdt.debug.core.sourceLocator"
+            sourcePathComputerId="org.eclipse.cdt.debug.core.sourcePathComputer">
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="org.eclipse.cdt.testsrunner.ui.internal.TestsRunnerConfigurationTabGroup"
+            description="Run C/C++ Tests"
+            id="org.eclipse.cdt.testsrunner.launch.testsRunnerTabGroup"
+            type="org.eclipse.cdt.testsrunner.launch.testsRunner">
+      </launchConfigurationTabGroup>
+   </extension>
+
+   
+
+   
+   
+</plugin>
