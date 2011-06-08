@@ -11,7 +11,6 @@
 package org.eclipse.cdt.testsrunner.internal;
 
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager;
-import org.eclipse.cdt.testsrunner.launcher.ITestsRunner;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -36,13 +35,6 @@ public class Activator extends AbstractUIPlugin {
 	public Activator() {
 		super();
 		plugin = this;
-		StringBuilder sb = new StringBuilder();
-		for (TestsRunnersManager.TestsRunnerInfo tr : testsRunnersManager.getTestsRunnersInfo()) {
-			sb.append(tr.getTestsRunner().run("aaa")); //$NON-NLS-1$
-			sb.append(" - ");
-			sb.append(tr.getName());
-		}
-		System.out.print(sb.toString());
 	}
 
 	/**
@@ -114,6 +106,10 @@ public class Activator extends AbstractUIPlugin {
 	@Override
     public void stop(BundleContext context) throws Exception {
 		super.stop(context);
+	}
+
+	public TestsRunnersManager getTestsRunnersManager() {
+		return testsRunnersManager;
 	}
 
 }

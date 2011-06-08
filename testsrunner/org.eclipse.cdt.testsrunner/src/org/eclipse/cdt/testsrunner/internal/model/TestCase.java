@@ -11,6 +11,7 @@
 package org.eclipse.cdt.testsrunner.internal.model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.cdt.testsrunner.model.ITestCase;
 
@@ -24,7 +25,7 @@ public class TestCase extends TestItem implements ITestCase {
 
 	private int testingTime;
 
-	private ArrayList<TestMessage> testMessages;
+	private List<TestMessage> testMessages = new ArrayList<TestMessage>();
 
 	
 	public TestCase(String name, TestSuite parent) {

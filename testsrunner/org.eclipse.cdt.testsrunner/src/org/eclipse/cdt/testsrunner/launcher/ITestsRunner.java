@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.launcher;
 
+import org.eclipse.cdt.testsrunner.model.IModelBuilder;
+
+
 /**
  * TODO: Add descriptions
  * 
@@ -18,6 +21,6 @@ package org.eclipse.cdt.testsrunner.launcher;
  */
 public interface ITestsRunner {
 
-	String run(String test);
+	void run(IModelBuilder modelBuilder);
 	
 }
