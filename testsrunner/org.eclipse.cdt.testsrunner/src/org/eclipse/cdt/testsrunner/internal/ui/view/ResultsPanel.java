@@ -91,5 +91,9 @@ public class ResultsPanel {
 		messagesPanel.showItemsMessages(testItems);
 	}
 
+	public void setPanelOrientation(ResultsView.Orientation currentOrientation) {
+		sashForm.setOrientation(currentOrientation == ResultsView.Orientation.Horizontal ? SWT.HORIZONTAL : SWT.VERTICAL);
+	}
+
 	
 }
