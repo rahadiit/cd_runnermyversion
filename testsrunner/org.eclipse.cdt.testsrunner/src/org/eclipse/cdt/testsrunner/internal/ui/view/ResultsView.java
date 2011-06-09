@@ -77,7 +77,7 @@ public class ResultsView extends ViewPart {
 
 	@Override
 	public void setFocus() {
-		// TODO : Handle focus HERE!
+		resultsPanel.getTestsHierarchyViewer().getTreeViewer().getControl().setFocus();
 	}
 
 	private void configureActionsBar() {
