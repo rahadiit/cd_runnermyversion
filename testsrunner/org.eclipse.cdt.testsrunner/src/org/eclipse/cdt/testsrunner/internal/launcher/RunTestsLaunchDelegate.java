@@ -51,12 +51,59 @@ import org.eclipse.ui.PartInitException;
 public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 
 	public void launch(ILaunchConfiguration config, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
-		IBinaryObject exeFile = null;
+		
 		if (monitor == null) {
 			monitor = new NullProgressMonitor();
 		}
+		if (mode.equals(ILaunchManager.RUN_MODE)) {
+			runTestModule(config, launch, monitor);
+		}
+// TODO: Support debug mode!
+//		if (mode.equals(ILaunchManager.DEBUG_MODE)) {
+//			debugTestModule(config, launch, monitor);
+//		}
+	}
+
+	private void runTestModule(ILaunchConfiguration config, ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		monitor.beginTask(LaunchMessages.LocalRunLaunchDelegate_Launching_Local_C_Application, 10); 
 		// check for cancellation
+		if (monitor.isCanceled()) {
+			return;
+		}
+		monitor.worked(1);
+		try {
+			// Allow test module running without a project specification
+			ICProject cProject = CDebugUtils.getCProject(config);
+			IPath exePath = CDebugUtils.verifyProgramPath(config, cProject == null);
+			String arguments[] = getProgramArgumentsArray(config);
+
+			// set the default source locator if required
+			setDefaultSourceLocator(launch, config);
+
+			File wd = getWorkingDirectory(config);
+			if (wd == null) {
+				wd = new File(System.getProperty("user.home", ".")); //$NON-NLS-1$ //$NON-NLS-2$
+			}
+			ArrayList<String> command = new ArrayList<String>(1 + arguments.length);
+			command.add(exePath.toOSString());
+			command.addAll(Arrays.asList(arguments));
+			String[] commandArray = command.toArray(new String[command.size()]);
+			monitor.worked(5);
+			String testsRunnerId = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String)null);
+			commandArray = Activator.getDefault().getTestsRunnersManager().configureLaunchParameters(testsRunnerId, commandArray);
+			Process process = exec(commandArray, getEnvironment(config), wd, testsRunnerId, launch);
+			monitor.worked(3);
+			DebugPlugin.newProcess(launch, process, renderProcessLabel(commandArray[0]));
+			
+		} finally {
+			monitor.done();
+		}		
+	}
+	
+	private void debugTestModule(ILaunchConfiguration config, ILaunch launch, IProgressMonitor monitor) throws CoreException {
+		
+		IBinaryObject exeFile = null;
+		monitor.beginTask(LaunchMessages.LocalRunLaunchDelegate_Launching_Local_C_Application, 10); 
 		if (monitor.isCanceled()) {
 			return;
 		}
@@ -72,80 +119,60 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			// set the default source locator if required
 			setDefaultSourceLocator(launch, config);
 
-			if (mode.equals(ILaunchManager.DEBUG_MODE)) {
-				ICDebugConfiguration debugConfig = getDebugConfig(config);
-				ICDISession dsession = null;
-				String debugMode = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_DEBUGGER_START_MODE,
-						ICDTLaunchConfigurationConstants.DEBUGGER_MODE_RUN);
-				if (debugMode.equals(ICDTLaunchConfigurationConstants.DEBUGGER_MODE_RUN)) {
-					dsession = debugConfig.createDebugger().createDebuggerSession(launch, exeFile,
-							new SubProgressMonitor(monitor, 8));
+			ICDebugConfiguration debugConfig = getDebugConfig(config);
+			ICDISession dsession = null;
+			String debugMode = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_DEBUGGER_START_MODE,
+					ICDTLaunchConfigurationConstants.DEBUGGER_MODE_RUN);
+			if (debugMode.equals(ICDTLaunchConfigurationConstants.DEBUGGER_MODE_RUN)) {
+				dsession = debugConfig.createDebugger().createDebuggerSession(launch, exeFile, new SubProgressMonitor(monitor, 8));
+				try {
 					try {
-						try {
-							ICDITarget[] dtargets = dsession.getTargets();
-							for (int i = 0; i < dtargets.length; ++i) {
-								ICDIRuntimeOptions opt = dtargets[i].getRuntimeOptions();
-								opt.setArguments(arguments);
-								File wd = getWorkingDirectory(config);
-								if (wd != null) {
-									opt.setWorkingDirectory(wd.getAbsolutePath());
-								}
-								opt.setEnvironment(getEnvironmentAsProperty(config));
+						ICDITarget[] dtargets = dsession.getTargets();
+						for (int i = 0; i < dtargets.length; ++i) {
+							ICDIRuntimeOptions opt = dtargets[i].getRuntimeOptions();
+							opt.setArguments(arguments);
+							File wd = getWorkingDirectory(config);
+							if (wd != null) {
+								opt.setWorkingDirectory(wd.getAbsolutePath());
 							}
-						} catch (CDIException e) {
-							abort(LaunchMessages.LocalRunLaunchDelegate_Failed_setting_runtime_option_though_debugger, e,
-									ICDTLaunchConfigurationConstants.ERR_INTERNAL_ERROR);
+							opt.setEnvironment(getEnvironmentAsProperty(config));
 						}
-						monitor.worked(1);
-						boolean stopInMain = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_DEBUGGER_STOP_AT_MAIN, false);
-						String stopSymbol = null;
-						if (stopInMain)
-							stopSymbol = launch.getLaunchConfiguration().getAttribute(
-									ICDTLaunchConfigurationConstants.ATTR_DEBUGGER_STOP_AT_MAIN_SYMBOL,
-									ICDTLaunchConfigurationConstants.DEBUGGER_STOP_AT_MAIN_SYMBOL_DEFAULT);
-
-						ICDITarget[] targets = dsession.getTargets();
-						for (int i = 0; i < targets.length; i++) {
-							Process process = targets[i].getProcess();
-							IProcess iprocess = null;
-							if (process != null) {
-								iprocess = DebugPlugin.newProcess(launch, process, renderProcessLabel(exePath.toOSString()), getDefaultProcessMap());
-							}
-							CDIDebugModel.newDebugTarget(launch, project.getProject(), targets[i], renderTargetLabel(debugConfig),
-									iprocess, exeFile, true, false, stopSymbol, true);
-						}
-					} catch (CoreException e) {
-						try {
-							dsession.terminate();
-						} catch (CDIException e1) {
-							// ignore
-						}
-						throw e;
+					} catch (CDIException e) {
+						abort(LaunchMessages.LocalRunLaunchDelegate_Failed_setting_runtime_option_though_debugger, e,
+								ICDTLaunchConfigurationConstants.ERR_INTERNAL_ERROR);
 					}
+					monitor.worked(1);
+					boolean stopInMain = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_DEBUGGER_STOP_AT_MAIN, false);
+					String stopSymbol = null;
+					if (stopInMain)
+						stopSymbol = launch.getLaunchConfiguration().getAttribute(
+								ICDTLaunchConfigurationConstants.ATTR_DEBUGGER_STOP_AT_MAIN_SYMBOL,
+								ICDTLaunchConfigurationConstants.DEBUGGER_STOP_AT_MAIN_SYMBOL_DEFAULT);
+
+					ICDITarget[] targets = dsession.getTargets();
+					for (int i = 0; i < targets.length; i++) {
+						Process process = targets[i].getProcess();
+						IProcess iprocess = null;
+						if (process != null) {
+							iprocess = DebugPlugin.newProcess(launch, process, renderProcessLabel(exePath.toOSString()), getDefaultProcessMap());
+						}
+						CDIDebugModel.newDebugTarget(launch, project.getProject(), targets[i], renderTargetLabel(debugConfig),
+								iprocess, exeFile, true, false, stopSymbol, true);
+					}
+				} catch (CoreException e) {
+					try {
+						dsession.terminate();
+					} catch (CDIException e1) {
+						// ignore
+					}
+					throw e;
 				}
-			} else {
-				File wd = getWorkingDirectory(config);
-				if (wd == null) {
-					wd = new File(System.getProperty("user.home", ".")); //$NON-NLS-1$ //$NON-NLS-2$
-				}
-				ArrayList<String> command = new ArrayList<String>(1 + arguments.length);
-				command.add(exePath.toOSString());
-				command.addAll(Arrays.asList(arguments));
-				String[] commandArray = command.toArray(new String[command.size()]);
-				boolean usePty = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_USE_TERMINAL,
-						ICDTLaunchConfigurationConstants.USE_TERMINAL_DEFAULT);
-				monitor.worked(5);
-				String testsRunnerId = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String)null);
-				commandArray = Activator.getDefault().getTestsRunnersManager().configureLaunchParameters(testsRunnerId, commandArray);
-				Process process = exec(commandArray, getEnvironment(config), wd, usePty, testsRunnerId, launch);
-				monitor.worked(3);
-				DebugPlugin.newProcess(launch, process, renderProcessLabel(commandArray[0]));
 			}
 		} finally {
 			monitor.done();
-		}
+		}		
 	}
-
+	
 	/**
 	 * Performs a runtime exec on the given command line in the context of the
 	 * specified working directory, and returns the resulting process. If the
@@ -163,31 +190,30 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 	 *         cancelled
 	 * @see Runtime
 	 */
-	protected Process exec(String[] cmdLine, String[] environ, File workingDirectory, boolean usePty, String testsRunnerId, ILaunch launch) throws CoreException {
+	protected Process exec(String[] cmdLine, String[] environ, File workingDirectory, String testsRunnerId, ILaunch launch) throws CoreException {
 		Process p = null;
 		try {
 			if (workingDirectory == null) {
 				p = ProcessFactory.getFactory().exec(cmdLine, environ);
 			} else {
-				if (usePty && PTY.isSupported()) {
-					p = ProcessFactory.getFactory().exec(cmdLine, environ, workingDirectory, new PTY());
-					Display.getDefault().syncExec(new Runnable() {
-						public void run() {
-							IViewPart view;
-							try {
-								view = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.eclipse.cdt.testsrunner.resultsview");
-								Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
-							} catch (PartInitException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
+				// NOTE: Pty should be used if possible to handle process output
+				p = (PTY.isSupported())
+					? ProcessFactory.getFactory().exec(cmdLine, environ, workingDirectory, new PTY())
+					: ProcessFactory.getFactory().exec(cmdLine, environ, workingDirectory);
+				Display.getDefault().syncExec(new Runnable() {
+					public void run() {
+						IViewPart view;
+						try {
+							view = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.eclipse.cdt.testsrunner.resultsview");
+							Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
+						} catch (PartInitException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
-					});
-					// TODO: Handle incorrect tests runner somehow
-		        	Activator.getDefault().getTestsRunnersManager().run(testsRunnerId, p.getInputStream(), launch);
-				} else {
-					p = ProcessFactory.getFactory().exec(cmdLine, environ, workingDirectory);
-				}
+					}
+				});
+				// TODO: Handle incorrect tests runner somehow
+				Activator.getDefault().getTestsRunnersManager().run(testsRunnerId, p.getInputStream(), launch);
 			}
 		} catch (IOException e) {
 			if (p != null) {
@@ -208,7 +234,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			if (handler != null) {
 				Object result = handler.handleStatus(status, this);
 				if (result instanceof Boolean && ((Boolean) result).booleanValue()) {
-					p = exec(cmdLine, environ, null, usePty, testsRunnerId, launch);
+					p = exec(cmdLine, environ, null, testsRunnerId, launch);
 				}
 			}
 		}
