@@ -78,11 +78,14 @@ public class CMainTab extends CAbstractMainTab {
 
 	private final boolean dontCheckProgram;
 	private final boolean fSpecifyCoreFile;
+	private final boolean fAllowEmptyProject;
 
 	public static final int WANTS_TERMINAL = 1;
 	public static final int DONT_CHECK_PROGRAM = 2;
 	/** @since 6.0 */
 	public static final int SPECIFY_CORE_FILE = 4;
+	/** @since 9.0 */
+	public static final int ALLOW_EMPTY_PROJECT = 8;
 
 	public CMainTab() {
 		this(WANTS_TERMINAL);
@@ -96,6 +99,7 @@ public class CMainTab extends CAbstractMainTab {
 		fWantsTerminalOption = (flags & WANTS_TERMINAL) != 0;
 		dontCheckProgram = (flags & DONT_CHECK_PROGRAM) != 0;
 		fSpecifyCoreFile = (flags & SPECIFY_CORE_FILE) != 0;
+		fAllowEmptyProject = (flags & ALLOW_EMPTY_PROJECT) != 0;
 	}
 	
 	/*
@@ -384,11 +388,13 @@ public class CMainTab extends CAbstractMainTab {
 	 * the specified project.
 	 */
 	protected void handleBinaryBrowseButtonSelected() {
-		final ICProject cproject = getCProject();
-		if (cproject == null) {
-			MessageDialog.openInformation(getShell(), LaunchMessages.CMainTab_Project_required, 
-					LaunchMessages.CMainTab_Enter_project_before_browsing_for_program); 
-			return;
+		if (!fAllowEmptyProject) {
+			final ICProject cproject = getCProject();
+			if (cproject == null) {
+				MessageDialog.openInformation(getShell(), LaunchMessages.CMainTab_Project_required, 
+						LaunchMessages.CMainTab_Enter_project_before_browsing_for_program); 
+				return;
+			}
 		}
 		FileDialog fileDialog = new FileDialog(getShell(), SWT.NONE);
 		fileDialog.setFileName(fProgText.getText());
@@ -409,55 +415,57 @@ public class CMainTab extends CAbstractMainTab {
 		setMessage(null);
 
 		if (!dontCheckProgram) {
-			String name = fProjText.getText().trim();
-			if (name.length() == 0) {
-				setErrorMessage(LaunchMessages.CMainTab_Project_not_specified); 
-				return false;
+			IProject project = null;
+			String programName = fProgText.getText().trim();
+			IPath exePath = new Path(programName);
+			if (!fAllowEmptyProject || !exePath.isAbsolute()) {
+				String projectName = fProjText.getText().trim();
+				if (projectName.length() == 0) {
+					setErrorMessage(LaunchMessages.CMainTab_Project_not_specified); 
+					return false;
+				}
+				if (!ResourcesPlugin.getWorkspace().getRoot().getProject(projectName).exists()) {
+					setErrorMessage(LaunchMessages.Launch_common_Project_does_not_exist); 
+					return false;
+				}
+				project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
+				if (!project.isOpen()) {
+					setErrorMessage(LaunchMessages.CMainTab_Project_must_be_opened); 
+					return false;
+				}
 			}
-			if (!ResourcesPlugin.getWorkspace().getRoot().getProject(name).exists()) {
-				setErrorMessage(LaunchMessages.Launch_common_Project_does_not_exist); 
-				return false;
-			}
-			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(name);
-			if (!project.isOpen()) {
-				setErrorMessage(LaunchMessages.CMainTab_Project_must_be_opened); 
-				return false;
-			}
-	
-			name = fProgText.getText().trim();
-			if (name.length() == 0) {
+			if (programName.length() == 0) {
 				setErrorMessage(LaunchMessages.CMainTab_Program_not_specified); 
 				return false;
 			}
-			if (name.equals(".") || name.equals("..")) { //$NON-NLS-1$ //$NON-NLS-2$
+			if (programName.equals(".") || programName.equals("..")) { //$NON-NLS-1$ //$NON-NLS-2$
 				setErrorMessage(LaunchMessages.CMainTab_Program_does_not_exist); 
 				return false;
 			}
 			// Avoid constantly checking the binary if nothing relevant has
 			// changed (binary or project name). See bug 277663.
-			if (name.equals(fPreviouslyCheckedProgram)) {
+			if (programName.equals(fPreviouslyCheckedProgram)) {
 				if (fPreviouslyCheckedProgramErrorMsg != null) {
 					setErrorMessage(fPreviouslyCheckedProgramErrorMsg);
 				}
 				return fPreviouslyCheckedProgramIsValid;
 			} else {
-				fPreviouslyCheckedProgram = name;
+				fPreviouslyCheckedProgram = programName;
 				fPreviouslyCheckedProgramIsValid = true;	// we'll flip this below if not true
 				fPreviouslyCheckedProgramErrorMsg = null;   // we'll set this below if there's an error
-				IPath exePath = new Path(name);
-				if (!exePath.isAbsolute()) {
+				if (!exePath.isAbsolute() && project != null) {
 					IPath location = project.getLocation();
 					if (location == null) {
 						setErrorMessage(fPreviouslyCheckedProgramErrorMsg = LaunchMessages.CMainTab_Program_does_not_exist); 
 						return (fPreviouslyCheckedProgramIsValid = false);
 					}
 		
-					exePath = location.append(name);
+					exePath = location.append(programName);
 					if (!exePath.toFile().exists()) {
 						// Try the old way, which is required to support linked resources.
 						IFile projFile = null;					
 						try {
-							projFile = project.getFile(name);
+							projFile = project.getFile(programName);
 						} catch (IllegalArgumentException e) {
 							// thrown if relative path that resolves to a root file ("..\somefile")
 						}
