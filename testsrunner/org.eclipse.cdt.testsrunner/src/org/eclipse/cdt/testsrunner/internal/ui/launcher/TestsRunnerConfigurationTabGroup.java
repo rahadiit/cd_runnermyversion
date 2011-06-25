@@ -14,23 +14,23 @@ import java.util.ArrayList;
 
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTabGroup;
-import org.eclipse.debug.ui.CommonTab;
 import org.eclipse.debug.ui.EnvironmentTab;
 import org.eclipse.debug.ui.sourcelookup.SourceLookupTab;
 import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.cdt.launch.ui.CMainTab;
 import org.eclipse.cdt.launch.ui.CArgumentsTab;
+import org.eclipse.cdt.launch.ui.CommonTabLite;
 
 public class TestsRunnerConfigurationTabGroup extends AbstractLaunchConfigurationTabGroup {
 
 	public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
 		ArrayList<AbstractLaunchConfigurationTab> tabs = new ArrayList<AbstractLaunchConfigurationTab>();
-		tabs.add(new CMainTab());
+		tabs.add(new CMainTab(0));
 		tabs.add(new CArgumentsTab());
 		tabs.add(new CTestingTab());
 		tabs.add(new EnvironmentTab());
 		tabs.add(new SourceLookupTab());
-		tabs.add(new CommonTab());
+		tabs.add(new CommonTabLite());
 		
 		setTabs(tabs.toArray(new AbstractLaunchConfigurationTab[tabs.size()]));
 	}
