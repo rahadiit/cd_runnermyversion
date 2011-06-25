@@ -29,12 +29,18 @@ public class ToggleOrientationAction extends Action {
 		if (orientation == ResultsView.Orientation.Horizontal) {
 			setText("&Horizontal");
 			setImageDescriptor(Activator.getImageDescriptor("elcl16/orientation_horizontal.gif")); //$NON-NLS-1$
+			setDisabledImageDescriptor(Activator.getImageDescriptor("dlcl16/orientation_horizontal.gif")); //$NON-NLS-1$
+			setHoverImageDescriptor(Activator.getImageDescriptor("elcl16/orientation_horizontal.gif")); //$NON-NLS-1$
 		} else if (orientation == ResultsView.Orientation.Vertical) {
 			setText("&Vertical");
 			setImageDescriptor(Activator.getImageDescriptor("elcl16/orientation_vertical.gif")); //$NON-NLS-1$
+			setDisabledImageDescriptor(Activator.getImageDescriptor("dlcl16/orientation_vertical.gif")); //$NON-NLS-1$
+			setHoverImageDescriptor(Activator.getImageDescriptor("elcl16/orientation_vertical.gif")); //$NON-NLS-1$
 		} else if (orientation == ResultsView.Orientation.Auto) {
 			setText("&Automatic");
 			setImageDescriptor(Activator.getImageDescriptor("elcl16/orientation_auto.gif")); //$NON-NLS-1$
+			setDisabledImageDescriptor(Activator.getImageDescriptor("dlcl16/orientation_auto.gif")); //$NON-NLS-1$
+			setHoverImageDescriptor(Activator.getImageDescriptor("elcl16/orientation_auto.gif")); //$NON-NLS-1$
 		}
 		this.orientation = orientation;
 	}

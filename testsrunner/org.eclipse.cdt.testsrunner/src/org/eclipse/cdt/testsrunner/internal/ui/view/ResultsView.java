@@ -103,6 +103,7 @@ public class ResultsView extends ViewPart {
 		previousAction.setEnabled(false);
 		actionBars.setGlobalActionHandler(ActionFactory.PREVIOUS.getId(), previousAction);
 		
+		Action showTimeAction = new ShowTimeAction(resultsPanel.getTestsHierarchyViewer());
 		
 		// Configure toolbar
 		IToolBarManager toolBar = actionBars.getToolBarManager();
@@ -113,6 +114,7 @@ public class ResultsView extends ViewPart {
 		
 		// Configure view menu
 		IMenuManager viewMenu = actionBars.getMenuManager();
+		viewMenu.add(showTimeAction);
 		MenuManager layoutSubMenu = new MenuManager("&Layout");
 		for (int i = 0; i < toggleOrientationActions.length; ++i) {
 			layoutSubMenu.add(toggleOrientationActions[i]);

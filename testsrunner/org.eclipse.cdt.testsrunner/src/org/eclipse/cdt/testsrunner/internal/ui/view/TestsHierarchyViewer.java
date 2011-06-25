@@ -38,7 +38,8 @@ import org.eclipse.swt.widgets.Composite;
  */
 public class TestsHierarchyViewer {
 	
-	TreeViewer treeViewer;
+	private TreeViewer treeViewer;
+	private boolean showTime = true;
 
 	
 	class TestTreeContentProvider implements ITreeContentProvider {
@@ -117,7 +118,9 @@ public class TestsHierarchyViewer {
 		public String getText(Object element) {
 			StringBuilder sb = new StringBuilder();
 			sb.append(((ITestItem) element).getName());
-			sb.append(getTestingTimeString(element));
+			if (showTime) {
+				sb.append(getTestingTimeString(element));
+			}
 			return sb.toString();
 		}
 
@@ -126,10 +129,11 @@ public class TestsHierarchyViewer {
 			StringBuilder labelBuf = new StringBuilder();
 			labelBuf.append(testItem.getName());
 			StyledString name = new StyledString(labelBuf.toString());
-			String time = getTestingTimeString(element);
-			labelBuf.append(time);
-			name = StyledCellLabelProvider.styleDecoratedString(labelBuf.toString(), StyledString.COUNTER_STYLER, name);
-			
+			if (showTime) {
+				String time = getTestingTimeString(element);
+				labelBuf.append(time);
+				name = StyledCellLabelProvider.styleDecoratedString(labelBuf.toString(), StyledString.COUNTER_STYLER, name);
+			}
 			return name;
 		}
 		
@@ -214,4 +218,12 @@ public class TestsHierarchyViewer {
 		return null;
 	}
 
+	public boolean getShowTime() {
+		return showTime;
+	}
+
+	public void setShowTime(boolean showTime) {
+		this.showTime = showTime;
+	}
+	
 }
