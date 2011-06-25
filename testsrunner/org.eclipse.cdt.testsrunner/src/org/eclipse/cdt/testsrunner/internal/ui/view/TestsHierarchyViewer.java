@@ -15,12 +15,15 @@ import java.util.Map;
 
 import org.eclipse.cdt.internal.ui.viewsupport.ColoringLabelProvider;
 import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.model.TestSuite;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestSuite;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -146,5 +149,69 @@ public class TestsHierarchyViewer {
 	public TreeViewer getTreeViewer() {
 		return treeViewer;
 	}
+
+	public void showNextFailure() {
+		showFailure(true);
+	}
 	
+	public void showPreviousFailure() {
+		showFailure(false);
+	}
+	
+	private void showFailure(boolean next) {
+		IStructuredSelection selection = (IStructuredSelection) getTreeViewer().getSelection();
+		ITestItem selected = (ITestItem) selection.getFirstElement();
+		ITestItem failedItem;
+
+		if (selected == null) {
+			TestSuite rootSuite = Activator.getDefault().getModelManager().getRootSuite();
+			// For next element we should also check its children, for previous shouldn't.
+			failedItem = findFailedChild(rootSuite, null, next, next);
+		} else {
+			// For next element we should also check its children, for previous shouldn't.
+			failedItem = findFailedChild(selected.getParent(), selected, next, next);
+		}
+
+		if (failedItem != null)
+			getTreeViewer().setSelection(new StructuredSelection(failedItem), true);
+	}
+	
+	private ITestItem findFailedChild(ITestItem parentItem, ITestItem currItem, boolean next, boolean checkCurrentChild) {
+		ITestItem[] children = parentItem.getChildren();
+		boolean doSearch = (currItem == null);
+		int increment = next ? 1 : -1;
+		int startIndex = next ? 0 : children.length-1;
+		int endIndex = next ? children.length : -1;
+		for (int index = startIndex; index != endIndex; index += increment) {
+			ITestItem item = children[index];
+			// Check element
+			if (doSearch) {
+				if (item instanceof ITestCase && item.getStatus().isError()) {
+					return item;
+				}
+			}
+			// If children of current element should be checked we should enable search here (if necessary)
+			if (checkCurrentChild && item == currItem) {
+				doSearch = true;
+			}
+			// Search element's children
+			if (doSearch) {
+				ITestItem result = findFailedChild(item, null, next, checkCurrentChild);
+				if (result != null) {
+					return result;
+				}
+			}
+			// If children of current element should NOT be checked we should enable search here
+			if (!checkCurrentChild && item == currItem) {
+				doSearch = true;
+			}
+		}
+		// Nothing found at this level - try to step up
+		ITestSuite grandParentItem = parentItem.getParent();
+		if (grandParentItem != null) {
+			return findFailedChild(grandParentItem, parentItem, next, false);
+		}
+		return null;
+	}
+
 }

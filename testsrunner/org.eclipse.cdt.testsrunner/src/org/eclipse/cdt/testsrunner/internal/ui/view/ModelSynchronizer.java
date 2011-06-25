@@ -27,17 +27,15 @@ import org.eclipse.swt.widgets.Display;
  */
 public class ModelSynchronizer {
 	
+	private ResultsView resultsView;
 	private TreeViewer treeViewer;
 	private ProgressCountPanel progressCountPanel;
 	private IModelManagerListener actualSynchronizer;
 
 	class TestingStartedRunnable implements Runnable {
 		
-		boolean restartPrevious;
-		TestingStartedRunnable(boolean restartPrevious) {
-			this.restartPrevious = restartPrevious;
-		}
-
+		private boolean restartPrevious;
+		
 		class TestCasesCounter implements IModelVisitor {
 			
 			public int result = 0;
@@ -51,6 +49,10 @@ public class ModelSynchronizer {
 			public void visit(ITestSuite testSuite) {}
 		}
 		
+		TestingStartedRunnable(boolean restartPrevious) {
+			this.restartPrevious = restartPrevious;
+		}
+
 		public void run() {
 			int totalTestsCount = 0;
 			if (restartPrevious) {
@@ -62,6 +64,7 @@ public class ModelSynchronizer {
 			}
 			progressCountPanel.restart(totalTestsCount);
 			treeViewer.refresh();
+			resultsView.resetActionsState();
 		}
 	}
 	
@@ -77,7 +80,7 @@ public class ModelSynchronizer {
 	class SilentModelSynchronizer implements IModelManagerListener {
 
 		class CountersUpdaterRunnable implements Runnable {
-			ITestCase testCase;
+			private ITestCase testCase;
 	
 			CountersUpdaterRunnable(ITestCase testCase) {
 				this.testCase = testCase;
@@ -86,6 +89,7 @@ public class ModelSynchronizer {
 			public void run() {
 				// TODO: Update only necessary properties!
 				progressCountPanel.updateCounters(testCase.getStatus());
+				resultsView.updateActionsState(testCase.getStatus());
 			}
 		}
 		
@@ -110,15 +114,14 @@ public class ModelSynchronizer {
 		public void testingFinished() {
 			Display.getDefault().syncExec(new TestingFinishedRunnable());
 		}
-		
 	}
 	
 	
 	class ScrollingModelSynchronizer implements IModelManagerListener {
 		
 		class AddTestItemRunnable implements Runnable {
-			Object parent;
-			Object child;
+			private Object parent;
+			private Object child;
 	
 			AddTestItemRunnable(Object parent, Object child) {
 				this.parent = parent;
@@ -131,7 +134,7 @@ public class ModelSynchronizer {
 		}
 	
 		class EnterTestItemRunnable implements Runnable {
-			Object object;
+			private Object object;
 	
 			EnterTestItemRunnable(Object object) {
 				this.object = object;
@@ -145,7 +148,7 @@ public class ModelSynchronizer {
 		}
 	
 		class ExitTestSuiteRunnable implements Runnable {
-			Object object;
+			private Object object;
 	
 			ExitTestSuiteRunnable(Object object) {
 				this.object = object;
@@ -159,7 +162,7 @@ public class ModelSynchronizer {
 		}
 	
 		class ExitTestCaseRunnable implements Runnable {
-			ITestCase testCase;
+			private ITestCase testCase;
 	
 			ExitTestCaseRunnable(ITestCase testCase) {
 				this.testCase = testCase;
@@ -169,6 +172,7 @@ public class ModelSynchronizer {
 				// TODO: Update only necessary properties!
 				treeViewer.update(testCase, null);
 				progressCountPanel.updateCounters(testCase.getStatus());
+				resultsView.updateActionsState(testCase.getStatus());
 			}
 		}
 	
@@ -203,13 +207,13 @@ public class ModelSynchronizer {
 		public void testingFinished() {
 			Display.getDefault().syncExec(new TestingFinishedRunnable());
 		}
-
 	}
 
 	
-	ModelSynchronizer(TreeViewer aTreeViewer, ProgressCountPanel aProgressCountPanel) {
-		treeViewer = aTreeViewer;
-		progressCountPanel = aProgressCountPanel;
+	ModelSynchronizer(ResultsView resultsView, TreeViewer treeViewer, ProgressCountPanel progressCountPanel) {
+		this.resultsView = resultsView;
+		this.treeViewer = treeViewer;
+		this.progressCountPanel = progressCountPanel;
 		setActualSyncronizer(new ScrollingModelSynchronizer());
 	}
 

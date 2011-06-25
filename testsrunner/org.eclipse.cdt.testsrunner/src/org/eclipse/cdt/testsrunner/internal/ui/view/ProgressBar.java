@@ -84,17 +84,8 @@ public class ProgressBar extends Canvas {
 	}
 	
 	public void updateCounters(ITestItem.Status testStatus) {
-		switch (testStatus) {
-			case Failed:
-			case Aborted:
-				hasErrors = true;
-				break;
-			case NotRun:
-			case Skipped:
-			case Passed:
-				// Do nothing, just avoid compiler's warning
-				break;
-		}
+		if (testStatus.isError())
+			hasErrors = true;
 		++currentCounter;
 		recalculateColorBarWidth();
 		redraw();
