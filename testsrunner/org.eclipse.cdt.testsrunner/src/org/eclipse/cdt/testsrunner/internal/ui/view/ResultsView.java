@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
+import org.eclipse.cdt.testsrunner.model.ITestItem.Status;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
@@ -19,6 +21,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.ViewPart;
 
 /**
@@ -37,7 +40,9 @@ public class ResultsView extends ViewPart {
 	private ProgressCountPanel progressCountPanel;
 	private ResultsPanel resultsPanel;
 	private ModelSynchronizer modelSynchronizer;
-
+	
+	private Action nextAction;
+	private Action previousAction;
 	private ToggleOrientationAction[] toggleOrientationActions;
 	
 	/**
@@ -49,8 +54,8 @@ public class ResultsView extends ViewPart {
 	 * The current view orientation (Horizontal or Vertical).
 	 */
 	private Orientation currentOrientation;
-	
 
+	
 	@Override
 	public void createPartControl(Composite parent) {
 		this.parent = parent;
@@ -63,8 +68,8 @@ public class ResultsView extends ViewPart {
 
 		progressCountPanel = new ProgressCountPanel(parent, currentOrientation);
 		resultsPanel = new ResultsPanel(parent);
-		modelSynchronizer = new ModelSynchronizer(resultsPanel.getTestsHierarchyViewer().getTreeViewer(), progressCountPanel);
-		configureActionsBar();
+		modelSynchronizer = new ModelSynchronizer(this, resultsPanel.getTestsHierarchyViewer().getTreeViewer(), progressCountPanel);
+		configureActionsBars();
 		
 		parent.addControlListener(new ControlListener() {
 			public void controlMoved(ControlEvent e) {
@@ -80,7 +85,9 @@ public class ResultsView extends ViewPart {
 		resultsPanel.getTestsHierarchyViewer().getTreeViewer().getControl().setFocus();
 	}
 
-	private void configureActionsBar() {
+	private void configureActionsBars() {
+		IActionBars actionBars = getViewSite().getActionBars();
+
 		// Create common action
 		toggleOrientationActions = new ToggleOrientationAction[] {
 			new ToggleOrientationAction(this, Orientation.Vertical),
@@ -88,14 +95,25 @@ public class ResultsView extends ViewPart {
 			new ToggleOrientationAction(this, Orientation.Auto),
 		};
 
-		// Configure toolbar
-		IActionBars actionBars= getViewSite().getActionBars();
-		IToolBarManager toolBar= actionBars.getToolBarManager();
-		toolBar.add(new ScrollLockAction(modelSynchronizer));
+		nextAction = new ShowNextFailureAction(resultsPanel.getTestsHierarchyViewer());
+		nextAction.setEnabled(false);
+		actionBars.setGlobalActionHandler(ActionFactory.NEXT.getId(), nextAction);
 
+		previousAction= new ShowPreviousFailureAction(resultsPanel.getTestsHierarchyViewer());
+		previousAction.setEnabled(false);
+		actionBars.setGlobalActionHandler(ActionFactory.PREVIOUS.getId(), previousAction);
+		
+		
+		// Configure toolbar
+		IToolBarManager toolBar = actionBars.getToolBarManager();
+		toolBar.add(nextAction);
+		toolBar.add(previousAction);
+		toolBar.add(new ScrollLockAction(modelSynchronizer));
+		
+		
 		// Configure view menu
 		IMenuManager viewMenu = actionBars.getMenuManager();
-		MenuManager layoutSubMenu= new MenuManager("&Layout");
+		MenuManager layoutSubMenu = new MenuManager("&Layout");
 		for (int i = 0; i < toggleOrientationActions.length; ++i) {
 			layoutSubMenu.add(toggleOrientationActions[i]);
 		}
@@ -134,6 +152,20 @@ public class ResultsView extends ViewPart {
 				return (size.x > size.y) ? Orientation.Horizontal : Orientation.Vertical;
 		}
 		return null;
+	}
+
+	public void resetActionsState() {
+		previousAction.setEnabled(false);
+		nextAction.setEnabled(false);
+	}
+	
+	public void updateActionsState(Status status) {
+		// Optimization: fPreviousAction and fNextAction should be enabled or disabled together
+		// so check only fNextAction.
+		if (!nextAction.isEnabled() && status.isError()) {
+			previousAction.setEnabled(true);
+			nextAction.setEnabled(true);
+		}
 	}
 	
 }

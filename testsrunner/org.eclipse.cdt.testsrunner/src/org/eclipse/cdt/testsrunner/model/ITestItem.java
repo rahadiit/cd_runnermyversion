@@ -24,7 +24,11 @@ public interface ITestItem {
 		Skipped,
 		Passed,
 		Failed,
-		Aborted,
+		Aborted;
+
+		public boolean isError() {
+			return (this == Failed) || (this == Aborted);
+		}
 	}
 	
 	String getName();
