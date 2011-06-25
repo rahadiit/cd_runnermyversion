@@ -25,7 +25,7 @@ public class TestsRunnerConfigurationTabGroup extends AbstractLaunchConfiguratio
 
 	public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
 		ArrayList<AbstractLaunchConfigurationTab> tabs = new ArrayList<AbstractLaunchConfigurationTab>();
-		tabs.add(new CMainTab(0));
+		tabs.add(new CMainTab(CMainTab.ALLOW_EMPTY_PROJECT));
 		tabs.add(new CArgumentsTab());
 		tabs.add(new CTestingTab());
 		tabs.add(new EnvironmentTab());
