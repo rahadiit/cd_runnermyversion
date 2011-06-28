@@ -11,7 +11,7 @@
 package org.eclipse.cdt.testsrunner.internal.model;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.eclipse.cdt.testsrunner.model.IModelVisitor;
@@ -24,9 +24,9 @@ import org.eclipse.cdt.testsrunner.model.ITestSuite;
  */
 public class TestSuite extends TestItem implements ITestSuite {
 
-	private Map<String, TestSuite> testSuites = new HashMap<String, TestSuite>();
+	private Map<String, TestSuite> testSuites = new LinkedHashMap<String, TestSuite>();
 
-	private Map<String, TestCase> testCases = new HashMap<String, TestCase>();
+	private Map<String, TestCase> testCases = new LinkedHashMap<String, TestCase>();
 
 	
 	public TestSuite(String name, TestSuite parent) {
