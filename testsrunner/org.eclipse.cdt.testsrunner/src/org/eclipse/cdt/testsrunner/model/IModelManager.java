@@ -18,10 +18,6 @@ package org.eclipse.cdt.testsrunner.model;
  */
 public interface IModelManager {
 
-	void testingStarted(boolean restartPrevious);
-	
-	void testingFinished();
-	
 	void enterTestSuite(String name);
 	
 	void exitTestSuite();
@@ -37,13 +33,10 @@ public interface IModelManager {
 
 	
 	void addTestMessage(String file, int line, ITestMessage.Level level, String text);
-
 	
-	boolean isCurrentlyRunning(ITestItem item);
-
 	
-	void addChangesListener ( IModelManagerListener listener );
+	ITestSuite currentTestSuite();
 	
-	void removeChangesListener ( IModelManagerListener listener );
+	ITestCase currentTestCase();
 	
 }

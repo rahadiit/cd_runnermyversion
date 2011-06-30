@@ -18,9 +18,11 @@ import java.util.Stack;
 
 import org.eclipse.cdt.testsrunner.model.IModelManager;
 import org.eclipse.cdt.testsrunner.model.IModelManagerListener;
+import org.eclipse.cdt.testsrunner.model.ITestCase;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestItem.Status;
 import org.eclipse.cdt.testsrunner.model.ITestMessage.Level;
+import org.eclipse.cdt.testsrunner.model.ITestSuite;
 
 /**
  * TODO: Add descriptions
@@ -168,6 +170,15 @@ public class ModelManager implements IModelManager {
 		currentTestCase.addTestMessage(new TestMessage(location, level, text));
 	}
 	
+	public ITestSuite currentTestSuite() {
+		return testSuitesStack.peek();
+	}
+
+
+	public ITestCase currentTestCase() {
+		return currentTestCase;
+	}
+
 	public boolean isCurrentlyRunning(ITestItem item) {
 		return (item == currentTestCase && item != null) || testSuitesStack.contains(item);
 	}
@@ -183,5 +194,6 @@ public class ModelManager implements IModelManager {
 	public TestSuite getRootSuite() {
 		return testSuitesStack.firstElement();
 	}
+
 
 }
