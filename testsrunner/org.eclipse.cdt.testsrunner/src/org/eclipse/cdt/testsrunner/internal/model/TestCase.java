@@ -31,8 +31,13 @@ public class TestCase extends TestItem implements ITestCase {
 	
 	public TestCase(String name, TestSuite parent) {
 		super(name, parent);
-		this.status = Status.Skipped;
-		this.testingTime = 0;
+		reset();
+	}
+	
+	public void reset() {
+		status = Status.Skipped;
+		testingTime = 0;
+		testMessages.clear();
 	}
 
 	public Status getStatus() {

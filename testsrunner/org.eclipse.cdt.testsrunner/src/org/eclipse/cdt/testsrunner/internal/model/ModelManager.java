@@ -52,6 +52,7 @@ public class ModelManager implements IModelManager {
 				public void visit(TestMessage testMessage) {}
 				
 				public void visit(TestCase testCase) {
+					testCase.reset();
 					testCase.setStatus(TestCase.Status.NotRun);
 				}
 				
