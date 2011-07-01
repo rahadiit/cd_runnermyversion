@@ -103,13 +103,16 @@ public class ResultsView extends ViewPart {
 		previousAction.setEnabled(false);
 		actionBars.setGlobalActionHandler(ActionFactory.PREVIOUS.getId(), previousAction);
 		
+		Action showFailedOnly = new ShowFailedOnlyAction(resultsPanel);
 		Action showTimeAction = new ShowTimeAction(resultsPanel.getTestsHierarchyViewer());
+		Action scrollLockAction = new ScrollLockAction(modelSynchronizer);
 		
 		// Configure toolbar
 		IToolBarManager toolBar = actionBars.getToolBarManager();
 		toolBar.add(nextAction);
 		toolBar.add(previousAction);
-		toolBar.add(new ScrollLockAction(modelSynchronizer));
+		toolBar.add(showFailedOnly);
+		toolBar.add(scrollLockAction);
 		
 		
 		// Configure view menu

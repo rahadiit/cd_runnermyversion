@@ -11,27 +11,31 @@
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 
+import org.eclipse.cdt.testsrunner.internal.Activator;
 import org.eclipse.jface.action.Action;
 
 /**
- * Toggles tests tree hierarchy auto-scroll
+ *  TODO: Add description here (and check other actions)!
  */
-public class ShowTimeAction extends Action {
+public class ShowFailedOnlyAction extends Action {
 
-	private TestsHierarchyViewer testsHierarchyViewer;
+	private ResultsPanel resultsPanel;
 
 
-	public ShowTimeAction(TestsHierarchyViewer testsHierarchyViewer) {
+	public ShowFailedOnlyAction(ResultsPanel resultsPanel) {
 		super("", AS_CHECK_BOX); //$NON-NLS-1$
-		this.testsHierarchyViewer = testsHierarchyViewer;
-		setText("Show Execution &Time");
-		setChecked(testsHierarchyViewer.showTime());
+		this.resultsPanel = resultsPanel;
+		setText("Show &Failures Only");
+		setToolTipText("Show &Failures Only");
+		setImageDescriptor(Activator.getImageDescriptor("obj16/show_failed_only.gif")); //$NON-NLS-1$
+		setChecked(resultsPanel.getShowFailedOnly().get());
 	}
 
 	@Override
 	public void run() {
-		testsHierarchyViewer.setShowTime(isChecked());
-		testsHierarchyViewer.getTreeViewer().refresh();
+		resultsPanel.getShowFailedOnly().set(isChecked());
+		resultsPanel.getTestsHierarchyViewer().getTreeViewer().refresh();
+		resultsPanel.getMessagesPanel().applyFilterChanges();
 	}
 
 }

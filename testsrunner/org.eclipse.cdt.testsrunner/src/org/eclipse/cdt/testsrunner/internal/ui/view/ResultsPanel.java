@@ -30,10 +30,28 @@ import org.eclipse.swt.widgets.Layout;
  * TODO: fix header comment
  */
 public class ResultsPanel {
+	
+	class ShowFailedOnlyKeeper {
+		
+		boolean showFailedOnly;
+		
+		ShowFailedOnlyKeeper() {
+			showFailedOnly = false;
+		}
+	
+		public boolean get() {
+			return showFailedOnly;
+		}
+
+		public void set(boolean showFailedOnly) {
+			this.showFailedOnly = showFailedOnly;
+		}
+	}
 
 	private SashForm sashForm;
 	private MessagesPanel messagesPanel;
 	private TestsHierarchyViewer testsHierarchyViewer;
+	private ShowFailedOnlyKeeper showFailedOnly = new ShowFailedOnlyKeeper();
 
 
 	public ResultsPanel(Composite parent) {
@@ -50,7 +68,7 @@ public class ResultsPanel {
 			protected void layout(Composite composite, boolean flushCache) {}
 		});
 		top.setTopLeft(empty); // makes ViewForm draw the horizontal separator line ...
-		testsHierarchyViewer = new TestsHierarchyViewer(top);
+		testsHierarchyViewer = new TestsHierarchyViewer(top, showFailedOnly);
 		top.setContent(testsHierarchyViewer.getTreeViewer().getControl());
 
 		// Configure test messages viewer
@@ -63,7 +81,7 @@ public class ResultsPanel {
 		// TODO: Review this later!
 		//ToolBar failureToolBar = new ToolBar(bottom, SWT.FLAT | SWT.WRAP);
 		//bottom.setTopCenter(failureToolBar);
-		messagesPanel = new MessagesPanel(bottom);
+		messagesPanel = new MessagesPanel(bottom, showFailedOnly);
 		bottom.setContent(messagesPanel.getTableViewer().getControl());
 
 		sashForm.setWeights(new int[]{50, 50});
@@ -101,5 +119,8 @@ public class ResultsPanel {
 		sashForm.setOrientation(currentOrientation == ResultsView.Orientation.Horizontal ? SWT.HORIZONTAL : SWT.VERTICAL);
 	}
 
+	public ResultsPanel.ShowFailedOnlyKeeper getShowFailedOnly() {
+		return showFailedOnly;
+	}
 	
 }
