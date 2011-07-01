@@ -40,23 +40,25 @@ import org.eclipse.ui.PlatformUI;
  */
 public class MessagesPanel {
 
-	private TableViewer tableViewer;
-	private OpenInEditorAction openInEditorAction;
-
-	
 	class MessagesCollector implements IModelVisitor {
 		
 		Set<ITestMessage> testMessages;
+		boolean collect = true;
 		
 		MessagesCollector(Set<ITestMessage> testMessages) {
 			this.testMessages = testMessages;
 		}
 		
 		public void visit(ITestMessage testMessage) {
-			testMessages.add(testMessage);
+			if (collect) {
+				testMessages.add(testMessage);
+			}
 		}
 		
-		public void visit(ITestCase testCase) {}
+		public void visit(ITestCase testCase) {
+			collect = !showFailedOnly.get() || testCase.getStatus().isError();
+		}
+		
 		public void visit(ITestSuite testSuite) {}
 	}
 
@@ -71,12 +73,14 @@ public class MessagesPanel {
 				testMessages = new ITestMessage[0];
 			}
 		}
+		
 		public void dispose() {
 		}
+		
 		public Object[] getElements(Object parent) {
 			return testMessages;
 		}
-
+		
 		private void collectMessages(ITestItem[] testItems) {
 			Set<ITestMessage> testMessagesSet = new TreeSet<ITestMessage>(new Comparator<ITestMessage>() {
 
@@ -185,7 +189,13 @@ public class MessagesPanel {
 	}
 	
 	
-	public MessagesPanel(Composite parent) {
+	private TableViewer tableViewer;
+	private OpenInEditorAction openInEditorAction;
+	private ResultsPanel.ShowFailedOnlyKeeper showFailedOnly;
+	
+
+	public MessagesPanel(Composite parent, ResultsPanel.ShowFailedOnlyKeeper showFailedOnly) {
+		this.showFailedOnly = showFailedOnly;
 		tableViewer = new TableViewer(parent, SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
 		tableViewer.setLabelProvider(new MessagesLabelProvider());
 		tableViewer.setContentProvider(new MessagesContentProvider());
@@ -205,6 +215,12 @@ public class MessagesPanel {
 	
 	public void showItemsMessages(ITestItem[] testItems) {
 		tableViewer.setInput(testItems);
+	}
+
+	public void applyFilterChanges() {
+		// NOTE: Set input again makes content provider to recollect messages (with filter applied)
+		tableViewer.setInput(tableViewer.getInput());
+		tableViewer.refresh();
 	}
 	
 }

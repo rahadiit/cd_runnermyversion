@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.cdt.internal.ui.viewsupport.ColoringLabelProvider;
@@ -40,12 +42,23 @@ public class TestsHierarchyViewer {
 	
 	private TreeViewer treeViewer;
 	private boolean showTime = true;
+	private ResultsPanel.ShowFailedOnlyKeeper showFailedOnly;
 
 	
 	class TestTreeContentProvider implements ITreeContentProvider {
 
 		public Object[] getChildren(Object parentElement) {
-			return ((ITestItem) parentElement).getChildren();
+			ITestItem[] result = ((ITestItem) parentElement).getChildren();
+			if (showFailedOnly.get()) {
+				List<ITestItem> failedChildren = new ArrayList<ITestItem>(result.length);
+				for (ITestItem child : result) {
+					if (child.getStatus().isError()) {
+						failedChildren.add(child);
+					}
+				}
+				result = failedChildren.toArray(new ITestItem[failedChildren.size()]);
+			}
+			return result;
 		}
 
 		public Object[] getElements(Object object) {
@@ -143,7 +156,8 @@ public class TestsHierarchyViewer {
 		}
 	}
 
-	public TestsHierarchyViewer(Composite parent) {
+	public TestsHierarchyViewer(Composite parent, ResultsPanel.ShowFailedOnlyKeeper showFailedOnly) {
+		this.showFailedOnly = showFailedOnly;
 		treeViewer = new TreeViewer(parent, SWT.V_SCROLL | SWT.MULTI);
 		treeViewer.setContentProvider(new TestTreeContentProvider());
 		treeViewer.setLabelProvider(new ColoringLabelProvider(new TestLabelProvider()));
@@ -218,7 +232,7 @@ public class TestsHierarchyViewer {
 		return null;
 	}
 
-	public boolean getShowTime() {
+	public boolean showTime() {
 		return showTime;
 	}
 
