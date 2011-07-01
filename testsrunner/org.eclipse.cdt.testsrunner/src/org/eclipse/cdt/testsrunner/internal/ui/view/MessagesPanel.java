@@ -101,12 +101,6 @@ public class MessagesPanel {
 								
 							} else if (line1 > line2) {
 								return 1;
-								
-							} else {
-								// Compare by message text
-								String text1 = message1.getText();
-								String text2 = message2.getText();
-								return text1.compareTo(text2);
 							}
 						}
 						
@@ -117,7 +111,10 @@ public class MessagesPanel {
 						return 1;
 					}
 					
-					return 0;
+					// Compare by message text
+					String text1 = message1.getText();
+					String text2 = message2.getText();
+					return text1.compareTo(text2);
 				}
 			});
 			for (ITestItem testItem : testItems) {
