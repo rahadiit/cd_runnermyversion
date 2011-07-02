@@ -10,9 +10,7 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.cdt.internal.ui.viewsupport.ColoringLabelProvider;
@@ -30,6 +28,7 @@ import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -40,25 +39,10 @@ import org.eclipse.swt.widgets.Composite;
  */
 public class TestsHierarchyViewer {
 	
-	private TreeViewer treeViewer;
-	private boolean showTime = true;
-	private ResultsPanel.ShowFailedOnlyKeeper showFailedOnly;
-
-	
 	class TestTreeContentProvider implements ITreeContentProvider {
 
 		public Object[] getChildren(Object parentElement) {
-			ITestItem[] result = ((ITestItem) parentElement).getChildren();
-			if (showFailedOnly.get()) {
-				List<ITestItem> failedChildren = new ArrayList<ITestItem>(result.length);
-				for (ITestItem child : result) {
-					if (child.getStatus().isError()) {
-						failedChildren.add(child);
-					}
-				}
-				result = failedChildren.toArray(new ITestItem[failedChildren.size()]);
-			}
-			return result;
+			return ((ITestItem) parentElement).getChildren();
 		}
 
 		public Object[] getElements(Object object) {
@@ -155,9 +139,22 @@ public class TestsHierarchyViewer {
 			return (element instanceof ITestItem) ? " ("+Double.toString(((ITestItem)element).getTestingTime()/1000.0)+" s)" : "";
 		}
 	}
+	
+	class FailedOnlyFilter extends ViewerFilter {
 
-	public TestsHierarchyViewer(Composite parent, ResultsPanel.ShowFailedOnlyKeeper showFailedOnly) {
-		this.showFailedOnly = showFailedOnly;
+		@Override
+		public boolean select(Viewer viewer, Object parentElement, Object element) {
+			return ((ITestItem)element).getStatus().isError();
+		}
+	}
+
+	
+	private TreeViewer treeViewer;
+	private boolean showTime = true;
+	private FailedOnlyFilter failedOnlyFilter = null;
+
+	
+	public TestsHierarchyViewer(Composite parent) {
 		treeViewer = new TreeViewer(parent, SWT.V_SCROLL | SWT.MULTI);
 		treeViewer.setContentProvider(new TestTreeContentProvider());
 		treeViewer.setLabelProvider(new ColoringLabelProvider(new TestLabelProvider()));
@@ -238,6 +235,18 @@ public class TestsHierarchyViewer {
 
 	public void setShowTime(boolean showTime) {
 		this.showTime = showTime;
+		getTreeViewer().refresh();
+	}
+	
+	public void setShowFailedOnly(boolean showFailedOnly) {
+		if (failedOnlyFilter == null) {
+			failedOnlyFilter = new FailedOnlyFilter();
+		}
+		if (showFailedOnly) {
+			getTreeViewer().addFilter(failedOnlyFilter);
+		} else {
+			getTreeViewer().removeFilter(failedOnlyFilter);
+		}
 	}
 	
 }

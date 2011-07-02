@@ -15,6 +15,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.graphics.Point;
@@ -118,11 +119,14 @@ public class ResultsView extends ViewPart {
 		// Configure view menu
 		IMenuManager viewMenu = actionBars.getMenuManager();
 		viewMenu.add(showTimeAction);
+		viewMenu.add(new Separator());
 		MenuManager layoutSubMenu = new MenuManager("&Layout");
 		for (int i = 0; i < toggleOrientationActions.length; ++i) {
 			layoutSubMenu.add(toggleOrientationActions[i]);
 		}
 		viewMenu.add(layoutSubMenu);
+		viewMenu.add(new Separator());
+		viewMenu.add(showFailedOnly);
 	}
 
 	public void dispose() {

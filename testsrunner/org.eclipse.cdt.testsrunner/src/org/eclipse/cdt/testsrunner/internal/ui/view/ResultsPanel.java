@@ -31,27 +31,9 @@ import org.eclipse.swt.widgets.Layout;
  */
 public class ResultsPanel {
 	
-	class ShowFailedOnlyKeeper {
-		
-		boolean showFailedOnly;
-		
-		ShowFailedOnlyKeeper() {
-			showFailedOnly = false;
-		}
-	
-		public boolean get() {
-			return showFailedOnly;
-		}
-
-		public void set(boolean showFailedOnly) {
-			this.showFailedOnly = showFailedOnly;
-		}
-	}
-
 	private SashForm sashForm;
 	private MessagesPanel messagesPanel;
 	private TestsHierarchyViewer testsHierarchyViewer;
-	private ShowFailedOnlyKeeper showFailedOnly = new ShowFailedOnlyKeeper();
 
 
 	public ResultsPanel(Composite parent) {
@@ -68,7 +50,7 @@ public class ResultsPanel {
 			protected void layout(Composite composite, boolean flushCache) {}
 		});
 		top.setTopLeft(empty); // makes ViewForm draw the horizontal separator line ...
-		testsHierarchyViewer = new TestsHierarchyViewer(top, showFailedOnly);
+		testsHierarchyViewer = new TestsHierarchyViewer(top);
 		top.setContent(testsHierarchyViewer.getTreeViewer().getControl());
 
 		// Configure test messages viewer
@@ -81,7 +63,7 @@ public class ResultsPanel {
 		// TODO: Review this later!
 		//ToolBar failureToolBar = new ToolBar(bottom, SWT.FLAT | SWT.WRAP);
 		//bottom.setTopCenter(failureToolBar);
-		messagesPanel = new MessagesPanel(bottom, showFailedOnly);
+		messagesPanel = new MessagesPanel(bottom);
 		bottom.setContent(messagesPanel.getTableViewer().getControl());
 
 		sashForm.setWeights(new int[]{50, 50});
@@ -91,6 +73,9 @@ public class ResultsPanel {
 				handleTestItemSelected();
 			}
 		});
+		
+		// Initialize default value
+		setShowFailedOnly(false);
 		
 		// Data for parent (view's) layout
 		sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -119,8 +104,13 @@ public class ResultsPanel {
 		sashForm.setOrientation(currentOrientation == ResultsView.Orientation.Horizontal ? SWT.HORIZONTAL : SWT.VERTICAL);
 	}
 
-	public ResultsPanel.ShowFailedOnlyKeeper getShowFailedOnly() {
-		return showFailedOnly;
+	public boolean getShowFailedOnly() {
+		return messagesPanel.getShowFailedOnly();
+	}
+	
+	public void setShowFailedOnly(boolean showFailedOnly) {
+		testsHierarchyViewer.setShowFailedOnly(showFailedOnly);
+		messagesPanel.setShowFailedOnly(showFailedOnly);
 	}
 	
 }

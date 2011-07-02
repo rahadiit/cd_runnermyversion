@@ -56,7 +56,7 @@ public class MessagesPanel {
 		}
 		
 		public void visit(ITestCase testCase) {
-			collect = !showFailedOnly.get() || testCase.getStatus().isError();
+			collect = !showFailedOnly || testCase.getStatus().isError();
 		}
 		
 		public void visit(ITestSuite testSuite) {}
@@ -191,11 +191,10 @@ public class MessagesPanel {
 	
 	private TableViewer tableViewer;
 	private OpenInEditorAction openInEditorAction;
-	private ResultsPanel.ShowFailedOnlyKeeper showFailedOnly;
+	private boolean showFailedOnly = false;
 	
 
-	public MessagesPanel(Composite parent, ResultsPanel.ShowFailedOnlyKeeper showFailedOnly) {
-		this.showFailedOnly = showFailedOnly;
+	public MessagesPanel(Composite parent) {
 		tableViewer = new TableViewer(parent, SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
 		tableViewer.setLabelProvider(new MessagesLabelProvider());
 		tableViewer.setContentProvider(new MessagesContentProvider());
@@ -217,10 +216,16 @@ public class MessagesPanel {
 		tableViewer.setInput(testItems);
 	}
 
-	public void applyFilterChanges() {
-		// NOTE: Set input again makes content provider to recollect messages (with filter applied)
-		tableViewer.setInput(tableViewer.getInput());
-		tableViewer.refresh();
+	public boolean getShowFailedOnly() {
+		return showFailedOnly;
+	}
+	
+	public void setShowFailedOnly(boolean showFailedOnly) {
+		if (this.showFailedOnly != showFailedOnly) {
+			this.showFailedOnly = showFailedOnly;
+			// NOTE: Set input again makes content provider to recollect messages (with filter applied)
+			tableViewer.setInput(tableViewer.getInput());
+		}
 	}
 	
 }
