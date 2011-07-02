@@ -28,14 +28,12 @@ public class ShowFailedOnlyAction extends Action {
 		setText("Show &Failures Only");
 		setToolTipText("Show &Failures Only");
 		setImageDescriptor(Activator.getImageDescriptor("obj16/show_failed_only.gif")); //$NON-NLS-1$
-		setChecked(resultsPanel.getShowFailedOnly().get());
+		setChecked(resultsPanel.getShowFailedOnly());
 	}
 
 	@Override
 	public void run() {
-		resultsPanel.getShowFailedOnly().set(isChecked());
-		resultsPanel.getTestsHierarchyViewer().getTreeViewer().refresh();
-		resultsPanel.getMessagesPanel().applyFilterChanges();
+		resultsPanel.setShowFailedOnly(isChecked());
 	}
 
 }

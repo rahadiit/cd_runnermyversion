@@ -31,7 +31,6 @@ public class ShowTimeAction extends Action {
 	@Override
 	public void run() {
 		testsHierarchyViewer.setShowTime(isChecked());
-		testsHierarchyViewer.getTreeViewer().refresh();
 	}
 
 }
