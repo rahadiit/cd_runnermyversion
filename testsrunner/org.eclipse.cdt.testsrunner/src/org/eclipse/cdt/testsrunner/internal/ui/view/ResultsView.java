@@ -69,7 +69,7 @@ public class ResultsView extends ViewPart {
 
 		progressCountPanel = new ProgressCountPanel(parent, currentOrientation);
 		resultsPanel = new ResultsPanel(parent);
-		modelSynchronizer = new ModelSynchronizer(this, resultsPanel.getTestsHierarchyViewer().getTreeViewer(), progressCountPanel);
+		modelSynchronizer = new ModelSynchronizer(this, resultsPanel.getTestsHierarchyViewer(), progressCountPanel);
 		configureActionsBars();
 		
 		parent.addControlListener(new ControlListener() {
@@ -105,6 +105,7 @@ public class ResultsView extends ViewPart {
 		actionBars.setGlobalActionHandler(ActionFactory.PREVIOUS.getId(), previousAction);
 		
 		Action showFailedOnly = new ShowFailedOnlyAction(resultsPanel);
+		Action showTestsHierarchyAction = new ShowTestsHierarchyAction(resultsPanel.getTestsHierarchyViewer());
 		Action showTimeAction = new ShowTimeAction(resultsPanel.getTestsHierarchyViewer());
 		Action scrollLockAction = new ScrollLockAction(modelSynchronizer);
 		
@@ -118,6 +119,7 @@ public class ResultsView extends ViewPart {
 		
 		// Configure view menu
 		IMenuManager viewMenu = actionBars.getMenuManager();
+		viewMenu.add(showTestsHierarchyAction);
 		viewMenu.add(showTimeAction);
 		viewMenu.add(new Separator());
 		MenuManager layoutSubMenu = new MenuManager("&Layout");
