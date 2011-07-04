@@ -18,7 +18,6 @@ import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
 import org.eclipse.cdt.testsrunner.model.ITestMessage;
 import org.eclipse.cdt.testsrunner.model.ITestSuite;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Display;
 
 /**
@@ -28,7 +27,7 @@ import org.eclipse.swt.widgets.Display;
 public class ModelSynchronizer {
 	
 	private ResultsView resultsView;
-	private TreeViewer treeViewer;
+	private TestsHierarchyViewer testsHierarchyViewer;
 	private ProgressCountPanel progressCountPanel;
 	private IModelManagerListener actualSynchronizer;
 
@@ -63,7 +62,7 @@ public class ModelSynchronizer {
 				totalTestsCount = testCasesCounter.result;
 			}
 			progressCountPanel.restart(totalTestsCount);
-			treeViewer.refresh();
+			testsHierarchyViewer.getTreeViewer().refresh();
 			resultsView.resetActionsState();
 		}
 	}
@@ -71,9 +70,9 @@ public class ModelSynchronizer {
 	class TestingFinishedRunnable implements Runnable {
 
 		public void run() {
-			treeViewer.refresh();
+			testsHierarchyViewer.getTreeViewer().refresh();
 			progressCountPanel.testingFinished();
-			treeViewer.expandToLevel(2);
+			testsHierarchyViewer.getTreeViewer().expandToLevel(2);
 		}
 	}
 	
@@ -129,7 +128,7 @@ public class ModelSynchronizer {
 			}
 	
 			public void run() {
-				treeViewer.add(parent, child);
+				testsHierarchyViewer.add(parent, child);
 			}
 		}
 	
@@ -142,8 +141,8 @@ public class ModelSynchronizer {
 	
 			public void run() {
 				// TODO: Update only necessary properties!
-				treeViewer.update(object, null);
-				treeViewer.reveal(object);
+				testsHierarchyViewer.getTreeViewer().update(object, null);
+				testsHierarchyViewer.getTreeViewer().reveal(object);
 			}
 		}
 	
@@ -156,8 +155,8 @@ public class ModelSynchronizer {
 	
 			public void run() {
 				// TODO: Update only necessary properties!
-				treeViewer.collapseAll();
-				treeViewer.update(object, null);
+				testsHierarchyViewer.getTreeViewer().collapseAll();
+				testsHierarchyViewer.getTreeViewer().update(object, null);
 			}
 		}
 	
@@ -170,7 +169,7 @@ public class ModelSynchronizer {
 	
 			public void run() {
 				// TODO: Update only necessary properties!
-				treeViewer.update(testCase, null);
+				testsHierarchyViewer.getTreeViewer().update(testCase, null);
 				progressCountPanel.updateCounters(testCase.getStatus());
 				resultsView.updateActionsState(testCase.getStatus());
 			}
@@ -210,9 +209,9 @@ public class ModelSynchronizer {
 	}
 
 	
-	ModelSynchronizer(ResultsView resultsView, TreeViewer treeViewer, ProgressCountPanel progressCountPanel) {
+	ModelSynchronizer(ResultsView resultsView, TestsHierarchyViewer testsHierarchyViewer, ProgressCountPanel progressCountPanel) {
 		this.resultsView = resultsView;
-		this.treeViewer = treeViewer;
+		this.testsHierarchyViewer = testsHierarchyViewer;
 		this.progressCountPanel = progressCountPanel;
 		setActualSyncronizer(new ScrollingModelSynchronizer());
 	}

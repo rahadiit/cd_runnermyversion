@@ -10,14 +10,18 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.cdt.internal.ui.viewsupport.ColoringLabelProvider;
 import org.eclipse.cdt.testsrunner.internal.Activator;
 import org.eclipse.cdt.testsrunner.internal.model.TestSuite;
+import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
+import org.eclipse.cdt.testsrunner.model.ITestMessage;
 import org.eclipse.cdt.testsrunner.model.ITestSuite;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -41,12 +45,31 @@ public class TestsHierarchyViewer {
 	
 	class TestTreeContentProvider implements ITreeContentProvider {
 
+		class TestCasesCollector implements IModelVisitor {
+			
+			List<ITestCase> testCases = new ArrayList<ITestCase>();
+			
+			public void visit(ITestMessage testMessage) {}
+			
+			public void visit(ITestCase testCase) {
+				testCases.add(testCase);
+			}
+			
+			public void visit(ITestSuite testSuite) {}
+		}
+		
 		public Object[] getChildren(Object parentElement) {
 			return ((ITestItem) parentElement).getChildren();
 		}
 
-		public Object[] getElements(Object object) {
-			return getChildren(object);
+		public Object[] getElements(Object rootTestSuite) {
+			if (showTestsHierarchy) {
+				return getChildren(rootTestSuite);
+			} else {
+				TestCasesCollector testCasesCollector = new TestCasesCollector();
+				((ITestItem)rootTestSuite).visit(testCasesCollector);
+				return testCasesCollector.testCases.toArray();
+			}
 		}
 
 		public Object getParent(Object object) {
@@ -113,8 +136,12 @@ public class TestsHierarchyViewer {
 	    }
 
 		public String getText(Object element) {
+			ITestItem testItem = (ITestItem)element;
 			StringBuilder sb = new StringBuilder();
-			sb.append(((ITestItem) element).getName());
+			sb.append(testItem.getName());
+			if (!showTestsHierarchy) {
+				sb.append(getTestItemPath(testItem));
+			}
 			if (showTime) {
 				sb.append(getTestingTimeString(element));
 			}
@@ -126,6 +153,11 @@ public class TestsHierarchyViewer {
 			StringBuilder labelBuf = new StringBuilder();
 			labelBuf.append(testItem.getName());
 			StyledString name = new StyledString(labelBuf.toString());
+			if (!showTestsHierarchy) {
+				String itemPath = getTestItemPath(testItem);
+				labelBuf.append(itemPath);
+				name = StyledCellLabelProvider.styleDecoratedString(labelBuf.toString(), StyledString.QUALIFIER_STYLER, name);
+			}
 			if (showTime) {
 				String time = getTestingTimeString(element);
 				labelBuf.append(time);
@@ -137,6 +169,27 @@ public class TestsHierarchyViewer {
 		private String getTestingTimeString(Object element) {
 			// TODO: Add a message template and internalize it!
 			return (element instanceof ITestItem) ? " ("+Double.toString(((ITestItem)element).getTestingTime()/1000.0)+" s)" : "";
+		}
+		
+		private String getTestItemPath(ITestItem testItem) {
+			StringBuilder itemPath = new StringBuilder();
+			List<ITestItem> parentItems = new ArrayList<ITestItem>();
+			ITestItem parent = testItem.getParent();
+			while (parent != null) {
+				parentItems.add(parent);
+				parent = parent.getParent();
+			}
+			if (!parentItems.isEmpty()) {
+				itemPath.append(" - ");
+				for (int i = parentItems.size()-2/* exclude unnamed root test suite */; i >= 0; --i) {
+					itemPath.append(parentItems.get(i).getName());
+					if (i != 0) {
+						itemPath.append(".");
+					}
+				}
+			}
+			// TODO: Implement caching of the last path
+			return itemPath.toString();
 		}
 	}
 	
@@ -152,6 +205,7 @@ public class TestsHierarchyViewer {
 	private TreeViewer treeViewer;
 	private boolean showTime = true;
 	private FailedOnlyFilter failedOnlyFilter = null;
+	private boolean showTestsHierarchy = true;
 
 	
 	public TestsHierarchyViewer(Composite parent) {
@@ -246,6 +300,26 @@ public class TestsHierarchyViewer {
 			getTreeViewer().addFilter(failedOnlyFilter);
 		} else {
 			getTreeViewer().removeFilter(failedOnlyFilter);
+		}
+	}
+
+	public boolean showTestsHierarchy() {
+		return showTestsHierarchy;
+	}
+
+	public void setShowTestsHierarchy(boolean showTestsHierarchy) {
+		this.showTestsHierarchy = showTestsHierarchy;
+		getTreeViewer().refresh();
+	}
+
+	public void add(Object parent, Object child) {
+		if (showTestsHierarchy()) {
+			getTreeViewer().add(parent, child);
+		} else {
+			if (child instanceof ITestCase) {
+				Object root = getTreeViewer().getInput();
+				getTreeViewer().add(root, child);
+			}
 		}
 	}
 	
