@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/org.eclipse.cdt.testsrunner_2.0.0.201107082027.jar" id="org.eclipse.cdt.testsrunner" version="2.0.0.201107082027">
+   <feature url="features/org.eclipse.cdt.testsrunner_2.0.1.201107082101.jar" id="org.eclipse.cdt.testsrunner" version="2.0.1.201107082101">
       <category name="C/C++ Tests Runner"/>
    </feature>
    <category-def name="C/C++ Tests Runner" label="C/C++ Tests Runner"/>
