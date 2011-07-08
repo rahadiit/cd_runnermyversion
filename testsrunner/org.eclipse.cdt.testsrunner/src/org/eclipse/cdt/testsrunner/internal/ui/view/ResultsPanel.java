@@ -30,7 +30,7 @@ import org.eclipse.swt.widgets.Layout;
  * TODO: fix header comment
  */
 public class ResultsPanel {
-
+	
 	private SashForm sashForm;
 	private MessagesPanel messagesPanel;
 	private TestsHierarchyViewer testsHierarchyViewer;
@@ -74,6 +74,9 @@ public class ResultsPanel {
 			}
 		});
 		
+		// Initialize default value
+		setShowFailedOnly(false);
+		
 		// Data for parent (view's) layout
 		sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
 	}
@@ -101,5 +104,13 @@ public class ResultsPanel {
 		sashForm.setOrientation(currentOrientation == ResultsView.Orientation.Horizontal ? SWT.HORIZONTAL : SWT.VERTICAL);
 	}
 
+	public boolean getShowFailedOnly() {
+		return messagesPanel.getShowFailedOnly();
+	}
+	
+	public void setShowFailedOnly(boolean showFailedOnly) {
+		testsHierarchyViewer.setShowFailedOnly(showFailedOnly);
+		messagesPanel.setShowFailedOnly(showFailedOnly);
+	}
 	
 }

@@ -13,7 +13,6 @@ package org.eclipse.cdt.testsrunner.internal.qttest;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
-import org.osgi.framework.BundleContext;
 
 
 public class Activator extends Plugin {
@@ -84,26 +83,6 @@ public class Activator extends Plugin {
 	 */
 	public static void log(Throwable e) {
 		log(new Status(IStatus.ERROR, getUniqueIdentifier(), IStatus.ERROR, e.getMessage(), e));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
-	 */
-	@Override
-    public void start(BundleContext context) throws Exception {
-		super.start(context);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
-	 */
-	@Override
-    public void stop(BundleContext context) throws Exception {
-		super.stop(context);
 	}
 
 }

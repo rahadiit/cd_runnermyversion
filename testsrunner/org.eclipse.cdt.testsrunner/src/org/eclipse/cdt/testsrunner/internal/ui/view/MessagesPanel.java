@@ -40,23 +40,25 @@ import org.eclipse.ui.PlatformUI;
  */
 public class MessagesPanel {
 
-	private TableViewer tableViewer;
-	private OpenInEditorAction openInEditorAction;
-
-	
 	class MessagesCollector implements IModelVisitor {
 		
 		Set<ITestMessage> testMessages;
+		boolean collect = true;
 		
 		MessagesCollector(Set<ITestMessage> testMessages) {
 			this.testMessages = testMessages;
 		}
 		
 		public void visit(ITestMessage testMessage) {
-			testMessages.add(testMessage);
+			if (collect) {
+				testMessages.add(testMessage);
+			}
 		}
 		
-		public void visit(ITestCase testCase) {}
+		public void visit(ITestCase testCase) {
+			collect = !showFailedOnly || testCase.getStatus().isError();
+		}
+		
 		public void visit(ITestSuite testSuite) {}
 	}
 
@@ -71,12 +73,14 @@ public class MessagesPanel {
 				testMessages = new ITestMessage[0];
 			}
 		}
+		
 		public void dispose() {
 		}
+		
 		public Object[] getElements(Object parent) {
 			return testMessages;
 		}
-
+		
 		private void collectMessages(ITestItem[] testItems) {
 			Set<ITestMessage> testMessagesSet = new TreeSet<ITestMessage>(new Comparator<ITestMessage>() {
 
@@ -101,12 +105,6 @@ public class MessagesPanel {
 								
 							} else if (line1 > line2) {
 								return 1;
-								
-							} else {
-								// Compare by message text
-								String text1 = message1.getText();
-								String text2 = message2.getText();
-								return text1.compareTo(text2);
 							}
 						}
 						
@@ -117,7 +115,10 @@ public class MessagesPanel {
 						return 1;
 					}
 					
-					return 0;
+					// Compare by message text
+					String text1 = message1.getText();
+					String text2 = message2.getText();
+					return text1.compareTo(text2);
 				}
 			});
 			for (ITestItem testItem : testItems) {
@@ -188,6 +189,11 @@ public class MessagesPanel {
 	}
 	
 	
+	private TableViewer tableViewer;
+	private OpenInEditorAction openInEditorAction;
+	private boolean showFailedOnly = false;
+	
+
 	public MessagesPanel(Composite parent) {
 		tableViewer = new TableViewer(parent, SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
 		tableViewer.setLabelProvider(new MessagesLabelProvider());
@@ -208,6 +214,18 @@ public class MessagesPanel {
 	
 	public void showItemsMessages(ITestItem[] testItems) {
 		tableViewer.setInput(testItems);
+	}
+
+	public boolean getShowFailedOnly() {
+		return showFailedOnly;
+	}
+	
+	public void setShowFailedOnly(boolean showFailedOnly) {
+		if (this.showFailedOnly != showFailedOnly) {
+			this.showFailedOnly = showFailedOnly;
+			// NOTE: Set input again makes content provider to recollect messages (with filter applied)
+			tableViewer.setInput(tableViewer.getInput());
+		}
 	}
 	
 }

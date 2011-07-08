@@ -8,7 +8,7 @@
  * Contributors:
  *     Anton Gorenkov - initial API and implementation
  *******************************************************************************/
-package org.eclipse.cdt.testsrunner.internal.boost;
+package org.eclipse.cdt.testsrunner.internal.gtest;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
@@ -65,6 +65,7 @@ public class Activator extends Plugin {
 	public static void log(IStatus status) {
 		getDefault().getLog().log(status);
 	}
+	
 	/**
 	 * Logs an internal error with the specified message.
 	 * 

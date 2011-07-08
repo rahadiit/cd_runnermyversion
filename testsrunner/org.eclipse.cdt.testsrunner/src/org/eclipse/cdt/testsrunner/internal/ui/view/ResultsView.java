@@ -15,6 +15,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.graphics.Point;
@@ -68,7 +69,7 @@ public class ResultsView extends ViewPart {
 
 		progressCountPanel = new ProgressCountPanel(parent, currentOrientation);
 		resultsPanel = new ResultsPanel(parent);
-		modelSynchronizer = new ModelSynchronizer(this, resultsPanel.getTestsHierarchyViewer().getTreeViewer(), progressCountPanel);
+		modelSynchronizer = new ModelSynchronizer(this, resultsPanel.getTestsHierarchyViewer(), progressCountPanel);
 		configureActionsBars();
 		
 		parent.addControlListener(new ControlListener() {
@@ -103,23 +104,31 @@ public class ResultsView extends ViewPart {
 		previousAction.setEnabled(false);
 		actionBars.setGlobalActionHandler(ActionFactory.PREVIOUS.getId(), previousAction);
 		
+		Action showFailedOnly = new ShowFailedOnlyAction(resultsPanel);
+		Action showTestsHierarchyAction = new ShowTestsHierarchyAction(resultsPanel.getTestsHierarchyViewer());
 		Action showTimeAction = new ShowTimeAction(resultsPanel.getTestsHierarchyViewer());
+		Action scrollLockAction = new ScrollLockAction(modelSynchronizer);
 		
 		// Configure toolbar
 		IToolBarManager toolBar = actionBars.getToolBarManager();
 		toolBar.add(nextAction);
 		toolBar.add(previousAction);
-		toolBar.add(new ScrollLockAction(modelSynchronizer));
+		toolBar.add(showFailedOnly);
+		toolBar.add(scrollLockAction);
 		
 		
 		// Configure view menu
 		IMenuManager viewMenu = actionBars.getMenuManager();
+		viewMenu.add(showTestsHierarchyAction);
 		viewMenu.add(showTimeAction);
+		viewMenu.add(new Separator());
 		MenuManager layoutSubMenu = new MenuManager("&Layout");
 		for (int i = 0; i < toggleOrientationActions.length; ++i) {
 			layoutSubMenu.add(toggleOrientationActions[i]);
 		}
 		viewMenu.add(layoutSubMenu);
+		viewMenu.add(new Separator());
+		viewMenu.add(showFailedOnly);
 	}
 
 	public void dispose() {

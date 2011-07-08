@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %pluginName
-Bundle-SymbolicName: org.eclipse.cdt.testsrunner.qttest;singleton:=true
+Bundle-SymbolicName: org.eclipse.cdt.testsrunner.gtest;singleton:=true
 Bundle-Version: 7.0.0.qualifier
-Bundle-Activator: org.eclipse.cdt.testsrunner.internal.qttest.Activator
+Bundle-Activator: org.eclipse.cdt.testsrunner.internal.gtest.Activator
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Bundle-ActivationPolicy: lazy
