@@ -27,7 +27,6 @@ import org.eclipse.cdt.debug.core.cdi.model.ICDIRuntimeOptions;
 import org.eclipse.cdt.debug.core.cdi.model.ICDITarget;
 import org.eclipse.cdt.launch.AbstractCLaunchDelegate;
 import org.eclipse.cdt.testsrunner.internal.Activator;
-import org.eclipse.cdt.launch.internal.ui.LaunchMessages;
 import org.eclipse.cdt.launch.internal.ui.LaunchUIPlugin;
 import org.eclipse.cdt.utils.pty.PTY;
 import org.eclipse.cdt.utils.spawner.ProcessFactory;
@@ -65,7 +64,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 	}
 
 	private void runTestModule(ILaunchConfiguration config, ILaunch launch, IProgressMonitor monitor) throws CoreException {
-		monitor.beginTask(LaunchMessages.LocalRunLaunchDelegate_Launching_Local_C_Application, 10); 
+		monitor.beginTask("Launching Local C/C++ Test Module", 10); 
 		// check for cancellation
 		if (monitor.isCanceled()) {
 			return;
@@ -103,7 +102,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 	private void debugTestModule(ILaunchConfiguration config, ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		
 		IBinaryObject exeFile = null;
-		monitor.beginTask(LaunchMessages.LocalRunLaunchDelegate_Launching_Local_C_Application, 10); 
+		monitor.beginTask("Launching Local C/C++ Test Module", 10); 
 		if (monitor.isCanceled()) {
 			return;
 		}
@@ -138,7 +137,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 							opt.setEnvironment(getEnvironmentAsProperty(config));
 						}
 					} catch (CDIException e) {
-						abort(LaunchMessages.LocalRunLaunchDelegate_Failed_setting_runtime_option_though_debugger, e,
+						abort("Failed to set program arguments, environment or working directory.", e,
 								ICDTLaunchConfigurationConstants.ERR_INTERNAL_ERROR);
 					}
 					monitor.worked(1);
@@ -219,7 +218,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			if (p != null) {
 				p.destroy();
 			}
-			abort(LaunchMessages.LocalRunLaunchDelegate_Error_starting_process, e, 
+			abort("Error starting process", e, 
 					ICDTLaunchConfigurationConstants.ERR_INTERNAL_ERROR);
 		} catch (NoSuchMethodError e) {
 			//attempting launches on 1.2.* - no ability to set working
@@ -227,7 +226,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 
 			IStatus status = new Status(IStatus.ERROR, LaunchUIPlugin.getUniqueIdentifier(),
 					ICDTLaunchConfigurationConstants.ERR_WORKING_DIRECTORY_NOT_SUPPORTED,
-					LaunchMessages.LocalRunLaunchDelegate_Does_not_support_working_dir,
+					"Eclipse runtime does not support working directory",
 					e);
 			IStatusHandler handler = DebugPlugin.getDefault().getStatusHandler(status);
 
