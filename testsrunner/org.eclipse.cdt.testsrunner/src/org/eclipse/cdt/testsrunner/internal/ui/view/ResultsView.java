@@ -44,6 +44,7 @@ public class ResultsView extends ViewPart {
 	
 	private Action nextAction;
 	private Action previousAction;
+	private Action rerunAction;
 	private ToggleOrientationAction[] toggleOrientationActions;
 	
 	/**
@@ -108,6 +109,8 @@ public class ResultsView extends ViewPart {
 		Action showTestsHierarchyAction = new ShowTestsHierarchyAction(resultsPanel.getTestsHierarchyViewer());
 		Action showTimeAction = new ShowTimeAction(resultsPanel.getTestsHierarchyViewer());
 		Action scrollLockAction = new ScrollLockAction(modelSynchronizer);
+		rerunAction = new RerunAction();
+		rerunAction.setEnabled(false);
 		
 		// Configure toolbar
 		IToolBarManager toolBar = actionBars.getToolBarManager();
@@ -115,7 +118,8 @@ public class ResultsView extends ViewPart {
 		toolBar.add(previousAction);
 		toolBar.add(showFailedOnly);
 		toolBar.add(scrollLockAction);
-		
+		toolBar.add(new Separator());
+		toolBar.add(rerunAction);
 		
 		// Configure view menu
 		IMenuManager viewMenu = actionBars.getMenuManager();
@@ -167,18 +171,23 @@ public class ResultsView extends ViewPart {
 		return null;
 	}
 
-	public void resetActionsState() {
+	public void updateActionsBeforeRunning() {
 		previousAction.setEnabled(false);
 		nextAction.setEnabled(false);
+		rerunAction.setEnabled(false);
 	}
 	
-	public void updateActionsState(Status status) {
+	public void updateActionsOnTestCase(Status status) {
 		// Optimization: fPreviousAction and fNextAction should be enabled or disabled together
 		// so check only fNextAction.
 		if (!nextAction.isEnabled() && status.isError()) {
 			previousAction.setEnabled(true);
 			nextAction.setEnabled(true);
 		}
+	}
+	
+	public void updateActionsAfterRunning() {
+		rerunAction.setEnabled(true);
 	}
 	
 }

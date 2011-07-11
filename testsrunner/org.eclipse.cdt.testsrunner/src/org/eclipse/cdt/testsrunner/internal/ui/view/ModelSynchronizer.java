@@ -63,7 +63,7 @@ public class ModelSynchronizer {
 			}
 			progressCountPanel.restart(totalTestsCount);
 			testsHierarchyViewer.getTreeViewer().refresh();
-			resultsView.resetActionsState();
+			resultsView.updateActionsBeforeRunning();
 		}
 	}
 	
@@ -73,6 +73,7 @@ public class ModelSynchronizer {
 			testsHierarchyViewer.getTreeViewer().refresh();
 			progressCountPanel.testingFinished();
 			testsHierarchyViewer.getTreeViewer().expandToLevel(2);
+			resultsView.updateActionsAfterRunning();
 		}
 	}
 	
@@ -88,7 +89,7 @@ public class ModelSynchronizer {
 			public void run() {
 				// TODO: Update only necessary properties!
 				progressCountPanel.updateCounters(testCase.getStatus());
-				resultsView.updateActionsState(testCase.getStatus());
+				resultsView.updateActionsOnTestCase(testCase.getStatus());
 			}
 		}
 		
@@ -171,7 +172,7 @@ public class ModelSynchronizer {
 				// TODO: Update only necessary properties!
 				testsHierarchyViewer.getTreeViewer().update(testCase, null);
 				progressCountPanel.updateCounters(testCase.getStatus());
-				resultsView.updateActionsState(testCase.getStatus());
+				resultsView.updateActionsOnTestCase(testCase.getStatus());
 			}
 		}
 	
