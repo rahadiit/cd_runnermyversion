@@ -132,7 +132,9 @@ public class ResultsView extends ViewPart {
 	}
 
 	public void dispose() {
-		modelSynchronizer.dispose();
+		if (modelSynchronizer != null) {
+			modelSynchronizer.dispose();
+		}
 	}
 	
 	public void setOrientation(Orientation orientation) {
