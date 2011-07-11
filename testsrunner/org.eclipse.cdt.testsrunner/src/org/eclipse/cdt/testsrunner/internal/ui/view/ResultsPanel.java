@@ -12,7 +12,9 @@ package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 import java.util.Iterator;
 
+import org.eclipse.cdt.testsrunner.internal.ui.view.MessagesPanel.LevelFilter;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -24,6 +26,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
+import org.eclipse.swt.widgets.ToolBar;
 
 /**
  * TODO: Add description here
@@ -57,13 +60,15 @@ public class ResultsPanel {
 		ViewForm bottom= new ViewForm(sashForm, SWT.NONE);
 		CLabel label = new CLabel(bottom, SWT.NONE);
 		label.setText("Messages");
-		// TODO: Review this later!
-		//label.setImage(fStackViewIcon);
 		bottom.setTopLeft(label);
-		// TODO: Review this later!
-		//ToolBar failureToolBar = new ToolBar(bottom, SWT.FLAT | SWT.WRAP);
-		//bottom.setTopCenter(failureToolBar);
 		messagesPanel = new MessagesPanel(bottom);
+		ToolBar messagesToolBar = new ToolBar(bottom, SWT.FLAT | SWT.WRAP);
+		ToolBarManager messagesToolBarmanager= new ToolBarManager(messagesToolBar);
+		messagesToolBarmanager.add(new MessageLevelFilterAction(messagesPanel, LevelFilter.Error, true));
+		messagesToolBarmanager.add(new MessageLevelFilterAction(messagesPanel, LevelFilter.Warning, true));
+		messagesToolBarmanager.add(new MessageLevelFilterAction(messagesPanel, LevelFilter.Info, false));
+		messagesToolBarmanager.update(true);
+		bottom.setTopCenter(messagesToolBar);
 		bottom.setContent(messagesPanel.getTableViewer().getControl());
 
 		sashForm.setWeights(new int[]{50, 50});
