@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
+import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
 import org.eclipse.cdt.testsrunner.model.ITestItem.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
@@ -22,6 +24,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.ViewPart;
 
@@ -40,7 +43,7 @@ public class ResultsView extends ViewPart {
 	private Composite parent;
 	private ProgressCountPanel progressCountPanel;
 	private ResultsPanel resultsPanel;
-	private ModelSynchronizer modelSynchronizer;
+	private UIUpdater uiUpdater;
 	
 	private Action nextAction;
 	private Action previousAction;
@@ -60,6 +63,9 @@ public class ResultsView extends ViewPart {
 	
 	@Override
 	public void createPartControl(Composite parent) {
+		TestingSessionsManager sessionsManager = Activator.getDefault().getTestingSessionsManager();
+		IWorkbench workbench = Activator.getDefault().getWorkbench();
+
 		this.parent = parent;
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.marginWidth = 0;
@@ -69,9 +75,9 @@ public class ResultsView extends ViewPart {
 		currentOrientation = getActualOrientation(orientation);
 
 		progressCountPanel = new ProgressCountPanel(parent, currentOrientation);
-		resultsPanel = new ResultsPanel(parent);
-		modelSynchronizer = new ModelSynchronizer(this, resultsPanel.getTestsHierarchyViewer(), progressCountPanel);
-		configureActionsBars();
+		resultsPanel = new ResultsPanel(parent, sessionsManager, workbench);
+		uiUpdater = new UIUpdater(this, resultsPanel.getTestsHierarchyViewer(), progressCountPanel, sessionsManager);
+		configureActionsBars(sessionsManager);
 		
 		parent.addControlListener(new ControlListener() {
 			public void controlMoved(ControlEvent e) {
@@ -87,7 +93,7 @@ public class ResultsView extends ViewPart {
 		resultsPanel.getTestsHierarchyViewer().getTreeViewer().getControl().setFocus();
 	}
 
-	private void configureActionsBars() {
+	private void configureActionsBars(TestingSessionsManager sessionsManager) {
 		IActionBars actionBars = getViewSite().getActionBars();
 
 		// Create common action
@@ -108,8 +114,8 @@ public class ResultsView extends ViewPart {
 		Action showFailedOnly = new ShowFailedOnlyAction(resultsPanel);
 		Action showTestsHierarchyAction = new ShowTestsHierarchyAction(resultsPanel.getTestsHierarchyViewer());
 		Action showTimeAction = new ShowTimeAction(resultsPanel.getTestsHierarchyViewer());
-		Action scrollLockAction = new ScrollLockAction(modelSynchronizer);
-		rerunAction = new RerunAction();
+		Action scrollLockAction = new ScrollLockAction(uiUpdater);
+		rerunAction = new RerunAction(sessionsManager);
 		rerunAction.setEnabled(false);
 		
 		// Configure toolbar
@@ -136,8 +142,8 @@ public class ResultsView extends ViewPart {
 	}
 
 	public void dispose() {
-		if (modelSynchronizer != null) {
-			modelSynchronizer.dispose();
+		if (uiUpdater != null) {
+			uiUpdater.dispose();
 		}
 	}
 	

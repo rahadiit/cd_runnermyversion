@@ -8,7 +8,9 @@
  * Contributors:
  *     Anton Gorenkov - initial API and implementation
  *******************************************************************************/
-package org.eclipse.cdt.testsrunner.model;
+package org.eclipse.cdt.testsrunner.internal.model;
+
+import org.eclipse.cdt.testsrunner.model.ITestingSession;
 
 /**
  * TODO: Add descriptions
@@ -16,16 +18,8 @@ package org.eclipse.cdt.testsrunner.model;
  * @noextend This interface is not intended to be extended by clients.
  * @noimplement This interface is not intended to be implemented by clients.
  */
-public interface ITestSuite extends ITestItem {
+public interface ITestingSessionsManagerListener {
 
-	public ITestSuite getTestSuite(String name);
+	void sessionActivated(ITestingSession testingSession);
 	
-	public ITestSuite[] getTestSuites();
-
-	public ITestCase getTestCase(String name);
-	
-	public ITestCase[] getTestCases();
-
-	public boolean hasChildren();
-
 }

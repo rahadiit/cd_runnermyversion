@@ -69,6 +69,7 @@ public class TestCase extends TestItem implements ITestCase {
 		for (TestMessage message : testMessages) {
 			message.visit(visitor);
 		}
+		visitor.leave(this);
 	}
 
 }

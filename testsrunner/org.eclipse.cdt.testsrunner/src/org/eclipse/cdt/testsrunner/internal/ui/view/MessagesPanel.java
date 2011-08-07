@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
 import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
@@ -34,6 +35,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 
 
@@ -96,6 +98,12 @@ public class MessagesPanel {
 			}
 			
 			public void visit(ITestSuite testSuite) {}
+
+			public void leave(ITestSuite testSuite) {}
+
+			public void leave(ITestCase testCase) {}
+
+			public void leave(ITestMessage testMessage) {}
 		}
 
 		ITestMessage[] testMessages;
@@ -230,12 +238,12 @@ public class MessagesPanel {
 	private Set<ITestMessage.Level> acceptedMessageLevels = new HashSet<ITestMessage.Level>();
 
 
-	public MessagesPanel(Composite parent) {
+	public MessagesPanel(Composite parent, TestingSessionsManager sessionsManager, IWorkbench workbench) {
 		tableViewer = new TableViewer(parent, SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
 		tableViewer.setLabelProvider(new MessagesLabelProvider());
 		tableViewer.setContentProvider(new MessagesContentProvider());
 		
-		openInEditorAction = new OpenInEditorAction(tableViewer);
+		openInEditorAction = new OpenInEditorAction(tableViewer, sessionsManager, workbench);
 		tableViewer.addOpenListener(new IOpenListener() {
 			
 			public void open(OpenEvent event) {

@@ -14,7 +14,7 @@ package org.eclipse.cdt.testsrunner.internal.ui.view;
 import java.net.URI;
 
 import org.eclipse.cdt.debug.core.CDebugCorePlugin;
-import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
 import org.eclipse.cdt.testsrunner.model.ITestLocation;
 import org.eclipse.cdt.testsrunner.model.ITestMessage;
 import org.eclipse.core.resources.IFile;
@@ -36,6 +36,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
@@ -48,10 +49,14 @@ import org.eclipse.ui.texteditor.ITextEditor;
 public class OpenInEditorAction extends Action {
 
 	private TableViewer messagesViewer;
+	private TestingSessionsManager testingSessionsManager;
+	private IWorkbench workbench;
 
-	public OpenInEditorAction(TableViewer tableViewer) {
+	public OpenInEditorAction(TableViewer tableViewer, TestingSessionsManager testingSessionsManager, IWorkbench workbench) {
 		super("Go to");
 		this.messagesViewer = tableViewer;
+		this.testingSessionsManager = testingSessionsManager;
+		this.workbench = workbench;
 		setToolTipText("Go to file pointed by message"); // TODO: Add detailed tooltip
 		// TODO: Add image
 //		setDisabledImageDescriptor(Activator.getImageDescriptor("dlcl16/scroll_lock.gif")); //$NON-NLS-1$
@@ -70,7 +75,7 @@ public class OpenInEditorAction extends Action {
 			ITestLocation messageLocation = ((ITestMessage)selectedObject).getLocation();
 			if (messageLocation != null) {
 				// Get source locator
-				ILaunch launch = Activator.getDefault().getTestsRunnersManager().getCurrentLaunch();
+				ILaunch launch = testingSessionsManager.getActiveSession().getLaunch();
 				ISourceLocator sourceLocator = launch.getSourceLocator();
 				ISourceLookupResult result = DebugUITools.lookupSource(messageLocation.getFile(), sourceLocator);
 				try {
@@ -114,7 +119,7 @@ public class OpenInEditorAction extends Action {
 		}
 		if (input != null && editorID != null) {
 			// Open the editor
-			IWorkbenchPage activePage = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();;
+			IWorkbenchPage activePage = workbench.getActiveWorkbenchWindow().getActivePage();;
 
 			IEditorPart editor = IDE.openEditor(activePage, input, editorID);
 			// Select the line

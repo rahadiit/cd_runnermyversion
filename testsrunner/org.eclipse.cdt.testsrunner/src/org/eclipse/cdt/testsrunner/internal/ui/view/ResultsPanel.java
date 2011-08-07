@@ -12,6 +12,7 @@ package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 import java.util.Iterator;
 
+import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
 import org.eclipse.cdt.testsrunner.internal.ui.view.MessagesPanel.LevelFilter;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.jface.action.ToolBarManager;
@@ -27,6 +28,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.ui.IWorkbench;
 
 /**
  * TODO: Add description here
@@ -39,7 +41,7 @@ public class ResultsPanel {
 	private TestsHierarchyViewer testsHierarchyViewer;
 
 
-	public ResultsPanel(Composite parent) {
+	public ResultsPanel(Composite parent, TestingSessionsManager sessionsManager, IWorkbench workbench) {
 		sashForm = new SashForm(parent, SWT.VERTICAL);
 
 		// Configure tests hierarchy viewer
@@ -61,7 +63,7 @@ public class ResultsPanel {
 		CLabel label = new CLabel(bottom, SWT.NONE);
 		label.setText("Messages");
 		bottom.setTopLeft(label);
-		messagesPanel = new MessagesPanel(bottom);
+		messagesPanel = new MessagesPanel(bottom, sessionsManager, workbench);
 		ToolBar messagesToolBar = new ToolBar(bottom, SWT.FLAT | SWT.WRAP);
 		ToolBarManager messagesToolBarmanager= new ToolBarManager(messagesToolBar);
 		messagesToolBarmanager.add(new MessageLevelFilterAction(messagesPanel, LevelFilter.Error, true));

@@ -10,33 +10,29 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.model;
 
+import org.eclipse.debug.core.ILaunch;
+
+
 /**
  * TODO: Add descriptions
  * 
- * @noextend This interface is not intended to be extended by clients.
- * @noimplement This interface is not intended to be implemented by clients.
  */
-public interface IModelManager {
+public interface ITestingSession {
 
-	void enterTestSuite(String name);
-	
-	void exitTestSuite();
-	
+	public int getCurrentCounter();
 
-	void enterTestCase(String name);
+	public int getTotalCounter();
 	
-	void setTestStatus(ITestItem.Status status);
-	
-	void setTestingTime(int testingTime);
-	
-	void exitTestCase();
+	public int getCount(ITestItem.Status status);
 
+	public boolean hasErrors();
+
+	public boolean wasStopped();
+
+	public boolean isFinished();
 	
-	void addTestMessage(String file, int line, ITestMessage.Level level, String text);
-	
-	
-	ITestSuite currentTestSuite();
-	
-	ITestCase currentTestCase();
+	public ITestModelAccessor getModelAccessor();
+
+	public ILaunch getLaunch();
 	
 }

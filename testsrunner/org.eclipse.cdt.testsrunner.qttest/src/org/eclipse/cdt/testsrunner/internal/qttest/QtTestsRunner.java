@@ -8,7 +8,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.eclipse.cdt.testsrunner.launcher.ITestsRunner;
-import org.eclipse.cdt.testsrunner.model.IModelManager;
+import org.eclipse.cdt.testsrunner.model.ITestModelUpdater;
 import org.xml.sax.SAXException;
 
 public class QtTestsRunner implements ITestsRunner {
@@ -25,11 +25,11 @@ public class QtTestsRunner implements ITestsRunner {
 		return result;
 	}
 	
-	public void run(IModelManager modelBuilder, InputStream inputStream) {
+	public void run(ITestModelUpdater modelUpdater, InputStream inputStream) {
 		try {
 			SAXParserFactory spf = SAXParserFactory.newInstance();
 			SAXParser sp = spf.newSAXParser();
-			sp.parse(inputStream, new QtXmlLogHandler(modelBuilder));
+			sp.parse(inputStream, new QtXmlLogHandler(modelUpdater));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

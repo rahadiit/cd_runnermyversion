@@ -16,16 +16,27 @@ package org.eclipse.cdt.testsrunner.model;
  * @noextend This interface is not intended to be extended by clients.
  * @noimplement This interface is not intended to be implemented by clients.
  */
-public interface ITestSuite extends ITestItem {
+public interface ITestModelUpdater {
 
-	public ITestSuite getTestSuite(String name);
+	public void enterTestSuite(String name);
 	
-	public ITestSuite[] getTestSuites();
-
-	public ITestCase getTestCase(String name);
+	public void exitTestSuite();
 	
-	public ITestCase[] getTestCases();
 
-	public boolean hasChildren();
+	public void enterTestCase(String name);
+	
+	public void setTestStatus(ITestItem.Status status);
+	
+	public void setTestingTime(int testingTime);
+	
+	public void exitTestCase();
 
+	
+	public void addTestMessage(String file, int line, ITestMessage.Level level, String text);
+	
+	
+	public ITestSuite currentTestSuite();
+	
+	public ITestCase currentTestCase();
+	
 }

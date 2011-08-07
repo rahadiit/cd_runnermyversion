@@ -27,6 +27,7 @@ import org.eclipse.cdt.debug.core.cdi.model.ICDIRuntimeOptions;
 import org.eclipse.cdt.debug.core.cdi.model.ICDITarget;
 import org.eclipse.cdt.launch.AbstractCLaunchDelegate;
 import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.model.TestingSession;
 import org.eclipse.cdt.launch.internal.ui.LaunchUIPlugin;
 import org.eclipse.cdt.utils.pty.PTY;
 import org.eclipse.cdt.utils.spawner.ProcessFactory;
@@ -88,9 +89,9 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			command.addAll(Arrays.asList(arguments));
 			String[] commandArray = command.toArray(new String[command.size()]);
 			monitor.worked(5);
-			String testsRunnerId = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String)null);
-			commandArray = Activator.getDefault().getTestsRunnersManager().configureLaunchParameters(testsRunnerId, commandArray);
-			Process process = exec(commandArray, getEnvironment(config), wd, testsRunnerId, launch);
+			TestingSession testingSession = Activator.getDefault().getTestingSessionsManager().newSession(launch);
+			commandArray = testingSession.configureLaunchParameters(commandArray);
+			Process process = exec(commandArray, getEnvironment(config), wd, testingSession);
 			monitor.worked(3);
 			DebugPlugin.newProcess(launch, process, renderProcessLabel(commandArray[0]));
 			
@@ -189,7 +190,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 	 *         cancelled
 	 * @see Runtime
 	 */
-	protected Process exec(String[] cmdLine, String[] environ, File workingDirectory, String testsRunnerId, ILaunch launch) throws CoreException {
+	protected Process exec(String[] cmdLine, String[] environ, File workingDirectory, TestingSession testingSession) throws CoreException {
 		Process p = null;
 		try {
 			if (workingDirectory == null) {
@@ -211,8 +212,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 						}
 					}
 				});
-				// TODO: Handle incorrect tests runner somehow
-				Activator.getDefault().getTestsRunnersManager().run(testsRunnerId, p.getInputStream(), launch);
+				testingSession.run(p.getInputStream());
 			}
 		} catch (IOException e) {
 			if (p != null) {
@@ -233,7 +233,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			if (handler != null) {
 				Object result = handler.handleStatus(status, this);
 				if (result instanceof Boolean && ((Boolean) result).booleanValue()) {
-					p = exec(cmdLine, environ, null, testsRunnerId, launch);
+					p = exec(cmdLine, environ, null, testingSession);
 				}
 			}
 		}
