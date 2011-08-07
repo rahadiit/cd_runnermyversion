@@ -8,21 +8,20 @@
  * Contributors:
  *     Anton Gorenkov - initial API and implementation
  *******************************************************************************/
-package org.eclipse.cdt.testsrunner.launcher;
-
-import java.io.InputStream;
-
-import org.eclipse.cdt.testsrunner.model.ITestModelUpdater;
-
+package org.eclipse.cdt.testsrunner.model;
 
 /**
  * TODO: Add descriptions
  * 
  */
-public interface ITestsRunner {
-
-	public String[] configureLaunchParameters(String[] commandLine, String[][] testPaths);
+public interface ITestsRunnerInfo {
 	
-	public void run(ITestModelUpdater modelUpdater, InputStream inputStream);
+	public String getName();
+
+	public String getId();
+
+	public String getDescription();
+
+	public boolean isAllowedMultipleTestFilter();
 	
 }

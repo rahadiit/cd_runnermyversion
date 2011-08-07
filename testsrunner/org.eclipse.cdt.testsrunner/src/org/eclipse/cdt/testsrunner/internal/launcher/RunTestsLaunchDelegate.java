@@ -14,6 +14,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.cdt.core.IBinaryParser.IBinaryObject;
 import org.eclipse.cdt.core.model.ICProject;
@@ -28,6 +30,7 @@ import org.eclipse.cdt.debug.core.cdi.model.ICDITarget;
 import org.eclipse.cdt.launch.AbstractCLaunchDelegate;
 import org.eclipse.cdt.testsrunner.internal.Activator;
 import org.eclipse.cdt.testsrunner.internal.model.TestingSession;
+import org.eclipse.cdt.testsrunner.internal.ui.view.TestPathUtils;
 import org.eclipse.cdt.launch.internal.ui.LaunchUIPlugin;
 import org.eclipse.cdt.utils.pty.PTY;
 import org.eclipse.cdt.utils.spawner.ProcessFactory;
@@ -89,8 +92,15 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			command.addAll(Arrays.asList(arguments));
 			String[] commandArray = command.toArray(new String[command.size()]);
 			monitor.worked(5);
+			
 			TestingSession testingSession = Activator.getDefault().getTestingSessionsManager().newSession(launch);
-			commandArray = testingSession.configureLaunchParameters(commandArray);
+			
+			// Unpack tests filters
+			List<String> packedTestsFilter = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_FILTER, Collections.EMPTY_LIST);
+			String [][] testsFilter = TestPathUtils.unpackTestPaths(packedTestsFilter.toArray(new String[packedTestsFilter.size()]));
+			// Configure test module run parameters with Tests Runner 
+			commandArray = testingSession.configureLaunchParameters(commandArray, testsFilter);
+			
 			Process process = exec(commandArray, getEnvironment(config), wd, testingSession);
 			monitor.worked(3);
 			DebugPlugin.newProcess(launch, process, renderProcessLabel(commandArray[0]));

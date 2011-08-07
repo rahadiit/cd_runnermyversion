@@ -16,7 +16,6 @@ import java.util.List;
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager;
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager.TestsRunnerInfo;
-import org.eclipse.cdt.testsrunner.launcher.ITestsRunner;
 import org.eclipse.cdt.testsrunner.model.ITestingSession;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
@@ -36,16 +35,15 @@ public class TestingSessionsManager {
 	public TestingSessionsManager(TestsRunnersManager testsRunnersManager) {
 		this.testsRunnersManager = testsRunnersManager;
 	}
-	
+
 	public TestingSession newSession(ILaunch launch) throws CoreException {
 		// TODO: Handle incorrect tests runner somehow
 		ILaunchConfiguration launchConf = launch.getLaunchConfiguration();
 		String testsRunnerId = launchConf.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String)null);
 		TestsRunnerInfo testsRunnerInfo = testsRunnersManager.getTestsRunner(testsRunnerId);
-		ITestsRunner testsRunner = testsRunnerInfo.instantiateTestsRunner();
 		// TODO: Maybe we should use not active but really the last session (case: if user switched to pre-last session and relaunch testing)
 		TestingSession lastSession = testingSessions.isEmpty() ? null : testingSessions.get(activeSessionIndex);
-		TestingSession newTestingSession = new TestingSession(launch, testsRunner, lastSession);
+		TestingSession newTestingSession = new TestingSession(launch, testsRunnerInfo, lastSession);
 		testingSessions.add(newTestingSession);
 		setActiveSession(testingSessions.size()-1);
 		return newTestingSession;

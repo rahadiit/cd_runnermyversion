@@ -13,6 +13,7 @@ package org.eclipse.cdt.testsrunner.internal.ui.view;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestModelAccessor;
 import org.eclipse.cdt.testsrunner.model.ITestingSession;
+import org.eclipse.cdt.testsrunner.model.ITestsRunnerInfo;
 import org.eclipse.debug.core.ILaunch;
 
 /**
@@ -50,6 +51,10 @@ public class DummyUISession implements ITestingSession {
 	}
 
 	public ILaunch getLaunch() {
+		return null;
+	}
+
+	public ITestsRunnerInfo getTestsRunnerInfo() {
 		return null;
 	}
 

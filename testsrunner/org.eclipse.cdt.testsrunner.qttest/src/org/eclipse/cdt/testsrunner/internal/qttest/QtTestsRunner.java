@@ -13,15 +13,21 @@ import org.xml.sax.SAXException;
 
 public class QtTestsRunner implements ITestsRunner {
 
-	public String[] configureLaunchParameters(String[] commandLine) {
+	public String[] configureLaunchParameters(String[] commandLine, String[][] testPaths) {
 		final String[] qtParameters = {
 			"-xml", //$NON-NLS-1$
 			"-flush", //$NON-NLS-1$
 		};
 
-		String[] result = new String[commandLine.length+qtParameters.length];
+		int testPathsLength = testPaths != null ? testPaths.length : 0;
+		String[] result = new String[commandLine.length + qtParameters.length + testPathsLength];
 		System.arraycopy(commandLine, 0, result, 0, commandLine.length);
 		System.arraycopy(qtParameters, 0, result, commandLine.length, qtParameters.length);
+		// Add test filters (if necessary)
+		for (int i = 0; i < testPathsLength; i++) {
+			String[] testPath = testPaths[i];
+			result[commandLine.length + qtParameters.length+i] = testPath[testPath.length-1];
+		}
 		return result;
 	}
 	
