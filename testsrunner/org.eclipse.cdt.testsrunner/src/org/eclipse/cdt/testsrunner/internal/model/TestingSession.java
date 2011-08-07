@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.util.EnumMap;
 import java.util.Map;
 
+import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager.TestsRunnerInfo;
 import org.eclipse.cdt.testsrunner.launcher.ITestsRunner;
 import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
@@ -32,12 +33,13 @@ import org.eclipse.debug.core.ILaunch;
  */
 public class TestingSession implements ITestingSession {
 
-	ILaunch launch;
-	ITestsRunner testsRunner;
-	TestModelManager modelManager;
+	private ILaunch launch;
+	private TestsRunnerInfo testsRunnerInfo;
+	private ITestsRunner testsRunner;
+	private TestModelManager modelManager;
 	private int totalCounter = -1;
 	private int currentCounter = 0;
-	Map<ITestItem.Status, Integer> statusCounters = new EnumMap<ITestItem.Status, Integer>(ITestItem.Status.class);
+	private Map<ITestItem.Status, Integer> statusCounters = new EnumMap<ITestItem.Status, Integer>(ITestItem.Status.class);
 	private boolean hasErrors = false;
 	private boolean wasStopped = false;
 	private boolean finished = false;
@@ -59,10 +61,11 @@ public class TestingSession implements ITestingSession {
 	}
 
 	
-	public TestingSession(ILaunch launch, ITestsRunner testsRunner, TestingSession previousSession) {
+	public TestingSession(ILaunch launch, TestsRunnerInfo testsRunnerInfo, TestingSession previousSession) {
 		// TODO: Check also that session is finished (not stopped and not running) 
 		this.launch = launch;
-		this.testsRunner = testsRunner;
+		this.testsRunnerInfo = testsRunnerInfo;
+		this.testsRunner = testsRunnerInfo.instantiateTestsRunner();
 		// TODO: Compare also test runner types here! If not equal -- previousSession => null
 		if ((previousSession != null) && (launch.getLaunchConfiguration() != previousSession.launch.getLaunchConfiguration())) {
 			previousSession = null;
@@ -105,8 +108,8 @@ public class TestingSession implements ITestingSession {
 		});
 	}
 
-	public String [] configureLaunchParameters(String[] parameters) {
-		return testsRunner.configureLaunchParameters(parameters);
+	public String [] configureLaunchParameters(String[] parameters, String [][] testsFilter) {
+		return testsRunner.configureLaunchParameters(parameters, testsFilter);
 	}
 
 	public void run(InputStream inputStream) {
@@ -149,6 +152,10 @@ public class TestingSession implements ITestingSession {
 	
 	public ILaunch getLaunch() {
 		return launch;
+	}
+	
+	public TestsRunnerInfo getTestsRunnerInfo() {
+		return testsRunnerInfo;
 	}
 
 }

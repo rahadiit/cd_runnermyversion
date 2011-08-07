@@ -8,6 +8,9 @@
             description="Tests runner for a test module based on Qt4 Testing framework"
             id="org.eclipse.cdt.testsrunner.qttest"
             name="Qt Tests Runner">
+         <features
+               multipleTestFilter="true">
+         </features>
       </runner>
    </extension>
 </plugin>

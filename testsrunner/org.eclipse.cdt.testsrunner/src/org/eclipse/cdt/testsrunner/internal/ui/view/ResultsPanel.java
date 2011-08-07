@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPartSite;
 
 /**
  * TODO: Add description here
@@ -41,7 +42,7 @@ public class ResultsPanel {
 	private TestsHierarchyViewer testsHierarchyViewer;
 
 
-	public ResultsPanel(Composite parent, TestingSessionsManager sessionsManager, IWorkbench workbench) {
+	public ResultsPanel(Composite parent, TestingSessionsManager sessionsManager, IWorkbench workbench, IWorkbenchPartSite site) {
 		sashForm = new SashForm(parent, SWT.VERTICAL);
 
 		// Configure tests hierarchy viewer
@@ -55,7 +56,7 @@ public class ResultsPanel {
 			protected void layout(Composite composite, boolean flushCache) {}
 		});
 		top.setTopLeft(empty); // makes ViewForm draw the horizontal separator line ...
-		testsHierarchyViewer = new TestsHierarchyViewer(top);
+		testsHierarchyViewer = new TestsHierarchyViewer(top, site);
 		top.setContent(testsHierarchyViewer.getTreeViewer().getControl());
 
 		// Configure test messages viewer

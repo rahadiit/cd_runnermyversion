@@ -137,7 +137,7 @@ public class UIUpdater {
 					
 					public void run() {
 						progressCountPanel.setTestingSession(testingSession);
-						testsHierarchyViewer.setModelAccessor(testingSession.getModelAccessor());
+						testsHierarchyViewer.setTestingSession(testingSession);
 					}
 				});
 				// TODO: Update actions!

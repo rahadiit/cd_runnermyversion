@@ -75,7 +75,7 @@ public class ResultsView extends ViewPart {
 		currentOrientation = getActualOrientation(orientation);
 
 		progressCountPanel = new ProgressCountPanel(parent, currentOrientation);
-		resultsPanel = new ResultsPanel(parent, sessionsManager, workbench);
+		resultsPanel = new ResultsPanel(parent, sessionsManager, workbench, getSite());
 		uiUpdater = new UIUpdater(this, resultsPanel.getTestsHierarchyViewer(), progressCountPanel, sessionsManager);
 		configureActionsBars(sessionsManager);
 		

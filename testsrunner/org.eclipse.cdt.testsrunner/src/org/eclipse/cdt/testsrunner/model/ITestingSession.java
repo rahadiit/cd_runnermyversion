@@ -35,4 +35,7 @@ public interface ITestingSession {
 
 	public ILaunch getLaunch();
 	
+	public ITestsRunnerInfo getTestsRunnerInfo();
+	
 }
+	
