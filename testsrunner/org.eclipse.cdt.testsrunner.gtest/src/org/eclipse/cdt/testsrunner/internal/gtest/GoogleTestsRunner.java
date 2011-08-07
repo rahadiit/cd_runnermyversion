@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.eclipse.cdt.testsrunner.launcher.ITestsRunner;
-import org.eclipse.cdt.testsrunner.model.IModelManager;
+import org.eclipse.cdt.testsrunner.model.ITestModelUpdater;
 
 public class GoogleTestsRunner implements ITestsRunner {
 
@@ -21,10 +21,10 @@ public class GoogleTestsRunner implements ITestsRunner {
 		return result;
 	}
 	
-	public void run(IModelManager modelManager, InputStream inputStream) {
+	public void run(ITestModelUpdater modelUpdater, InputStream inputStream) {
 		
 		try {
-			OutputHandler ouputHandler = new OutputHandler(modelManager);
+			OutputHandler ouputHandler = new OutputHandler(modelUpdater);
 			ouputHandler.run(inputStream);
 		} catch (IOException e) { // TODO: Not only IO - maybe all?
 			// TODO Auto-generated catch block

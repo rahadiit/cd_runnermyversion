@@ -46,5 +46,6 @@ public class TestMessage implements ITestMessage {
 
 	public void visit(IModelVisitor visitor) {
 		visitor.visit(this);
+		visitor.leave(this);
 	}
 }

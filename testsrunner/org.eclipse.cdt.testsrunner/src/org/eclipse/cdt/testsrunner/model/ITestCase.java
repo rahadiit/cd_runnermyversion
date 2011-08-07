@@ -18,6 +18,6 @@ package org.eclipse.cdt.testsrunner.model;
  */
 public interface ITestCase extends ITestItem {
 
-	ITestMessage[] getTestMessages();
+	public ITestMessage[] getTestMessages();
 
 }

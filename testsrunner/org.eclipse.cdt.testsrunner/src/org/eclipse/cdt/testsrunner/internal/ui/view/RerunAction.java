@@ -12,8 +12,9 @@ package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 
 import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
+import org.eclipse.cdt.testsrunner.model.ITestingSession;
 import org.eclipse.debug.core.ILaunch;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jface.action.Action;
 
@@ -22,12 +23,15 @@ import org.eclipse.jface.action.Action;
  */
 public class RerunAction extends Action {
 
-	public RerunAction() {
+	private TestingSessionsManager testingSessionsManager;
+
+	public RerunAction(TestingSessionsManager testingSessionsManager) {
 		super("Rerun");
 		setToolTipText("Rerun Test"); // TODO: Add detailed tooltip
 		setDisabledImageDescriptor(Activator.getImageDescriptor("dlcl16/rerun.gif")); //$NON-NLS-1$
 		setHoverImageDescriptor(Activator.getImageDescriptor("elcl16/rerun.gif")); //$NON-NLS-1$
 		setImageDescriptor(Activator.getImageDescriptor("elcl16/rerun.gif")); //$NON-NLS-1$
+		this.testingSessionsManager = testingSessionsManager;
 	}
 
 	/**
@@ -35,15 +39,15 @@ public class RerunAction extends Action {
 	 */
 	@Override
 	public void run() {
-		ILaunch launch = Activator.getDefault().getTestsRunnersManager().getCurrentLaunch();
-		if (launch != null) {
-			ILaunchConfiguration launchConf = launch.getLaunchConfiguration();
-			if (launchConf != null) {
-				DebugUITools.launch(launchConf, launch.getLaunchMode());
-				return;
-			}
+		ITestingSession activeSession = testingSessionsManager.getActiveSession();
+		if (activeSession != null) {
+			ILaunch launch = activeSession.getLaunch();
+			DebugUITools.launch(launch.getLaunchConfiguration(), launch.getLaunchMode());
 		}
-		setEnabled(false);
+		else
+		{
+			setEnabled(false);
+		}
 	}
 	
 }

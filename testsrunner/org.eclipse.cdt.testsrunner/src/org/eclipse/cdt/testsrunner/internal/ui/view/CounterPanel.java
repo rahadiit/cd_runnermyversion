@@ -13,6 +13,7 @@ package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 import org.eclipse.cdt.testsrunner.internal.Activator;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
+import org.eclipse.cdt.testsrunner.model.ITestingSession;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -28,18 +29,18 @@ import java.text.MessageFormat;
 // TODO: Fix description
 // TODO: Refactor this class for C/C++ Unit tests
 public class CounterPanel extends Composite {
-	protected Label failedCounterLabel;
-	protected Label abortedCounterLabel;
-	protected Label currentCounterLabel;
-	protected int currentCounter;
-	protected int failedCounter;
-	protected int abortedCounter;
-	protected int skippedCounter;
+
+	private ITestingSession testingSession;
+	private Label failedCounterLabel;
+	private Label abortedCounterLabel;
+	private Label currentCounterLabel;
+	private boolean hasSkipped;
 
 	private final Image errorIcon= Activator.createAutoImage("ovr16/failed_counter.gif"); //$NON-NLS-1$
 	private final Image failureIcon= Activator.createAutoImage("ovr16/aborted_counter.gif"); //$NON-NLS-1$
 
-	public CounterPanel(Composite parent) {
+	
+	public CounterPanel(Composite parent, ITestingSession testingSession) {
 		super(parent, SWT.WRAP);
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.numColumns = 9;
@@ -50,7 +51,7 @@ public class CounterPanel extends Composite {
 		currentCounterLabel = createLabel("Runs: ", null);
 		failedCounterLabel = createLabel("Errors: ", errorIcon);
 		abortedCounterLabel = createLabel("Failures: ", failureIcon);
-		restart(); // Just fill labels
+		setTestingSession(testingSession);
 	}
 
 	private Label createLabel(String name, Image image) {
@@ -73,53 +74,31 @@ public class CounterPanel extends Composite {
 		return value;
 	}
 
-	public void restart() {
-		setFailedCounter(0);
-		setAbortedCounter(0);
-		setCurrentCounter(0, 0);
-		layout();
+	public void setTestingSession(ITestingSession testingSession) {
+		this.testingSession = testingSession;
+		this.hasSkipped = testingSession.getCount(ITestItem.Status.Skipped)!=0;
+		updateInfoFromSession();
+	}
+	
+	public void updateInfoFromSession() {
+		setFailedCounter(testingSession.getCount(ITestItem.Status.Failed));
+		setAbortedCounter(testingSession.getCount(ITestItem.Status.Aborted));
+		setCurrentCounter(testingSession.getCurrentCounter(), testingSession.getCount(ITestItem.Status.Skipped));
 		redraw();
 	}
 	
-	public void updateCounters(ITestItem.Status testStatus) {
-		// Update special counters
-		switch (testStatus) {
-			case Skipped:
-				++skippedCounter;
-				// If value has been changed just now - layout again!
-				if (skippedCounter == 1) {
-					layout();
-				}
-				break;
-			case Failed:
-				setFailedCounter(failedCounter+1);
-				break;
-			case Aborted:
-				setAbortedCounter(abortedCounter+1);
-				break;
-			case NotRun:
-			case Passed:
-				// Do nothing, just avoid compiler's warning
-				break;
-		}
-		// Update current counter
-		setCurrentCounter(currentCounter+1, skippedCounter);
-		redraw();
-	}
-
 	private void setFailedCounter(int newValue) {
-		failedCounter = newValue;
-		failedCounterLabel.setText(Integer.toString(failedCounter));
+		failedCounterLabel.setText(Integer.toString(newValue));
 	}
 
 	private void setAbortedCounter(int newValue) {
-		abortedCounter = newValue;
-		abortedCounterLabel.setText(Integer.toString(abortedCounter));
+		abortedCounterLabel.setText(Integer.toString(newValue));
 	}
 
 	private void setCurrentCounter(int currentValue, int skippedValue) {
-		currentCounter = currentValue;
-		skippedCounter = skippedValue;
+		if (!hasSkipped && skippedValue!=0) {
+			layout();
+		}
 		String currentCounterStr = Integer.toString(currentValue);
 		String runString = (skippedValue == 0)
 				? currentCounterStr

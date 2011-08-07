@@ -18,7 +18,7 @@ package org.eclipse.cdt.testsrunner.model;
  */
 public interface ITestMessage {
 
-	enum Level {
+	public enum Level {
 		Info,
 		Message,
 		Warning,
@@ -27,12 +27,12 @@ public interface ITestMessage {
 		Exception,
 	}
 	
-	ITestLocation getLocation();
+	public ITestLocation getLocation();
 
-	Level getLevel();
+	public Level getLevel();
 
-	String getText();
+	public String getText();
 
-	void visit(IModelVisitor visitor);
+	public void visit(IModelVisitor visitor);
 
 }

@@ -36,10 +36,28 @@ public abstract class ModelVisitor implements IModelVisitor {
 		visit((TestMessage)testMessage);
 	}
 
-	abstract void visit(TestSuite testSuite);
+	public void leave(ITestSuite testSuite) {
+		visit((TestSuite)testSuite);
+	}
 	
-	abstract void visit(TestCase testCase);
+	public void leave(ITestCase testCase) {
+		visit((TestCase)testCase);
+	}
 	
-	abstract void visit(TestMessage testMessage);
+	public void leave(ITestMessage testMessage) {
+		visit((TestMessage)testMessage);
+	}
+
+	public abstract void visit(TestSuite testSuite);
+	
+	public abstract void visit(TestCase testCase);
+	
+	public abstract void visit(TestMessage testMessage);
+
+	public abstract void leave(TestSuite testSuite);
+	
+	public abstract void leave(TestCase testCase);
+	
+	public abstract void leave(TestMessage testMessage);
 	
 }

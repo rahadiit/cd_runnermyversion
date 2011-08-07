@@ -12,7 +12,7 @@ package org.eclipse.cdt.testsrunner.launcher;
 
 import java.io.InputStream;
 
-import org.eclipse.cdt.testsrunner.model.IModelManager;
+import org.eclipse.cdt.testsrunner.model.ITestModelUpdater;
 
 
 /**
@@ -21,8 +21,8 @@ import org.eclipse.cdt.testsrunner.model.IModelManager;
  */
 public interface ITestsRunner {
 
-	String[] configureLaunchParameters(String[] commandLine);
+	public String[] configureLaunchParameters(String[] commandLine);
 	
-	void run(IModelManager modelBuilder, InputStream inputStream);
+	public void run(ITestModelUpdater modelUpdater, InputStream inputStream);
 	
 }

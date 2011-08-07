@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.cdt.testsrunner.model.IModelManager;
+import org.eclipse.cdt.testsrunner.model.ITestModelUpdater;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestMessage;
 
@@ -56,7 +56,7 @@ public class OutputHandler {
 		}
 
 		public void onEnter(State previousState) {
-			modelManager.enterTestSuite(group(1));
+			modelUpdater.enterTestSuite(group(1));
 		}
 	}
 	
@@ -67,8 +67,8 @@ public class OutputHandler {
 
 		public void onEnter(State previousState) {
 			// TODO: Check: current TS == group(1)
-			//if (modelManager.currentTestSuite().getName().equals(group(1))) ...
-			modelManager.enterTestCase(group(2));
+			//if (modelUpdater.currentTestSuite().getName().equals(group(1))) ...
+			modelUpdater.enterTestCase(group(2));
 		}
 	}
 	
@@ -146,7 +146,7 @@ public class OutputHandler {
 
 		public void onExit(State nextState) {
 			if (this != nextState) {
-				modelManager.addTestMessage(
+				modelUpdater.addTestMessage(
 					stateErrorMessageLocation.getMessageFileName(),
 					stateErrorMessageLocation.getMessageLineNumber(),
 					ITestMessage.Level.Error,
@@ -175,9 +175,9 @@ public class OutputHandler {
 			} else {
 				// TODO: Format error!
 			}
-			modelManager.setTestingTime(Integer.parseInt(group(5)));
-			modelManager.setTestStatus(testStatus);
-			modelManager.exitTestCase();
+			modelUpdater.setTestingTime(Integer.parseInt(group(5)));
+			modelUpdater.setTestStatus(testStatus);
+			modelUpdater.exitTestCase();
 		}
 	}
 	
@@ -189,12 +189,12 @@ public class OutputHandler {
 		
 		public void onEnter(State previousState) {
 			// TODO: Check: current TS == group(1)
-			modelManager.exitTestSuite();
+			modelUpdater.exitTestSuite();
 		}
 	}
 	
 	
-	private IModelManager modelManager;
+	private ITestModelUpdater modelUpdater;
 
 	// Common regular expression parts
 	static private String regexTestSuiteName = "([^,]+)"; //$NON-NLS-1$
@@ -249,8 +249,8 @@ public class OutputHandler {
 	}
 	
 	
-	OutputHandler(IModelManager modelManager) {
-		this.modelManager = modelManager;
+	OutputHandler(ITestModelUpdater modelUpdater) {
+		this.modelUpdater = modelUpdater;
 	}
 	
 	public void run(InputStream inputStream) throws IOException {

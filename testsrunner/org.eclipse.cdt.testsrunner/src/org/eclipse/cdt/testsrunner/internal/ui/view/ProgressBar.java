@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
-import org.eclipse.cdt.testsrunner.model.ITestItem;
+import org.eclipse.cdt.testsrunner.model.ITestingSession;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
@@ -35,23 +35,20 @@ public class ProgressBar extends Canvas {
 	private static final int DEFAULT_WIDTH = 160;
 	private static final int DEFAULT_HEIGHT = 18;
 
-	private int currentCounter;
-	private int totalCounter;
+	private ITestingSession testingSession;
 	private int colorBarWidth;
 	private Color okColor;
 	private Color failureColor;
 	private Color stoppedColor;
-	private boolean hasErrors;
-	private boolean wasStopped;
 
-	public ProgressBar(Composite parent) {
+	
+	public ProgressBar(Composite parent, ITestingSession testingSession) {
 		super(parent, SWT.NONE);
 
 		addControlListener(new ControlAdapter() {
 			@Override
 			public void controlResized(ControlEvent e) {
-				recalculateColorBarWidth();
-				redraw();
+				updateInfoFromSession();
 			}
 		});
 		addPaintListener(new PaintListener() {
@@ -72,40 +69,23 @@ public class ProgressBar extends Canvas {
 				stoppedColor.dispose();
 			}
 		});
+		setTestingSession(testingSession);
 	}
 	
-	public void restart(int totalTestsCount) {
-		currentCounter = 0;
-		totalCounter = totalTestsCount;
-		colorBarWidth = 0;
-		hasErrors = false;
-		wasStopped = false;
-		redraw();
+	public void setTestingSession(ITestingSession testingSession) {
+		this.testingSession = testingSession;
+		updateInfoFromSession();
 	}
 	
-	public void updateCounters(ITestItem.Status testStatus) {
-		if (testStatus.isError())
-			hasErrors = true;
-		++currentCounter;
-		recalculateColorBarWidth();
-		redraw();
-	}
-	
-	public void setStopped() {
-		wasStopped = true;
-		redraw();
-	}
-	
-	public void testingFinished() {
-		totalCounter = currentCounter;
+	public void updateInfoFromSession() {
 		recalculateColorBarWidth();
 		redraw();
 	}
 
 	private void setStatusColor(GC gc) {
-		if (wasStopped)
+		if (testingSession.wasStopped())
 			gc.setBackground(stoppedColor);
-		else if (hasErrors)
+		else if (testingSession.hasErrors())
 			gc.setBackground(failureColor);
 		else
 			gc.setBackground(okColor);
@@ -114,10 +94,10 @@ public class ProgressBar extends Canvas {
 	private void recalculateColorBarWidth() {
 		Rectangle r = getClientArea();
 		int newColorBarWidth;
-		if (totalCounter > 0) {
-			newColorBarWidth = currentCounter*(r.width-2)/totalCounter;
+		if (testingSession.getTotalCounter() > 0) {
+			newColorBarWidth = testingSession.getCurrentCounter()*(r.width-2)/testingSession.getTotalCounter();
 		} else {
-			newColorBarWidth = currentCounter == 0 ? 0 : (r.width-2)/2;
+			newColorBarWidth = testingSession.getCurrentCounter() == 0 ? 0 : (r.width-2)/2;
 		}
 		colorBarWidth = Math.max(0, newColorBarWidth);
 	}

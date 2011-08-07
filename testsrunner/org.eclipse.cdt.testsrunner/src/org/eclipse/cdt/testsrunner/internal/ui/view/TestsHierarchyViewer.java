@@ -17,11 +17,11 @@ import java.util.Map;
 
 import org.eclipse.cdt.internal.ui.viewsupport.ColoringLabelProvider;
 import org.eclipse.cdt.testsrunner.internal.Activator;
-import org.eclipse.cdt.testsrunner.internal.model.TestSuite;
 import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestMessage;
+import org.eclipse.cdt.testsrunner.model.ITestModelAccessor;
 import org.eclipse.cdt.testsrunner.model.ITestSuite;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -49,13 +49,15 @@ public class TestsHierarchyViewer {
 			
 			List<ITestCase> testCases = new ArrayList<ITestCase>();
 			
-			public void visit(ITestMessage testMessage) {}
-			
 			public void visit(ITestCase testCase) {
 				testCases.add(testCase);
 			}
 			
+			public void visit(ITestMessage testMessage) {}
 			public void visit(ITestSuite testSuite) {}
+			public void leave(ITestSuite testSuite) {}
+			public void leave(ITestCase testCase) {}
+			public void leave(ITestMessage testMessage) {}
 		}
 		
 		public Object[] getChildren(Object parentElement) {
@@ -126,7 +128,7 @@ public class TestsHierarchyViewer {
 	    	}
 	    	if (imagesMap != null) {
 	    		ITestItem testItem = (ITestItem)element;
-				if (Activator.getDefault().getModelManager().isCurrentlyRunning(testItem)) {
+				if (modelAccessor.isCurrentlyRunning(testItem)) {
 					return runImage;
 				}
 				return imagesMap.get(testItem.getStatus());
@@ -202,6 +204,7 @@ public class TestsHierarchyViewer {
 	}
 
 	
+	private ITestModelAccessor modelAccessor;
 	private TreeViewer treeViewer;
 	private boolean showTime = true;
 	private FailedOnlyFilter failedOnlyFilter = null;
@@ -212,7 +215,11 @@ public class TestsHierarchyViewer {
 		treeViewer = new TreeViewer(parent, SWT.V_SCROLL | SWT.MULTI);
 		treeViewer.setContentProvider(new TestTreeContentProvider());
 		treeViewer.setLabelProvider(new ColoringLabelProvider(new TestLabelProvider()));
-		treeViewer.setInput(Activator.getDefault().getModelManager().getRootSuite());
+	}
+	
+	public void setModelAccessor(ITestModelAccessor modelAccessor) {
+		this.modelAccessor = modelAccessor;
+		treeViewer.setInput(modelAccessor.getRootSuite());
 	}
 	
 	public TreeViewer getTreeViewer() {
@@ -233,7 +240,7 @@ public class TestsHierarchyViewer {
 		ITestItem failedItem;
 
 		if (selected == null) {
-			TestSuite rootSuite = Activator.getDefault().getModelManager().getRootSuite();
+			ITestItem rootSuite = (ITestItem)treeViewer.getInput();
 			// For next element we should also check its children, for previous shouldn't.
 			failedItem = findFailedChild(rootSuite, null, next, next);
 		} else {

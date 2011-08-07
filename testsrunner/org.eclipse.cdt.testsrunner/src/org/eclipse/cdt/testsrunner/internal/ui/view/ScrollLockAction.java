@@ -19,9 +19,9 @@ import org.eclipse.jface.action.Action;
  */
 public class ScrollLockAction extends Action {
 
-	private ModelSynchronizer modelSyncronizer;
+	private UIUpdater modelSyncronizer;
 
-	public ScrollLockAction(ModelSynchronizer modelSyncronizer) {
+	public ScrollLockAction(UIUpdater modelSyncronizer) {
 		super("Scroll Lock");
 		this.modelSyncronizer = modelSyncronizer;
 		setToolTipText("Scroll Lock"); // TODO: Add detailed tooltip
