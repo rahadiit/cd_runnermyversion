@@ -104,6 +104,10 @@ public class OutputHandler {
 					// TODO: Internal error: unknown location format!
 				}
 			}
+			// Check special case when file is not known - reset location
+			if (messageFileName.equals("unknown file")) { //$NON-NLS-1$
+				messageFileName = null;
+			}
 			// NOTE: For Visual Studio style there is also first part of the message at this line
 			messagePart = group(8);
 		}
