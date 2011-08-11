@@ -71,7 +71,6 @@ public class BoostXmlLogHandler extends DefaultHandler {
 
 		} else if (STRING_TO_MESSAGE_LEVEL.containsKey(qName)
 				|| qName == XML_NODE_LAST_CHECKPOINT) {
-			elementData = null;
 			fileName = attrs.getValue(XML_ATTR_MESSAGE_FILE);
 			lineNumber = Integer.parseInt(attrs.getValue(XML_ATTR_MESSAGE_LINE).trim());
 			
@@ -127,9 +126,9 @@ public class BoostXmlLogHandler extends DefaultHandler {
 
 		} else if (qName == XML_NODE_EXCEPTION) {
 			if (fileName != null && lineNumber != -1) {
-				elementData += "\nSee the last checkpoint attached.";
+				elementData += "\nLast check point was here.";
 			}
-			addCurrentMessage(STRING_TO_MESSAGE_LEVEL.get(qName));
+			addCurrentMessage(ITestMessage.Level.FatalError);
 
 		} else if (qName == XML_NODE_TEST_LOG || qName == XML_NODE_LAST_CHECKPOINT) {
 			/* just skip, do nothing */
