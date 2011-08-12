@@ -18,6 +18,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.graphics.Point;
@@ -65,6 +66,7 @@ public class ResultsView extends ViewPart {
 	public void createPartControl(Composite parent) {
 		TestingSessionsManager sessionsManager = Activator.getDefault().getTestingSessionsManager();
 		IWorkbench workbench = Activator.getDefault().getWorkbench();
+		Clipboard clipboard = new Clipboard(parent.getDisplay());
 
 		this.parent = parent;
 		GridLayout gridLayout = new GridLayout();
@@ -75,7 +77,7 @@ public class ResultsView extends ViewPart {
 		currentOrientation = getActualOrientation(orientation);
 
 		progressCountPanel = new ProgressCountPanel(parent, currentOrientation);
-		resultsPanel = new ResultsPanel(parent, sessionsManager, workbench, getSite());
+		resultsPanel = new ResultsPanel(parent, sessionsManager, workbench, getSite(), clipboard);
 		uiUpdater = new UIUpdater(this, resultsPanel.getTestsHierarchyViewer(), progressCountPanel, sessionsManager);
 		configureActionsBars(sessionsManager);
 		
