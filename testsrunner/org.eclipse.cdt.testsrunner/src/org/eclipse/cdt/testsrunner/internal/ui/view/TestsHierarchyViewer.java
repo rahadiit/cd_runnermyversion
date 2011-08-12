@@ -38,6 +38,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
@@ -195,9 +196,11 @@ public class TestsHierarchyViewer {
 	private boolean showTime = true;
 	private FailedOnlyFilter failedOnlyFilter = null;
 	private boolean showTestsHierarchy = true;
+	private Clipboard clipboard;
 
 	
-	public TestsHierarchyViewer(Composite parent, IWorkbenchPartSite site) {
+	public TestsHierarchyViewer(Composite parent, IWorkbenchPartSite site, Clipboard clipboard) {
+		this.clipboard = clipboard;
 		treeViewer = new TreeViewer(parent, SWT.V_SCROLL | SWT.MULTI);
 		treeViewer.setContentProvider(new TestTreeContentProvider());
 		treeViewer.setLabelProvider(new ColoringLabelProvider(new TestLabelProvider()));
@@ -224,7 +227,10 @@ public class TestsHierarchyViewer {
 			!selection.isEmpty() && 
 			(testingSession.getTestsRunnerInfo().isAllowedMultipleTestFilter() || (selection.size() == 1))
 		);
+		Action copyAction = new CopySelectedTestsAction(selection, clipboard);
+		
 		manager.add(rerunAction);
+		manager.add(copyAction);
 	}
 
 	public void setTestingSession(ITestingSession testingSession) {
