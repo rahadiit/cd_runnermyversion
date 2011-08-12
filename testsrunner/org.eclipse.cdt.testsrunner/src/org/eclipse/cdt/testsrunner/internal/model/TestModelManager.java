@@ -79,9 +79,11 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 	}
 
 	public void testingStarted() {
-		// Notify listeners
-		for (ITestingSessionListener listener : listeners) {
-			listener.testingStarted();
+		synchronized (listeners) {
+			// Notify listeners
+			for (ITestingSessionListener listener : listeners) {
+				listener.testingStarted();
+			}
 		}
 	}
 
@@ -110,9 +112,11 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 		});
 		usedTestSuites.clear();
 		
-		// Notify listeners
-		for (ITestingSessionListener listener : listeners) {
-			listener.testingFinished();
+		synchronized (listeners) {
+			// Notify listeners
+			for (ITestingSessionListener listener : listeners) {
+				listener.testingFinished();
+			}
 		}
 	}
 	
@@ -122,17 +126,21 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 		if (newTestSuite == null) {
 			newTestSuite = new TestSuite(name, currTestSuite);
 			currTestSuite.addTestSuite(newTestSuite);
-			// Notify listeners
-			for (ITestingSessionListener listener : listeners) {
-				listener.addTestSuite(currTestSuite, newTestSuite);
+			synchronized (listeners) {
+				// Notify listeners
+				for (ITestingSessionListener listener : listeners) {
+					listener.addTestSuite(currTestSuite, newTestSuite);
+				}
 			}
 		}
 		testSuitesStack.push(newTestSuite);
 		usedTestSuites.add(newTestSuite);
 		
 		// Notify listeners
-		for (ITestingSessionListener listener : listeners) {
-			listener.enterTestSuite(newTestSuite);
+		synchronized (listeners) {
+			for (ITestingSessionListener listener : listeners) {
+				listener.enterTestSuite(newTestSuite);
+			}
 		}
 	}
 
@@ -140,8 +148,10 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 		exitTestCase();
 		TestSuite testSuite = testSuitesStack.pop();
 		// Notify listeners
-		for (ITestingSessionListener listener : listeners) {
-			listener.exitTestSuite(testSuite);
+		synchronized (listeners) {
+			for (ITestingSessionListener listener : listeners) {
+				listener.exitTestSuite(testSuite);
+			}
 		}
 	}
 
@@ -152,14 +162,18 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 			currentTestCase = new TestCase(name, currTestSuite);
 			currTestSuite.addTestCase(currentTestCase);
 			// Notify listeners
-			for (ITestingSessionListener listener : listeners) {
-				listener.addTestCase(currTestSuite, currentTestCase);
+			synchronized (listeners) {
+				for (ITestingSessionListener listener : listeners) {
+					listener.addTestCase(currTestSuite, currentTestCase);
+				}
 			}
 		}
 		currentTestCase.setStatus(ITestItem.Status.Skipped);
-		// Notify listeners
-		for (ITestingSessionListener listener : listeners) {
-			listener.enterTestCase(currentTestCase);
+		synchronized (listeners) {
+			// Notify listeners
+			for (ITestingSessionListener listener : listeners) {
+				listener.enterTestCase(currentTestCase);
+			}
 		}
 	}
 
@@ -176,9 +190,11 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 		if (currentTestCase != null) {
 			TestCase testCase = currentTestCase;
 			currentTestCase = null;
-			// Notify listeners
-			for (ITestingSessionListener listener : listeners) {
-				listener.exitTestCase(testCase);
+			synchronized (listeners) {
+				// Notify listeners
+				for (ITestingSessionListener listener : listeners) {
+					listener.exitTestCase(testCase);
+				}
 			}
 		}
 	}
@@ -206,11 +222,15 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 	}
 
 	public void addChangesListener(ITestingSessionListener listener) {
-		listeners.add(listener);
+		synchronized (listeners) {
+			listeners.add(listener);
+		}
 	}
 
 	public void removeChangesListener(ITestingSessionListener listener) {
-		listeners.remove(listener);
+		synchronized (listeners) {
+			listeners.remove(listener);
+		}
 	}
 	
 }
