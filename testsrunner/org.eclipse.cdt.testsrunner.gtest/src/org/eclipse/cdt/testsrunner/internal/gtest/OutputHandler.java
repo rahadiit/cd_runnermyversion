@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -12,6 +13,7 @@ import java.util.regex.Pattern;
 import org.eclipse.cdt.testsrunner.model.ITestModelUpdater;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestMessage;
+import org.eclipse.cdt.testsrunner.model.TestingException;
 
 
 public class OutputHandler {
@@ -44,7 +46,7 @@ public class OutputHandler {
 			return matcher.group(groupNumber);
 		}
 		
-		public void onEnter(State previousState) {}
+		public void onEnter(State previousState) throws TestingException {}
 
 		public void onExit(State nextState) {}
 	}
@@ -65,9 +67,16 @@ public class OutputHandler {
 			super(enterRegex, groupCount);
 		}
 
-		public void onEnter(State previousState) {
-			// TODO: Check: current TS == group(1)
-			//if (modelUpdater.currentTestSuite().getName().equals(group(1))) ...
+		public void onEnter(State previousState) throws TestingException {
+			String lastTestSuiteName = modelUpdater.currentTestSuite().getName();
+			if (!lastTestSuiteName.equals(group(1))) {
+				generateInternalError(
+					MessageFormat.format(
+						"A test case \"{0}\" belongs to test suite \"{1}\", but the last started suite is \"{2}\".",
+						group(2), group(1), lastTestSuiteName
+					)
+				);
+			}
 			modelUpdater.enterTestCase(group(2));
 		}
 	}
@@ -81,7 +90,7 @@ public class OutputHandler {
 			super(enterRegex, groupCount);
 		}
 		
-		public void onEnter(State previousState) {
+		public void onEnter(State previousState) throws TestingException {
 			String fileNameIfLinePresent = group(2);
 			String fileNameIfLineAbsent = group(6);
 			String lineNumberCommon = group(4);
@@ -94,14 +103,16 @@ public class OutputHandler {
 					messageFileName = fileNameIfLinePresent;
 					messageLineNumber = Integer.parseInt(lineNumberVS.trim());
 				} else {
-					// TODO: Internal error: unknown location format!
+					if (!modelUpdater.currentTestSuite().getName().equals(group(1))) {
+						generateInternalError("Unknown location format.");
+					}
 				}
 			} else if (fileNameIfLineAbsent != null) {
 				if (lineNumberCommon == null && lineNumberVS == null) {
 					messageFileName = fileNameIfLineAbsent;
 					messageLineNumber = 1;
 				} else {
-					// TODO: Internal error: unknown location format!
+					generateInternalError("Unknown location format.");
 				}
 			}
 			// Check special case when file is not known - reset location
@@ -167,9 +178,25 @@ public class OutputHandler {
 			super(enterRegex, groupCount);
 		}
 		
-		public void onEnter(State previousState) {
-			// TODO: Check: current TS == group(2)
-			// TODO: Check: current TC == group(3)
+		public void onEnter(State previousState) throws TestingException {
+			String lastTestSuiteName = modelUpdater.currentTestSuite().getName();
+			if (!lastTestSuiteName.equals(group(2))) {
+				generateInternalError(
+					MessageFormat.format(
+						"A test case \"{0}\" belongs to test suite \"{1}\", but the last started suite is \"{2}\".",
+						group(2), group(1), lastTestSuiteName
+					)
+				);					
+			}
+			String lastTestCaseName = modelUpdater.currentTestCase().getName();
+			if (!lastTestCaseName.equals(group(3))) {
+				generateInternalError(
+						MessageFormat.format(
+							"End of test case \"{0}\" is not expected, because the last started case is \"{1}\".",
+							group(3), lastTestCaseName
+						)
+					);					
+			}
 			String testStatusStr = group(1);
 			ITestItem.Status testStatus = ITestItem.Status.Skipped;
 			if (testStatusStr.equals(testStatusOk)) {
@@ -177,7 +204,7 @@ public class OutputHandler {
 			} else if (testStatusStr.equals(testStatusFailed)) {
 				testStatus = ITestItem.Status.Failed;
 			} else {
-				// TODO: Format error!
+				generateInternalError(MessageFormat.format("Test status value \"{0}\" is unknown.", testStatusStr));
 			}
 			modelUpdater.setTestingTime(Integer.parseInt(group(5)));
 			modelUpdater.setTestStatus(testStatus);
@@ -191,8 +218,16 @@ public class OutputHandler {
 			super(enterRegex, groupCount);
 		}
 		
-		public void onEnter(State previousState) {
-			// TODO: Check: current TS == group(1)
+		public void onEnter(State previousState) throws TestingException {
+			String lastTestSuiteName = modelUpdater.currentTestSuite().getName();
+			if (!lastTestSuiteName.equals(group(1))) {
+				generateInternalError(
+					MessageFormat.format(
+						"End of test suite \"{0}\" is not expected, because the last started suite is \"{1}\".",
+						group(1), lastTestSuiteName
+					)
+				);					
+			}
 			modelUpdater.exitTestSuite();
 		}
 	}
@@ -257,7 +292,7 @@ public class OutputHandler {
 		this.modelUpdater = modelUpdater;
 	}
 	
-	public void run(InputStream inputStream) throws IOException {
+	public void run(InputStream inputStream) throws IOException, TestingException {
 		// Initialize input stream reader
 		InputStreamReader streamReader = new InputStreamReader(inputStream);
 		BufferedReader reader = new BufferedReader(streamReader);
@@ -287,16 +322,19 @@ public class OutputHandler {
         	//       lines without an error
         }
 	}
+	
+	private void generateInternalError(String additionalInfo) throws TestingException
+	{
+		throw new TestingException("Unknown error during parsing Google Test module output: "+additionalInfo);
+	}
 
-	private boolean checkStateMachine() {
+	private void checkStateMachine() {
 		// Check if only final state has no transitions
 		for (State state : transitions.keySet()) {
 			if (transitions.get(state).length == 0 && state != stateFinal) {
-				// TODO: Internal error!
-				return false;
+				Activator.logErrorMessage("Google Test output parsing state machine check was failed: only final state should have no transitions");
 			}
 		}
-		return true;
 	}
 	
 	private State from(State fromState) {

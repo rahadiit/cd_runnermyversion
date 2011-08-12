@@ -41,6 +41,9 @@ public class UIUpdater {
 			Display.getDefault().syncExec(new Runnable() {
 				
 				public void run() {
+					resultsView.setCaption(
+						testItem.getName()+" - "+TestPathUtils.getTestItemPath(testItem.getParent())
+					);
 					testsHierarchyViewer.getTreeViewer().update(testItem, null);
 					if (autoScroll) {
 						testsHierarchyViewer.getTreeViewer().reveal(testItem);
@@ -102,6 +105,7 @@ public class UIUpdater {
 			Display.getDefault().syncExec(new Runnable() {
 				
 				public void run() {
+					resultsView.setCaption(testingSession.getStatusMessage());
 					progressCountPanel.updateInfoFromSession();
 					testsHierarchyViewer.getTreeViewer().refresh();
 					// TODO: Move from here!
@@ -119,6 +123,7 @@ public class UIUpdater {
 					testsHierarchyViewer.getTreeViewer().expandToLevel(2);
 					// TODO: Move from here!
 					resultsView.updateActionsAfterRunning();
+					resultsView.setCaption(testingSession.getStatusMessage());
 				}
 			});
 		}
@@ -138,6 +143,7 @@ public class UIUpdater {
 					public void run() {
 						progressCountPanel.setTestingSession(testingSession);
 						testsHierarchyViewer.setTestingSession(testingSession);
+						resultsView.setCaption(testingSession.getStatusMessage());
 					}
 				});
 				// TODO: Update actions!

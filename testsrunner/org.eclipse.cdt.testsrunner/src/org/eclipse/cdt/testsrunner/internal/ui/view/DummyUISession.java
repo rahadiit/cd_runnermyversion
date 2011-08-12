@@ -43,7 +43,7 @@ public class DummyUISession implements ITestingSession {
 	}
 
 	public boolean isFinished() {
-		return true;
+		return false;
 	}
 
 	public ITestModelAccessor getModelAccessor() {
@@ -56,6 +56,10 @@ public class DummyUISession implements ITestingSession {
 
 	public ITestsRunnerInfo getTestsRunnerInfo() {
 		return null;
+	}
+
+	public String getStatusMessage() {
+		return ""; //$NON-NLS-1$
 	}
 
 }
