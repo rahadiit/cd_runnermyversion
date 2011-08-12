@@ -11,6 +11,7 @@
 package org.eclipse.cdt.testsrunner.internal.model;
 
 import java.io.InputStream;
+import java.text.MessageFormat;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -25,6 +26,7 @@ import org.eclipse.cdt.testsrunner.model.ITestModelAccessor;
 import org.eclipse.cdt.testsrunner.model.ITestSuite;
 import org.eclipse.cdt.testsrunner.model.ITestingSession;
 import org.eclipse.cdt.testsrunner.model.ITestingSessionListener;
+import org.eclipse.cdt.testsrunner.model.TestingException;
 import org.eclipse.debug.core.ILaunch;
 
 /**
@@ -43,6 +45,7 @@ public class TestingSession implements ITestingSession {
 	private boolean hasErrors = false;
 	private boolean wasStopped = false;
 	private boolean finished = false;
+	private String statusMessage = "Starting...";
 	
 	
 	class TestCasesCounter implements IModelVisitor {
@@ -51,6 +54,22 @@ public class TestingSession implements ITestingSession {
 		
 		public void visit(ITestCase testCase) {
 			++result;
+		}
+		
+		public void visit(ITestSuite testSuite) {}
+		public void visit(ITestMessage testMessage) {}
+		public void leave(ITestSuite testSuite) {}
+		public void leave(ITestCase testCase) {}
+		public void leave(ITestMessage testMessage) {}
+	}
+
+	
+	class TestingTimeCounter implements IModelVisitor {
+		
+		public int result = 0;
+		
+		public void visit(ITestCase testCase) {
+			result += testCase.getTestingTime();
 		}
 		
 		public void visit(ITestSuite testSuite) {}
@@ -114,7 +133,17 @@ public class TestingSession implements ITestingSession {
 
 	public void run(InputStream inputStream) {
 		modelManager.testingStarted();
-		testsRunner.run(modelManager, inputStream);
+		try {
+			testsRunner.run(modelManager, inputStream);
+
+			TestingTimeCounter testingTimeCounter = new TestingTimeCounter();
+			getModelAccessor().getRootSuite().visit(testingTimeCounter);
+			statusMessage = MessageFormat.format("Finished after {0} seconds", testingTimeCounter.result/1000.0);
+		} catch (TestingException e) {
+			statusMessage = e.getLocalizedMessage();
+			hasErrors = true;
+		}
+		finished = true;
 		modelManager.testingFinished();
 	}
 
@@ -156,6 +185,10 @@ public class TestingSession implements ITestingSession {
 	
 	public TestsRunnerInfo getTestsRunnerInfo() {
 		return testsRunnerInfo;
+	}
+	
+	public String getStatusMessage() {
+		return statusMessage;
 	}
 
 }

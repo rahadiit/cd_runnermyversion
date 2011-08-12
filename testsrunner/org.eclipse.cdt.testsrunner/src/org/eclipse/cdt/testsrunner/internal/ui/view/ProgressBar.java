@@ -97,7 +97,7 @@ public class ProgressBar extends Canvas {
 		if (testingSession.getTotalCounter() > 0) {
 			newColorBarWidth = testingSession.getCurrentCounter()*(r.width-2)/testingSession.getTotalCounter();
 		} else {
-			newColorBarWidth = testingSession.getCurrentCounter() == 0 ? 0 : (r.width-2)/2;
+			newColorBarWidth = testingSession.getCurrentCounter() > 0 ? (r.width-2)/2 : (testingSession.isFinished() ? r.width-2 : 0);
 		}
 		colorBarWidth = Math.max(0, newColorBarWidth);
 	}

@@ -148,7 +148,7 @@ public class TestsHierarchyViewer {
 			StringBuilder sb = new StringBuilder();
 			sb.append(testItem.getName());
 			if (!showTestsHierarchy) {
-				sb.append(getTestItemPath(testItem));
+				sb.append(TestPathUtils.getTestItemPath(testItem));
 			}
 			if (showTime) {
 				sb.append(getTestingTimeString(element));
@@ -162,7 +162,7 @@ public class TestsHierarchyViewer {
 			labelBuf.append(testItem.getName());
 			StyledString name = new StyledString(labelBuf.toString());
 			if (!showTestsHierarchy) {
-				String itemPath = getTestItemPath(testItem);
+				String itemPath = " - "+TestPathUtils.getTestItemPath(testItem);
 				labelBuf.append(itemPath);
 				name = StyledCellLabelProvider.styleDecoratedString(labelBuf.toString(), StyledString.QUALIFIER_STYLER, name);
 			}
@@ -179,26 +179,6 @@ public class TestsHierarchyViewer {
 			return (element instanceof ITestItem) ? " ("+Double.toString(((ITestItem)element).getTestingTime()/1000.0)+" s)" : "";
 		}
 		
-		private String getTestItemPath(ITestItem testItem) {
-			StringBuilder itemPath = new StringBuilder();
-			List<ITestItem> parentItems = new ArrayList<ITestItem>();
-			ITestItem parent = testItem.getParent();
-			while (parent != null) {
-				parentItems.add(parent);
-				parent = parent.getParent();
-			}
-			if (!parentItems.isEmpty()) {
-				itemPath.append(" - ");
-				for (int i = parentItems.size()-2/* exclude unnamed root test suite */; i >= 0; --i) {
-					itemPath.append(parentItems.get(i).getName());
-					if (i != 0) {
-						itemPath.append(".");
-					}
-				}
-			}
-			// TODO: Implement caching of the last path
-			return itemPath.toString();
-		}
 	}
 	
 	class FailedOnlyFilter extends ViewerFilter {

@@ -13,6 +13,7 @@ package org.eclipse.cdt.testsrunner.launcher;
 import java.io.InputStream;
 
 import org.eclipse.cdt.testsrunner.model.ITestModelUpdater;
+import org.eclipse.cdt.testsrunner.model.TestingException;
 
 
 /**
@@ -23,6 +24,6 @@ public interface ITestsRunner {
 
 	public String[] configureLaunchParameters(String[] commandLine, String[][] testPaths);
 	
-	public void run(ITestModelUpdater modelUpdater, InputStream inputStream);
+	public void run(ITestModelUpdater modelUpdater, InputStream inputStream) throws TestingException;
 	
 }

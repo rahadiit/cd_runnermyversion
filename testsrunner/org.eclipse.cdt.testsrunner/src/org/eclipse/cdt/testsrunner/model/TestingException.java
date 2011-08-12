@@ -10,34 +10,21 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.model;
 
-import org.eclipse.debug.core.ILaunch;
-
 
 /**
  * TODO: Add descriptions
  * 
  */
-public interface ITestingSession {
+public class TestingException extends Exception {
 
-	public int getCurrentCounter();
+    /**
+     * Constructs an exception with the given descriptive message.
+     *
+     * @param msg Description of the exception which has occurred.
+     */
+    public TestingException(String msg) {
+        super(msg);
+    }
 
-	public int getTotalCounter();
-	
-	public int getCount(ITestItem.Status status);
 
-	public boolean hasErrors();
-
-	public boolean wasStopped();
-
-	public boolean isFinished();
-	
-	public ITestModelAccessor getModelAccessor();
-
-	public ILaunch getLaunch();
-	
-	public ITestsRunnerInfo getTestsRunnerInfo();
-
-	public String getStatusMessage();
-	
 }
-	

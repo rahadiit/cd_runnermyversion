@@ -196,4 +196,8 @@ public class ResultsView extends ViewPart {
 		rerunAction.setEnabled(true);
 	}
 	
+	public void setCaption(String message) {
+		setContentDescription(message);
+	}
+	
 }
