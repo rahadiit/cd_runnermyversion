@@ -17,12 +17,12 @@ import org.eclipse.jface.action.Action;
 /**
  * Toggles tests tree hierarchy auto-scroll
  */
-public class ShowTestsHierarchyAction extends Action {
+public class ShowTestsInHierarchyAction extends Action {
 
 	private TestsHierarchyViewer testsHierarchyViewer;
 
 
-	public ShowTestsHierarchyAction(TestsHierarchyViewer testsHierarchyViewer) {
+	public ShowTestsInHierarchyAction(TestsHierarchyViewer testsHierarchyViewer) {
 		super("Show Tests in &Hierarchy", AS_CHECK_BOX); //$NON-NLS-1$
 		this.testsHierarchyViewer = testsHierarchyViewer;
 		setText("Show Tests in &Hierarchy");

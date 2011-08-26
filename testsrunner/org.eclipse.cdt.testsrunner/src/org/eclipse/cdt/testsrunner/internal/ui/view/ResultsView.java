@@ -56,7 +56,7 @@ public class ResultsView extends ViewPart {
 	private ToggleOrientationAction[] toggleOrientationActions;
 	private Action historyAction;
 	private Action showFailedOnly;
-	private Action showTestsHierarchyAction;
+	private Action showTestsInHierarchyAction;
 	private Action showTimeAction;
 	private Action scrollLockAction;
 
@@ -75,7 +75,7 @@ public class ResultsView extends ViewPart {
 	// Persistence tags
 	static final String TAG_ORIENTATION= "orientation"; //$NON-NLS-1$
 	static final String TAG_SHOW_FAILED_ONLY= "showFailedOnly"; //$NON-NLS-1$
-	static final String TAG_TESTS_HIERARCHY= "testsInHierarchy"; //$NON-NLS-1$
+	static final String TAG_SHOW_TESTS_IN_HIERARCHY= "showTestsInHierarchy"; //$NON-NLS-1$
 	static final String TAG_SHOW_TIME= "showTime"; //$NON-NLS-1$
 	static final String TAG_SCROLL_LOCK= "scrollLock"; //$NON-NLS-1$
 	static final String TAG_HISTORY_SIZE= "history_size"; //$NON-NLS-1$
@@ -135,7 +135,7 @@ public class ResultsView extends ViewPart {
 		actionBars.setGlobalActionHandler(ActionFactory.PREVIOUS.getId(), previousAction);
 		
 		showFailedOnly = new ShowFailedOnlyAction(resultsPanel);
-		showTestsHierarchyAction = new ShowTestsHierarchyAction(resultsPanel.getTestsHierarchyViewer());
+		showTestsInHierarchyAction = new ShowTestsInHierarchyAction(resultsPanel.getTestsHierarchyViewer());
 		showTimeAction = new ShowTimeAction(resultsPanel.getTestsHierarchyViewer());
 		scrollLockAction = new ScrollLockAction(uiUpdater);
 		rerunAction = new RerunAction(sessionsManager);
@@ -155,7 +155,7 @@ public class ResultsView extends ViewPart {
 		
 		// Configure view menu
 		IMenuManager viewMenu = actionBars.getMenuManager();
-		viewMenu.add(showTestsHierarchyAction);
+		viewMenu.add(showTestsInHierarchyAction);
 		viewMenu.add(showTimeAction);
 		viewMenu.add(new Separator());
 		MenuManager layoutSubMenu = new MenuManager("&Layout");
@@ -247,7 +247,7 @@ public class ResultsView extends ViewPart {
 			}
 			resultsPanel.restoreState(memento);
 			restoreActionChecked(memento, TAG_SHOW_FAILED_ONLY, showFailedOnly);
-			restoreActionChecked(memento, TAG_TESTS_HIERARCHY, showTestsHierarchyAction);
+			restoreActionChecked(memento, TAG_SHOW_TESTS_IN_HIERARCHY, showTestsInHierarchyAction);
 			restoreActionChecked(memento, TAG_SHOW_TIME, showTimeAction);
 			restoreActionChecked(memento, TAG_SCROLL_LOCK, scrollLockAction);
 			Integer historySize = memento.getInteger(TAG_HISTORY_SIZE);
@@ -270,7 +270,7 @@ public class ResultsView extends ViewPart {
 		memento.putInteger(TAG_ORIENTATION, orientation.ordinal());
 		resultsPanel.saveState(memento);
 		memento.putBoolean(TAG_SHOW_FAILED_ONLY, showFailedOnly.isChecked());
-		memento.putBoolean(TAG_TESTS_HIERARCHY, showTestsHierarchyAction.isChecked());
+		memento.putBoolean(TAG_SHOW_TESTS_IN_HIERARCHY, showTestsInHierarchyAction.isChecked());
 		memento.putBoolean(TAG_SHOW_TIME, showTimeAction.isChecked());
 		memento.putBoolean(TAG_SCROLL_LOCK, scrollLockAction.isChecked());
 		memento.putInteger(TAG_HISTORY_SIZE, sessionsManager.getHistorySize());

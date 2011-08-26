@@ -30,7 +30,6 @@ import org.eclipse.cdt.testsrunner.model.ITestSuite;
 
 /**
  * TODO: Add descriptions
- * TODO: ModelManager (case insensitive) => TestModelUpdater, "Model Manager" (ci) => ??
  */
 public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 
