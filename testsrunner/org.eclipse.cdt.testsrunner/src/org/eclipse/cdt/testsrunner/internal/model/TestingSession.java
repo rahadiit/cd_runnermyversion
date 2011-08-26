@@ -131,8 +131,17 @@ public class TestingSession implements ITestingSession {
 		});
 	}
 
-	public String [] configureLaunchParameters(String[] parameters, String [][] testsFilter) {
-		return testsRunner.configureLaunchParameters(parameters, testsFilter);
+	public String [] configureLaunchParameters(String[] parameters, String [][] testsFilter) throws TestingException {
+		try {
+			return testsRunner.configureLaunchParameters(parameters, testsFilter);
+			
+		} catch (TestingException e) {
+			statusMessage = e.getLocalizedMessage();
+			hasErrors = true;
+			finished = true;
+			modelManager.testingFinished();
+			throw e;
+		}
 	}
 
 	public void run(InputStream inputStream) {

@@ -14,20 +14,49 @@ import org.xml.sax.SAXException;
 
 public class QtTestsRunner implements ITestsRunner {
 
-	public String[] configureLaunchParameters(String[] commandLine, String[][] testPaths) {
+	private boolean isSpecialTestPath(String[] testPath) {
+		// Root test suite should not be explicitly specified for rerun
+		if (testPath.length <= 1) {
+			return true;
+		}
+		// "initTestCase" & "cleanupTestCase" are special test case names and they should be skipped too
+		String testName = testPath[testPath.length-1];
+		return testName.equals("initTestCase") || testName.equals("cleanupTestCase");
+	}
+	
+	private int getNonSpecialTestsCount(String[][] testPaths) {
+		int result = 0;
+		if (testPaths != null) {
+			for (int i = 0; i < testPaths.length; i++) {
+				String[] testPath = testPaths[i];
+				result += isSpecialTestPath(testPath) ? 0 : 1;
+			}
+		}
+		return result;
+	}
+	
+	public String[] configureLaunchParameters(String[] commandLine, String[][] testPaths) throws TestingException {
 		final String[] qtParameters = {
 			"-xml", //$NON-NLS-1$
 			"-flush", //$NON-NLS-1$
 		};
 
-		int testPathsLength = testPaths != null ? testPaths.length : 0;
+		int testPathsLength = getNonSpecialTestsCount(testPaths);
+		// If there is only special test cases were specified
+		if ((testPathsLength == 0) != (testPaths.length == 0)) {
+			throw new TestingException("There is no test cases to rerun (initialization and finalization test cases are not taken into account)");
+		}
 		String[] result = new String[commandLine.length + qtParameters.length + testPathsLength];
 		System.arraycopy(commandLine, 0, result, 0, commandLine.length);
 		System.arraycopy(qtParameters, 0, result, commandLine.length, qtParameters.length);
 		// Add test filters (if necessary)
-		for (int i = 0; i < testPathsLength; i++) {
+		int resultIdx = commandLine.length + qtParameters.length;
+		for (int i = 0; i < testPaths.length; i++) {
 			String[] testPath = testPaths[i];
-			result[commandLine.length + qtParameters.length+i] = testPath[testPath.length-1];
+			if (!isSpecialTestPath(testPath)) {
+				result[resultIdx] = testPath[testPath.length-1];
+				resultIdx++;
+			}
 		}
 		return result;
 	}
