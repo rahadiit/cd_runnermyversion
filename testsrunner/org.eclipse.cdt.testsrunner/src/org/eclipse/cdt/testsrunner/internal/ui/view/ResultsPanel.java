@@ -142,6 +142,7 @@ public class ResultsPanel {
 		Boolean checked = memento.getBoolean(key);
 		if (checked != null) {
 			action.setChecked(checked);
+			action.run();
 		}
 	}
 
