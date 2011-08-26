@@ -19,7 +19,7 @@ package org.eclipse.cdt.testsrunner.model;
 public interface ITestItem {
 
 	// NOTE: Order of values is significant (cause enum values comparison is necessary)
-	enum Status {
+	public enum Status {
 		NotRun,
 		Skipped,
 		Passed,
@@ -31,18 +31,18 @@ public interface ITestItem {
 		}
 	}
 	
-	String getName();
+	public String getName();
 	
-	Status getStatus();
+	public Status getStatus();
 
-	int getTestingTime();
+	public int getTestingTime();
 
-	ITestSuite getParent();
+	public ITestSuite getParent();
 	
-	boolean hasChildren();
+	public boolean hasChildren();
 
-	ITestItem[] getChildren();
+	public ITestItem[] getChildren();
 	
-	void visit(IModelVisitor visitor);
+	public void visit(IModelVisitor visitor);
 
 }

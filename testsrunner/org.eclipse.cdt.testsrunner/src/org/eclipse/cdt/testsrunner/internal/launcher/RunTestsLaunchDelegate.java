@@ -14,6 +14,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.cdt.core.IBinaryParser.IBinaryObject;
 import org.eclipse.cdt.core.model.ICProject;
@@ -27,6 +29,9 @@ import org.eclipse.cdt.debug.core.cdi.model.ICDIRuntimeOptions;
 import org.eclipse.cdt.debug.core.cdi.model.ICDITarget;
 import org.eclipse.cdt.launch.AbstractCLaunchDelegate;
 import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.model.TestingSession;
+import org.eclipse.cdt.testsrunner.internal.ui.view.TestPathUtils;
+import org.eclipse.cdt.testsrunner.model.TestingException;
 import org.eclipse.cdt.launch.internal.ui.LaunchUIPlugin;
 import org.eclipse.cdt.utils.pty.PTY;
 import org.eclipse.cdt.utils.spawner.ProcessFactory;
@@ -88,11 +93,22 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			command.addAll(Arrays.asList(arguments));
 			String[] commandArray = command.toArray(new String[command.size()]);
 			monitor.worked(5);
-			String testsRunnerId = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String)null);
-			commandArray = Activator.getDefault().getTestsRunnersManager().configureLaunchParameters(testsRunnerId, commandArray);
-			Process process = exec(commandArray, getEnvironment(config), wd, testsRunnerId, launch);
-			monitor.worked(3);
-			DebugPlugin.newProcess(launch, process, renderProcessLabel(commandArray[0]));
+			
+			TestingSession testingSession = Activator.getDefault().getTestingSessionsManager().newSession(launch);
+			
+			// Unpack tests filters
+			List<String> packedTestsFilter = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_FILTER, Collections.EMPTY_LIST);
+			String [][] testsFilter = TestPathUtils.unpackTestPaths(packedTestsFilter.toArray(new String[packedTestsFilter.size()]));
+			// Configure test module run parameters with Tests Runner 
+			try {
+				commandArray = testingSession.configureLaunchParameters(commandArray, testsFilter);
+				Process process = exec(commandArray, getEnvironment(config), wd, testingSession);
+				monitor.worked(3);
+				DebugPlugin.newProcess(launch, process, renderProcessLabel(commandArray[0]));
+			} catch (TestingException e) {
+				// Do nothing, just do not run the process in case of error.
+				// Message showing is done in TestingSession.configureLaunchParameters()
+			}
 			
 		} finally {
 			monitor.done();
@@ -189,7 +205,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 	 *         cancelled
 	 * @see Runtime
 	 */
-	protected Process exec(String[] cmdLine, String[] environ, File workingDirectory, String testsRunnerId, ILaunch launch) throws CoreException {
+	protected Process exec(String[] cmdLine, String[] environ, File workingDirectory, TestingSession testingSession) throws CoreException {
 		Process p = null;
 		try {
 			if (workingDirectory == null) {
@@ -211,8 +227,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 						}
 					}
 				});
-				// TODO: Handle incorrect tests runner somehow
-				Activator.getDefault().getTestsRunnersManager().run(testsRunnerId, p.getInputStream(), launch);
+				testingSession.run(p.getInputStream());
 			}
 		} catch (IOException e) {
 			if (p != null) {
@@ -233,7 +248,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			if (handler != null) {
 				Object result = handler.handleStatus(status, this);
 				if (result instanceof Boolean && ((Boolean) result).booleanValue()) {
-					p = exec(cmdLine, environ, null, testsRunnerId, launch);
+					p = exec(cmdLine, environ, null, testingSession);
 				}
 			}
 		}

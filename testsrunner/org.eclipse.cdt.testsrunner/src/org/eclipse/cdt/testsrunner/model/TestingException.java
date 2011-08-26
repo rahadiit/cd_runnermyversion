@@ -10,22 +10,21 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.model;
 
+
 /**
  * TODO: Add descriptions
  * 
- * @noextend This interface is not intended to be extended by clients.
- * @noimplement This interface is not intended to be implemented by clients.
  */
-public interface ITestSuite extends ITestItem {
+public class TestingException extends Exception {
 
-	public ITestSuite getTestSuite(String name);
-	
-	public ITestSuite[] getTestSuites();
+    /**
+     * Constructs an exception with the given descriptive message.
+     *
+     * @param msg Description of the exception which has occurred.
+     */
+    public TestingException(String msg) {
+        super(msg);
+    }
 
-	public ITestCase getTestCase(String name);
-	
-	public ITestCase[] getTestCases();
-
-	public boolean hasChildren();
 
 }

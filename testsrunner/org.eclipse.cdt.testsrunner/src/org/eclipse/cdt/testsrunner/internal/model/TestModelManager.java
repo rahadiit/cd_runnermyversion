@@ -16,8 +16,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import org.eclipse.cdt.testsrunner.model.IModelManager;
-import org.eclipse.cdt.testsrunner.model.IModelManagerListener;
+import org.eclipse.cdt.testsrunner.model.IModelVisitor;
+import org.eclipse.cdt.testsrunner.model.ITestMessage;
+import org.eclipse.cdt.testsrunner.model.ITestModelAccessor;
+import org.eclipse.cdt.testsrunner.model.ITestModelUpdater;
+import org.eclipse.cdt.testsrunner.model.ITestingSession;
+import org.eclipse.cdt.testsrunner.model.ITestingSessionListener;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestItem.Status;
@@ -26,57 +30,63 @@ import org.eclipse.cdt.testsrunner.model.ITestSuite;
 
 /**
  * TODO: Add descriptions
- * 
  */
-public class ModelManager implements IModelManager {
+public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 
 	private Stack<TestSuite> testSuitesStack = new Stack<TestSuite>();
-	
 	private TestCase currentTestCase = null;
-	
-	private List<IModelManagerListener> changesListeners = new ArrayList<IModelManagerListener>();
-	
 	private Set<TestSuite> usedTestSuites = new HashSet<TestSuite>();
+	
+	private List<ITestingSessionListener> listeners = new ArrayList<ITestingSessionListener>();
 
 	
-	public ModelManager() {
-		testSuitesStack.push(new TestSuite("<root>", null)); //$NON-NLS-1$
+	class HierarchyCopier implements IModelVisitor {
+
+		public void visit(ITestSuite testSuite) {
+			// Do not copy root test suite
+			if (testSuite.getParent() != null) {
+				enterTestSuite(testSuite.getName());
+			}
+		}
+
+		public void leave(ITestSuite testSuite) {
+			// Do not copy root test suite
+			if (testSuite.getParent() != null) {
+				exitTestSuite();
+			}
+		}
+
+		public void visit(ITestCase testCase) {
+			enterTestCase(testCase.getName());
+			setTestStatus(TestCase.Status.NotRun);
+		}
+
+		public void leave(ITestCase testCase) {
+			exitTestCase();
+		}
+
+		public void visit(ITestMessage testMessage) {}
+		public void leave(ITestMessage testMessage) {}
 	}
 	
 
-	public void testingStarted(boolean restartPrevious) {
-		if (restartPrevious) {
-			// Mark all tests as NotRun before testing
-			getRootSuite().visit(new ModelVisitor() {
-				
-				public void visit(TestMessage testMessage) {}
-				
-				public void visit(TestCase testCase) {
-					testCase.reset();
-					testCase.setStatus(TestCase.Status.NotRun);
-				}
-				
-				public void visit(TestSuite testSuite) {}
-			});
-		} else {
-			// Start a new session
-			getRootSuite().clear();
+	public TestModelManager(ITestingSession previousSession) {
+		testSuitesStack.push(new TestSuite("<root>", null)); //$NON-NLS-1$
+		if (previousSession != null) {
+			previousSession.getModelAccessor().getRootSuite().visit(new HierarchyCopier());
 		}
-		usedTestSuites.clear();
-		
+	}
+
+	public void testingStarted() {
 		// Notify listeners
-		for (IModelManagerListener listener : changesListeners) {
-			listener.testingStarted(restartPrevious);
+		for (ITestingSessionListener listener : getListenersCopy()) {
+			listener.testingStarted();
 		}
 	}
 
 	public void testingFinished() {
 		// Remove all NotRun-tests and not used test suites (probably they were removed from test module)
 		getRootSuite().visit(new ModelVisitor() {
-			
-			public void visit(TestMessage testMessage) {}
-			
-			public void visit(TestCase testCase) {}
 			
 			public void visit(TestSuite testSuite) {
 				for (TestSuite childTestSuite : testSuite.getTestSuites()) {
@@ -90,11 +100,17 @@ public class ModelManager implements IModelManager {
 					}
 				}
 			}
+
+			public void visit(TestMessage testMessage) {}
+			public void visit(TestCase testCase) {}
+			public void leave(TestSuite testSuite) {}
+			public void leave(TestCase testCase) {}
+			public void leave(TestMessage testMessage) {}
 		});
 		usedTestSuites.clear();
 		
 		// Notify listeners
-		for (IModelManagerListener listener : changesListeners) {
+		for (ITestingSessionListener listener : getListenersCopy()) {
 			listener.testingFinished();
 		}
 	}
@@ -106,7 +122,7 @@ public class ModelManager implements IModelManager {
 			newTestSuite = new TestSuite(name, currTestSuite);
 			currTestSuite.addTestSuite(newTestSuite);
 			// Notify listeners
-			for (IModelManagerListener listener : changesListeners) {
+			for (ITestingSessionListener listener : getListenersCopy()) {
 				listener.addTestSuite(currTestSuite, newTestSuite);
 			}
 		}
@@ -114,7 +130,7 @@ public class ModelManager implements IModelManager {
 		usedTestSuites.add(newTestSuite);
 		
 		// Notify listeners
-		for (IModelManagerListener listener : changesListeners) {
+		for (ITestingSessionListener listener : getListenersCopy()) {
 			listener.enterTestSuite(newTestSuite);
 		}
 	}
@@ -123,7 +139,7 @@ public class ModelManager implements IModelManager {
 		exitTestCase();
 		TestSuite testSuite = testSuitesStack.pop();
 		// Notify listeners
-		for (IModelManagerListener listener : changesListeners) {
+		for (ITestingSessionListener listener : getListenersCopy()) {
 			listener.exitTestSuite(testSuite);
 		}
 	}
@@ -135,13 +151,13 @@ public class ModelManager implements IModelManager {
 			currentTestCase = new TestCase(name, currTestSuite);
 			currTestSuite.addTestCase(currentTestCase);
 			// Notify listeners
-			for (IModelManagerListener listener : changesListeners) {
+			for (ITestingSessionListener listener : getListenersCopy()) {
 				listener.addTestCase(currTestSuite, currentTestCase);
 			}
 		}
 		currentTestCase.setStatus(ITestItem.Status.Skipped);
 		// Notify listeners
-		for (IModelManagerListener listener : changesListeners) {
+		for (ITestingSessionListener listener : getListenersCopy()) {
 			listener.enterTestCase(currentTestCase);
 		}
 	}
@@ -160,7 +176,7 @@ public class ModelManager implements IModelManager {
 			TestCase testCase = currentTestCase;
 			currentTestCase = null;
 			// Notify listeners
-			for (IModelManagerListener listener : changesListeners) {
+			for (ITestingSessionListener listener : getListenersCopy()) {
 				listener.exitTestCase(testCase);
 			}
 		}
@@ -184,17 +200,26 @@ public class ModelManager implements IModelManager {
 		return (item == currentTestCase && item != null) || testSuitesStack.contains(item);
 	}
 	
-	public void addChangesListener(IModelManagerListener listener) {
-		changesListeners.add(listener);
-	}
-
-	public void removeChangesListener(IModelManagerListener listener) {
-		changesListeners.remove(listener);
-	}
-	
 	public TestSuite getRootSuite() {
 		return testSuitesStack.firstElement();
 	}
 
+	public void addChangesListener(ITestingSessionListener listener) {
+		synchronized (listeners) {
+			listeners.add(listener);
+		}
+	}
 
+	public void removeChangesListener(ITestingSessionListener listener) {
+		synchronized (listeners) {
+			listeners.remove(listener);
+		}
+	}
+	
+	private ITestingSessionListener[] getListenersCopy() {
+		synchronized (listeners) {
+			return listeners.toArray(new ITestingSessionListener[listeners.size()]);
+		}		
+	}
+	
 }

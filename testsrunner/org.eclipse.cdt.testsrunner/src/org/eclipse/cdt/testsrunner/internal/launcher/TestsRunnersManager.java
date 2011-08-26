@@ -10,17 +10,15 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.launcher;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.cdt.testsrunner.internal.Activator;
-import org.eclipse.cdt.testsrunner.internal.model.ModelManager;
 import org.eclipse.cdt.testsrunner.launcher.ITestsRunner;
+import org.eclipse.cdt.testsrunner.model.ITestsRunnerInfo;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.debug.core.ILaunch;
 
 /**
  * TODO: Add descriptions
@@ -29,19 +27,19 @@ import org.eclipse.debug.core.ILaunch;
 public class TestsRunnersManager {
 	
 	private static final String TESTS_RUNNER_EXTENSION_POINT_ID = "org.eclipse.cdt.testsrunner.TestsRunner"; //$NON-NLS-1$
+	private static final String TESTS_RUNNER_FEATURES_ELEMENT = "features"; //$NON-NLS-1$
+	private static final String TESTS_RUNNER_FEATURE_MULTIPLE_TEST_FILTER_ATTRIBUTE = "multipleTestFilter"; //$NON-NLS-1$
 	private static final String TESTS_RUNNER_ID_ATTRIBUTE = "id"; //$NON-NLS-1$
 	private static final String TESTS_RUNNER_NAME_ATTRIBUTE = "name"; //$NON-NLS-1$
 	private static final String TESTS_RUNNER_CLASS_ATTRIBUTE = "class"; //$NON-NLS-1$
 	private static final String TESTS_RUNNER_DESCRIPTION_ATTRIBUTE = "description"; //$NON-NLS-1$
 
 	private TestsRunnerInfo[] testsRunners = null;
-	ILaunch currLaunch = null;	
 
 	
-	public class TestsRunnerInfo {
-		private ITestsRunner testsRunner;
+	public class TestsRunnerInfo implements ITestsRunnerInfo {
 		private IConfigurationElement element;
-		
+
 		public TestsRunnerInfo(IConfigurationElement element) {
 			this.element = element;
 		}
@@ -59,18 +57,39 @@ public class TestsRunnersManager {
 			return result == null ? "" : result; //$NON-NLS-1$
 		}
 
-		public ITestsRunner getTestsRunner() {
-			if (testsRunner == null) {
-				try {
-					Object object = element.createExecutableExtension(TESTS_RUNNER_CLASS_ATTRIBUTE);
-					if (object instanceof ITestsRunner) {
-						testsRunner = (ITestsRunner)object;
-					}
-				} catch (CoreException e) {
-					Activator.log(e);
+		public ITestsRunner instantiateTestsRunner() {
+			try {
+				Object object = element.createExecutableExtension(TESTS_RUNNER_CLASS_ATTRIBUTE);
+				if (object instanceof ITestsRunner) {
+					return (ITestsRunner)object;
+				}
+			} catch (CoreException e) {
+				Activator.log(e);
+			}
+			return null;
+		}
+		
+		private IConfigurationElement getFeatures() {
+			IConfigurationElement[] featuresElements = element.getChildren(TESTS_RUNNER_FEATURES_ELEMENT);
+			if (featuresElements.length == 1) {
+				return featuresElements[0];
+			}
+			return null;
+		}
+		
+		private boolean getBooleanFeatureValue(String featureName, boolean defaultValue) {
+			IConfigurationElement features = getFeatures();
+			if (features != null) {
+				String attrValue = features.getAttribute(featureName);
+				if (attrValue != null) {
+					return Boolean.parseBoolean(attrValue);
 				}
 			}
-			return testsRunner;
+			return defaultValue;
+		}
+		
+		public boolean isAllowedMultipleTestFilter() {
+			return getBooleanFeatureValue(TESTS_RUNNER_FEATURE_MULTIPLE_TEST_FILTER_ATTRIBUTE, false);
 		}
 	}
 	
@@ -90,7 +109,7 @@ public class TestsRunnersManager {
 		return testsRunners;
 	}
 	
-	private TestsRunnerInfo findTestsRunner(String testsRunnerId) {
+	public TestsRunnerInfo getTestsRunner(String testsRunnerId) {
 		if (testsRunnerId!=null) {
 			for (TestsRunnerInfo testsRunner : getTestsRunnersInfo()) {
 				if (testsRunner.getId().equals(testsRunnerId)) {
@@ -101,23 +120,4 @@ public class TestsRunnersManager {
 		return null;
 	}
 	
-	public String[] configureLaunchParameters(String testsRunnerId, String[] parameters) {
-		TestsRunnerInfo testsRunner = findTestsRunner(testsRunnerId);
-		return testsRunner.getTestsRunner().configureLaunchParameters(parameters);
-	}
-
-	public void run(String testsRunnerId, InputStream inputStream, ILaunch launch) {
-		boolean restartPrevious = currLaunch == null ? false : (currLaunch.getLaunchConfiguration() == launch.getLaunchConfiguration());
-		currLaunch = launch;
-		TestsRunnerInfo testsRunner = findTestsRunner(testsRunnerId);
-		ModelManager modelManager = Activator.getDefault().getModelManager();
-		modelManager.testingStarted(restartPrevious);
-		testsRunner.getTestsRunner().run(modelManager, inputStream);
-		modelManager.testingFinished();
-	}
-	
-	public ILaunch getCurrentLaunch() {
-		return currLaunch;
-	}
-
 }

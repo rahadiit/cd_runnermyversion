@@ -11,14 +11,17 @@
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
 import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestLocation;
 import org.eclipse.cdt.testsrunner.model.ITestMessage;
+import org.eclipse.cdt.testsrunner.model.ITestMessage.Level;
 import org.eclipse.cdt.testsrunner.model.ITestSuite;
 import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -27,10 +30,12 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 
 
@@ -40,30 +45,67 @@ import org.eclipse.ui.PlatformUI;
  */
 public class MessagesPanel {
 
-	class MessagesCollector implements IModelVisitor {
+	enum LevelFilter {
+		Info(ISharedImages.IMG_OBJS_INFO_TSK, ITestMessage.Level.Info, ITestMessage.Level.Message),
+		Warning(ISharedImages.IMG_OBJS_WARN_TSK, ITestMessage.Level.Warning),
+		Error(ISharedImages.IMG_OBJS_ERROR_TSK, ITestMessage.Level.Error, ITestMessage.Level.FatalError, ITestMessage.Level.Exception);
+
+		private String imageId;
+		private ITestMessage.Level [] includedLevels;
 		
-		Set<ITestMessage> testMessages;
-		boolean collect = true;
-		
-		MessagesCollector(Set<ITestMessage> testMessages) {
-			this.testMessages = testMessages;
+		LevelFilter(String imageId, ITestMessage.Level... includedLevels) {
+			this.imageId = imageId;
+			this.includedLevels = includedLevels;
 		}
 		
-		public void visit(ITestMessage testMessage) {
-			if (collect) {
-				testMessages.add(testMessage);
+		public String getImageId() {
+			return imageId;
+		}
+		
+		public ITestMessage.Level [] getLevels() {
+			return includedLevels;
+		}
+		
+		public boolean isIncluded(ITestMessage.Level searchLevel) {
+			for (ITestMessage.Level currLevel : includedLevels) {
+				if (currLevel.equals(searchLevel)) {
+					return true;
+				}
 			}
+			return false;
 		}
-		
-		public void visit(ITestCase testCase) {
-			collect = !showFailedOnly || testCase.getStatus().isError();
-		}
-		
-		public void visit(ITestSuite testSuite) {}
 	}
 
 	class MessagesContentProvider implements IStructuredContentProvider {
 		
+		class MessagesCollector implements IModelVisitor {
+			
+			Set<ITestMessage> testMessages;
+			boolean collect = true;
+			
+			MessagesCollector(Set<ITestMessage> testMessages) {
+				this.testMessages = testMessages;
+			}
+			
+			public void visit(ITestMessage testMessage) {
+				if (collect) {
+					testMessages.add(testMessage);
+				}
+			}
+			
+			public void visit(ITestCase testCase) {
+				collect = !showFailedOnly || testCase.getStatus().isError();
+			}
+			
+			public void visit(ITestSuite testSuite) {}
+
+			public void leave(ITestSuite testSuite) {}
+
+			public void leave(ITestCase testCase) {}
+
+			public void leave(ITestMessage testMessage) {}
+		}
+
 		ITestMessage[] testMessages;
 		
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
@@ -163,49 +205,52 @@ public class MessagesPanel {
 			sb.append(message.getText());
 			return sb.toString();
 		}
+		
 		public Image getColumnImage(Object obj, int index) {
 			return getImage(obj);
 		}
+		
 		public Image getImage(Object obj) {
-			// TODO: Refactor this later!
-			String str = ISharedImages.IMG_OBJ_ELEMENT;
-			switch (((ITestMessage)obj).getLevel()) {
-				case Info:
-				case Message:
-					str = ISharedImages.IMG_OBJS_INFO_TSK;
+			Level level = ((ITestMessage)obj).getLevel();
+			String imageId = ISharedImages.IMG_OBJ_ELEMENT;
+			for (LevelFilter levelFilter : LevelFilter.values()) {
+				if (levelFilter.isIncluded(level)) {
+					imageId = levelFilter.getImageId();
 					break;
-				case Warning:
-					str = ISharedImages.IMG_OBJS_WARN_TSK;
-					break;
-				case Error:
-				case FatalError:
-				case Exception:
-					str = ISharedImages.IMG_OBJS_ERROR_TSK;
-					break;
+				}
 			}
-			return PlatformUI.getWorkbench().
-					getSharedImages().getImage(str);
+			return PlatformUI.getWorkbench().getSharedImages().getImage(imageId);
 		}
 	}
 	
-	
+	class MessageLevelFilter extends ViewerFilter {
+
+		@Override
+		public boolean select(Viewer viewer, Object parentElement, Object element) {
+			return acceptedMessageLevels.contains(((ITestMessage)element).getLevel());
+		}
+	}
+
+
 	private TableViewer tableViewer;
 	private OpenInEditorAction openInEditorAction;
 	private boolean showFailedOnly = false;
-	
+	private Set<ITestMessage.Level> acceptedMessageLevels = new HashSet<ITestMessage.Level>();
 
-	public MessagesPanel(Composite parent) {
+
+	public MessagesPanel(Composite parent, TestingSessionsManager sessionsManager, IWorkbench workbench) {
 		tableViewer = new TableViewer(parent, SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
 		tableViewer.setLabelProvider(new MessagesLabelProvider());
 		tableViewer.setContentProvider(new MessagesContentProvider());
 		
-		openInEditorAction = new OpenInEditorAction(tableViewer);
+		openInEditorAction = new OpenInEditorAction(tableViewer, sessionsManager, workbench);
 		tableViewer.addOpenListener(new IOpenListener() {
 			
 			public void open(OpenEvent event) {
 				openInEditorAction.run();
 			}
 		});
+		tableViewer.addFilter(new MessageLevelFilter());
 	}
 
 	public TableViewer getTableViewer() {
@@ -226,6 +271,22 @@ public class MessagesPanel {
 			// NOTE: Set input again makes content provider to recollect messages (with filter applied)
 			tableViewer.setInput(tableViewer.getInput());
 		}
+	}
+
+	public void addLevelFilter(LevelFilter levelFilter, boolean refresh) {
+		for (ITestMessage.Level level : levelFilter.getLevels()) {
+			acceptedMessageLevels.add(level);
+		}
+		if (refresh) {
+			tableViewer.refresh();
+		}
+	}
+
+	public void removeLevelFilter(LevelFilter levelFilter) {
+		for (ITestMessage.Level level : levelFilter.getLevels()) {
+			acceptedMessageLevels.remove(level);
+		}
+		tableViewer.refresh();
 	}
 	
 }

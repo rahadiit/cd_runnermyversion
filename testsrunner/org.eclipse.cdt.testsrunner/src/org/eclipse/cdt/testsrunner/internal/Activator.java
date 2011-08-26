@@ -13,7 +13,7 @@ package org.eclipse.cdt.testsrunner.internal;
 import java.net.URL;
 
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager;
-import org.eclipse.cdt.testsrunner.internal.model.ModelManager;
+import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
@@ -36,9 +36,8 @@ public class Activator extends AbstractUIPlugin {
 	private static Activator plugin;
 	
 	private TestsRunnersManager testsRunnersManager = new TestsRunnersManager();
+	private TestingSessionsManager testingSessionsManager = new TestingSessionsManager(testsRunnersManager);
 
-	private ModelManager modelManager = new ModelManager();
-	
 	/**
 	 * Constructor for LaunchUIPlugin.
 	 * 
@@ -120,12 +119,12 @@ public class Activator extends AbstractUIPlugin {
 		super.stop(context);
 	}
 
-	public TestsRunnersManager getTestsRunnersManager() {
-		return testsRunnersManager;
+	public TestingSessionsManager getTestingSessionsManager() {
+		return testingSessionsManager;
 	}
 
-	public ModelManager getModelManager() {
-		return modelManager;
+	public TestsRunnersManager getTestsRunnersManager() {
+		return testsRunnersManager;
 	}
 
 	static public ImageDescriptor getImageDescriptor(String relativePath) {

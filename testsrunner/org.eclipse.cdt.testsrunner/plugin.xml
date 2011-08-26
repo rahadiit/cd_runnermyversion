@@ -8,7 +8,7 @@
             delegate="org.eclipse.cdt.testsrunner.internal.launcher.RunTestsLaunchDelegate"
             id="org.eclipse.cdt.testsrunner.launch.testsRunner"
             modes="run"
-            name="Run C/C++ Tests"
+            name="C/C++ Unit"
             public="true"
             sourceLocatorId="org.eclipse.cdt.debug.core.sourceLocator"
             sourcePathComputerId="org.eclipse.cdt.debug.core.sourcePathComputer">
@@ -28,10 +28,19 @@
       <view
             category="org.eclipse.cdt.ui.views"
             class="org.eclipse.cdt.testsrunner.internal.ui.view.ResultsView"
+            icon="$nl$/icons/eview16/cppunit.gif"
             id="org.eclipse.cdt.testsrunner.resultsview"
-            name="C++ Test Results"
+            name="C/C++ Unit"
             restorable="true">
       </view>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            configTypeID="org.eclipse.cdt.testsrunner.launch.testsRunner"
+            icon="$nl$/icons/eview16/cppunit.gif"
+            id="org.eclipse.cdt.testsrunner.launch.testsRunner.image">
+      </launchConfigurationTypeImage>
    </extension>
 
    

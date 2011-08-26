@@ -18,8 +18,8 @@ package org.eclipse.cdt.testsrunner.model;
  */
 public interface ITestLocation {
 
-	String getFile();  // TODO: Change return value to IResource & add resource resolving
+	public String getFile();  // TODO: Change return value to IResource & add resource resolving
 
-	int getLine();
+	public int getLine();
 
 }

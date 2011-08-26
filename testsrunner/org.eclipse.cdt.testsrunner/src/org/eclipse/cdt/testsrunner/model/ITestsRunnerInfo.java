@@ -13,19 +13,15 @@ package org.eclipse.cdt.testsrunner.model;
 /**
  * TODO: Add descriptions
  * 
- * @noextend This interface is not intended to be extended by clients.
- * @noimplement This interface is not intended to be implemented by clients.
  */
-public interface ITestSuite extends ITestItem {
-
-	public ITestSuite getTestSuite(String name);
+public interface ITestsRunnerInfo {
 	
-	public ITestSuite[] getTestSuites();
+	public String getName();
 
-	public ITestCase getTestCase(String name);
+	public String getId();
+
+	public String getDescription();
+
+	public boolean isAllowedMultipleTestFilter();
 	
-	public ITestCase[] getTestCases();
-
-	public boolean hasChildren();
-
 }

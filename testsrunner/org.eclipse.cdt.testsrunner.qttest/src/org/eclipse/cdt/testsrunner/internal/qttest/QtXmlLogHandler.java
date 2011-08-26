@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.cdt.testsrunner.model.IModelManager;
+import org.eclipse.cdt.testsrunner.model.ITestModelUpdater;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
 import org.eclipse.cdt.testsrunner.model.ITestMessage;
 import org.xml.sax.Attributes;
@@ -87,7 +87,7 @@ public class QtXmlLogHandler extends DefaultHandler {
         STRING_INCIDENT_TO_MESSAGE_LEVEL = Collections.unmodifiableMap(aMap);
     }
 
-	private IModelManager modelManager;
+	private ITestModelUpdater modelUpdater;
 	private String elementData;
 	private String messageText;
 	private String fileName;
@@ -95,8 +95,8 @@ public class QtXmlLogHandler extends DefaultHandler {
 	private ITestMessage.Level messageLevel;
 	private long testStartTime;
 	
-	QtXmlLogHandler(IModelManager modelBuilder) {
-		this.modelManager = modelBuilder;
+	QtXmlLogHandler(ITestModelUpdater modelUpdater) {
+		this.modelUpdater = modelUpdater;
 	}
 	
 	public void startElement(String namespaceURI, String localName, String qName, Attributes attrs) throws SAXException {
@@ -105,12 +105,12 @@ public class QtXmlLogHandler extends DefaultHandler {
 		if (qName == XML_NODE_TEST_CASE) {
 			// NOTE: Terminology mapping: Qt Test Case is actually a Test Suite
 			String testSuiteName = attrs.getValue(XML_ATTR_TEST_CASE_NAME);
-			modelManager.enterTestSuite(testSuiteName);
+			modelUpdater.enterTestSuite(testSuiteName);
 
 		} else if (qName == XML_NODE_TEST_FUNCTION) {
 			// NOTE: Terminology mapping: Qt Test Function is actually a Test Case
 			String testCaseName = attrs.getValue(XML_ATTR_TEST_FUNCTION_NAME);
-			modelManager.enterTestCase(testCaseName);
+			modelUpdater.enterTestCase(testCaseName);
 			testStartTime = System.currentTimeMillis();
 
 		} else if (qName == XML_NODE_MESSAGE) {
@@ -124,7 +124,7 @@ public class QtXmlLogHandler extends DefaultHandler {
 			lineNumber = Integer.parseInt(attrs.getValue(XML_ATTR_LINE).trim());
 			String strType = attrs.getValue(XML_ATTR_TYPE);
 			messageLevel = STRING_INCIDENT_TO_MESSAGE_LEVEL.get(strType);
-			modelManager.setTestStatus(STRING_TO_TEST_STATUS.get(strType));
+			modelUpdater.setTestStatus(STRING_TO_TEST_STATUS.get(strType));
 			messageText = null;
 
 		} else if (qName == XML_NODE_DESCRIPTION
@@ -145,16 +145,16 @@ public class QtXmlLogHandler extends DefaultHandler {
 	public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
 
 		if (qName == XML_NODE_TEST_CASE) {
-			modelManager.exitTestSuite();
+			modelUpdater.exitTestSuite();
 
 		} else if (qName == XML_NODE_TEST_FUNCTION) {
-			modelManager.setTestingTime((int)(System.currentTimeMillis()-testStartTime));
+			modelUpdater.setTestingTime((int)(System.currentTimeMillis()-testStartTime));
 			testStartTime = 0;
-			modelManager.exitTestCase();
+			modelUpdater.exitTestCase();
 		
 		} else if (qName == XML_NODE_MESSAGE || qName == XML_NODE_INCIDENT) {
 			if (messageText != null) {
-				modelManager.addTestMessage(fileName, lineNumber, messageLevel, messageText);
+				modelUpdater.addTestMessage(fileName, lineNumber, messageLevel, messageText);
 			}
 
 		} else if (qName == XML_NODE_DESCRIPTION) {

@@ -16,27 +16,14 @@ package org.eclipse.cdt.testsrunner.model;
  * @noextend This interface is not intended to be extended by clients.
  * @noimplement This interface is not intended to be implemented by clients.
  */
-public interface IModelManager {
+public interface ITestModelAccessor {
 
-	void enterTestSuite(String name);
+	public boolean isCurrentlyRunning(ITestItem item);
 	
-	void exitTestSuite();
+	public ITestSuite getRootSuite();
 	
+	public void addChangesListener(ITestingSessionListener listener);
 
-	void enterTestCase(String name);
-	
-	void setTestStatus(ITestItem.Status status);
-	
-	void setTestingTime(int testingTime);
-	
-	void exitTestCase();
-
-	
-	void addTestMessage(String file, int line, ITestMessage.Level level, String text);
-	
-	
-	ITestSuite currentTestSuite();
-	
-	ITestCase currentTestCase();
+	public void removeChangesListener(ITestingSessionListener listener);
 	
 }

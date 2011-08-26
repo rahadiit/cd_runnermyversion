@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.cdt.testsrunner.model.IModelManager;
+import org.eclipse.cdt.testsrunner.model.ITestModelUpdater;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestMessage;
 import org.eclipse.cdt.testsrunner.model.ITestItem.Status;
@@ -48,30 +48,29 @@ public class BoostXmlLogHandler extends DefaultHandler {
         STRING_TO_MESSAGE_LEVEL = Collections.unmodifiableMap(aMap);
     }
 
-	private IModelManager modelManager;
+	private ITestModelUpdater modelUpdater;
 	private String elementData;
 	private String fileName;
 	private int lineNumber;
 	private ITestItem.Status testStatus;
 	
-	BoostXmlLogHandler(IModelManager modelBuilder) {
-		this.modelManager = modelBuilder;
+	BoostXmlLogHandler(ITestModelUpdater modelUpdater) {
+		this.modelUpdater = modelUpdater;
 	}
 	
 	public void startElement(String namespaceURI, String localName, String qName, Attributes attrs) throws SAXException {
 		
 		if (qName == XML_NODE_TEST_SUITE) {
 			String testSuiteName = attrs.getValue(XML_ATTR_TEST_SUITE_NAME);
-			modelManager.enterTestSuite(testSuiteName);
+			modelUpdater.enterTestSuite(testSuiteName);
 
 		} else if (qName == XML_NODE_TEST_CASE) {
 			String testCaseName = attrs.getValue(XML_ATTR_TEST_CASE_NAME);
-			modelManager.enterTestCase(testCaseName);
+			modelUpdater.enterTestCase(testCaseName);
 			testStatus = Status.Passed;
 
 		} else if (STRING_TO_MESSAGE_LEVEL.containsKey(qName)
 				|| qName == XML_NODE_LAST_CHECKPOINT) {
-			elementData = null;
 			fileName = attrs.getValue(XML_ATTR_MESSAGE_FILE);
 			lineNumber = Integer.parseInt(attrs.getValue(XML_ATTR_MESSAGE_LINE).trim());
 			
@@ -96,7 +95,7 @@ public class BoostXmlLogHandler extends DefaultHandler {
 			Activator.logErrorMessage(message);
 			throw new SAXException(message);
 		}
-		modelManager.addTestMessage(fileName, lineNumber, level, elementData);
+		modelUpdater.addTestMessage(fileName, lineNumber, level, elementData);
 		elementData = null;
 		fileName = null;
 		lineNumber = -1;
@@ -113,23 +112,23 @@ public class BoostXmlLogHandler extends DefaultHandler {
 	public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
 
 		if (qName == XML_NODE_TEST_SUITE) {
-			modelManager.exitTestSuite();
+			modelUpdater.exitTestSuite();
 
 		} else if (qName == XML_NODE_TEST_CASE) {
-			modelManager.setTestStatus(testStatus);
-			modelManager.exitTestCase();
+			modelUpdater.setTestStatus(testStatus);
+			modelUpdater.exitTestCase();
 		
 		} else if (qName == XML_NODE_TESTING_TIME) {
-			modelManager.setTestingTime(Integer.parseInt(elementData.trim())/100);
+			modelUpdater.setTestingTime(Integer.parseInt(elementData.trim())/100);
 
 		} else if (STRING_TO_MESSAGE_LEVEL.containsKey(qName)) {
 			addCurrentMessage(STRING_TO_MESSAGE_LEVEL.get(qName));
 
 		} else if (qName == XML_NODE_EXCEPTION) {
 			if (fileName != null && lineNumber != -1) {
-				elementData += "\nSee the last checkpoint attached.";
+				elementData += "\nLast check point was here.";
 			}
-			addCurrentMessage(STRING_TO_MESSAGE_LEVEL.get(qName));
+			addCurrentMessage(ITestMessage.Level.FatalError);
 
 		} else if (qName == XML_NODE_TEST_LOG || qName == XML_NODE_LAST_CHECKPOINT) {
 			/* just skip, do nothing */

@@ -49,6 +49,9 @@
 
    <element name="runner">
       <complexType>
+         <sequence minOccurs="0" maxOccurs="1">
+            <element ref="features"/>
+         </sequence>
          <attribute name="name" type="string" use="required">
             <annotation>
                <documentation>
@@ -83,6 +86,18 @@
             <annotation>
                <documentation>
                   Internal unique name of the tests runner
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="features">
+      <complexType>
+         <attribute name="multipleTestFilter" type="boolean">
+            <annotation>
+               <documentation>
+                  Should be True if Tests Runner can generate a multiple tests filter for single test module launch. In this case rerun of multiple tests or test suites will be available and a few test items may be passed to configureLaunchParameters(). It is False by default.
                </documentation>
             </annotation>
          </attribute>

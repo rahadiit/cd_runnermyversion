@@ -17,12 +17,16 @@ import java.util.Map;
 
 import org.eclipse.cdt.internal.ui.viewsupport.ColoringLabelProvider;
 import org.eclipse.cdt.testsrunner.internal.Activator;
-import org.eclipse.cdt.testsrunner.internal.model.TestSuite;
 import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestMessage;
 import org.eclipse.cdt.testsrunner.model.ITestSuite;
+import org.eclipse.cdt.testsrunner.model.ITestingSession;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -34,8 +38,11 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.IWorkbenchPartSite;
 
 /**
  * TODO: Add description here
@@ -49,13 +56,15 @@ public class TestsHierarchyViewer {
 			
 			List<ITestCase> testCases = new ArrayList<ITestCase>();
 			
-			public void visit(ITestMessage testMessage) {}
-			
 			public void visit(ITestCase testCase) {
 				testCases.add(testCase);
 			}
 			
+			public void visit(ITestMessage testMessage) {}
 			public void visit(ITestSuite testSuite) {}
+			public void leave(ITestSuite testSuite) {}
+			public void leave(ITestCase testCase) {}
+			public void leave(ITestMessage testMessage) {}
 		}
 		
 		public Object[] getChildren(Object parentElement) {
@@ -126,7 +135,7 @@ public class TestsHierarchyViewer {
 	    	}
 	    	if (imagesMap != null) {
 	    		ITestItem testItem = (ITestItem)element;
-				if (Activator.getDefault().getModelManager().isCurrentlyRunning(testItem)) {
+				if (testingSession.getModelAccessor().isCurrentlyRunning(testItem)) {
 					return runImage;
 				}
 				return imagesMap.get(testItem.getStatus());
@@ -140,7 +149,7 @@ public class TestsHierarchyViewer {
 			StringBuilder sb = new StringBuilder();
 			sb.append(testItem.getName());
 			if (!showTestsHierarchy) {
-				sb.append(getTestItemPath(testItem));
+				sb.append(TestPathUtils.getTestItemPath(testItem));
 			}
 			if (showTime) {
 				sb.append(getTestingTimeString(element));
@@ -154,7 +163,7 @@ public class TestsHierarchyViewer {
 			labelBuf.append(testItem.getName());
 			StyledString name = new StyledString(labelBuf.toString());
 			if (!showTestsHierarchy) {
-				String itemPath = getTestItemPath(testItem);
+				String itemPath = " - "+TestPathUtils.getTestItemPath(testItem);
 				labelBuf.append(itemPath);
 				name = StyledCellLabelProvider.styleDecoratedString(labelBuf.toString(), StyledString.QUALIFIER_STYLER, name);
 			}
@@ -171,26 +180,6 @@ public class TestsHierarchyViewer {
 			return (element instanceof ITestItem) ? " ("+Double.toString(((ITestItem)element).getTestingTime()/1000.0)+" s)" : "";
 		}
 		
-		private String getTestItemPath(ITestItem testItem) {
-			StringBuilder itemPath = new StringBuilder();
-			List<ITestItem> parentItems = new ArrayList<ITestItem>();
-			ITestItem parent = testItem.getParent();
-			while (parent != null) {
-				parentItems.add(parent);
-				parent = parent.getParent();
-			}
-			if (!parentItems.isEmpty()) {
-				itemPath.append(" - ");
-				for (int i = parentItems.size()-2/* exclude unnamed root test suite */; i >= 0; --i) {
-					itemPath.append(parentItems.get(i).getName());
-					if (i != 0) {
-						itemPath.append(".");
-					}
-				}
-			}
-			// TODO: Implement caching of the last path
-			return itemPath.toString();
-		}
 	}
 	
 	class FailedOnlyFilter extends ViewerFilter {
@@ -202,17 +191,51 @@ public class TestsHierarchyViewer {
 	}
 
 	
+	private ITestingSession testingSession;
 	private TreeViewer treeViewer;
 	private boolean showTime = true;
 	private FailedOnlyFilter failedOnlyFilter = null;
 	private boolean showTestsHierarchy = true;
+	private Clipboard clipboard;
 
 	
-	public TestsHierarchyViewer(Composite parent) {
+	public TestsHierarchyViewer(Composite parent, IWorkbenchPartSite site, Clipboard clipboard) {
+		this.clipboard = clipboard;
 		treeViewer = new TreeViewer(parent, SWT.V_SCROLL | SWT.MULTI);
 		treeViewer.setContentProvider(new TestTreeContentProvider());
 		treeViewer.setLabelProvider(new ColoringLabelProvider(new TestLabelProvider()));
-		treeViewer.setInput(Activator.getDefault().getModelManager().getRootSuite());
+		initContextMenu(site);
+	}
+	
+	private void initContextMenu(IWorkbenchPartSite site) {
+		MenuManager menuMgr= new MenuManager("#PopupMenu"); //$NON-NLS-1$
+		menuMgr.setRemoveAllWhenShown(true);
+		menuMgr.addMenuListener(new IMenuListener() {
+			public void menuAboutToShow(IMenuManager manager) {
+				handleMenuAboutToShow(manager);
+			}
+		});
+		site.registerContextMenu(menuMgr, treeViewer);
+		Menu menu = menuMgr.createContextMenu(treeViewer.getTree());
+		treeViewer.getTree().setMenu(menu);
+	}
+	
+	private void handleMenuAboutToShow(IMenuManager manager) {
+		IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
+		Action rerunAction = new RerunSelectedAction(testingSession, selection);
+		rerunAction.setEnabled(
+			!selection.isEmpty() && 
+			(testingSession.getTestsRunnerInfo().isAllowedMultipleTestFilter() || (selection.size() == 1))
+		);
+		Action copyAction = new CopySelectedTestsAction(selection, clipboard);
+		
+		manager.add(rerunAction);
+		manager.add(copyAction);
+	}
+
+	public void setTestingSession(ITestingSession testingSession) {
+		this.testingSession = testingSession;
+		treeViewer.setInput(testingSession != null ? testingSession.getModelAccessor().getRootSuite() : null);
 	}
 	
 	public TreeViewer getTreeViewer() {
@@ -233,7 +256,7 @@ public class TestsHierarchyViewer {
 		ITestItem failedItem;
 
 		if (selected == null) {
-			TestSuite rootSuite = Activator.getDefault().getModelManager().getRootSuite();
+			ITestItem rootSuite = (ITestItem)treeViewer.getInput();
 			// For next element we should also check its children, for previous shouldn't.
 			failedItem = findFailedChild(rootSuite, null, next, next);
 		} else {

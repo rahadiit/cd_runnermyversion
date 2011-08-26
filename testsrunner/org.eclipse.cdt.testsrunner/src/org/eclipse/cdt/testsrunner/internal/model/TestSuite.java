@@ -117,6 +117,7 @@ public class TestSuite extends TestItem implements ITestSuite {
 		for (TestCase testCase : testCases.values()) {
 			testCase.visit(visitor);
 		}
+		visitor.leave(this);
 	}
 
 }
