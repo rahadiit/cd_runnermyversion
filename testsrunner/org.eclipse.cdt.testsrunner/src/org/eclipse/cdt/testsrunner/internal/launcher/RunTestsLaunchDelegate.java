@@ -31,6 +31,7 @@ import org.eclipse.cdt.launch.AbstractCLaunchDelegate;
 import org.eclipse.cdt.testsrunner.internal.Activator;
 import org.eclipse.cdt.testsrunner.internal.model.TestingSession;
 import org.eclipse.cdt.testsrunner.internal.ui.view.TestPathUtils;
+import org.eclipse.cdt.testsrunner.model.TestingException;
 import org.eclipse.cdt.launch.internal.ui.LaunchUIPlugin;
 import org.eclipse.cdt.utils.pty.PTY;
 import org.eclipse.cdt.utils.spawner.ProcessFactory;
@@ -99,11 +100,15 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			List<String> packedTestsFilter = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_FILTER, Collections.EMPTY_LIST);
 			String [][] testsFilter = TestPathUtils.unpackTestPaths(packedTestsFilter.toArray(new String[packedTestsFilter.size()]));
 			// Configure test module run parameters with Tests Runner 
-			commandArray = testingSession.configureLaunchParameters(commandArray, testsFilter);
-			
-			Process process = exec(commandArray, getEnvironment(config), wd, testingSession);
-			monitor.worked(3);
-			DebugPlugin.newProcess(launch, process, renderProcessLabel(commandArray[0]));
+			try {
+				commandArray = testingSession.configureLaunchParameters(commandArray, testsFilter);
+				Process process = exec(commandArray, getEnvironment(config), wd, testingSession);
+				monitor.worked(3);
+				DebugPlugin.newProcess(launch, process, renderProcessLabel(commandArray[0]));
+			} catch (TestingException e) {
+				// Do nothing, just do not run the process in case of error.
+				// Message showing is done in TestingSession.configureLaunchParameters()
+			}
 			
 		} finally {
 			monitor.done();
