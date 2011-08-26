@@ -235,7 +235,7 @@ public class TestsHierarchyViewer {
 
 	public void setTestingSession(ITestingSession testingSession) {
 		this.testingSession = testingSession;
-		treeViewer.setInput(testingSession.getModelAccessor().getRootSuite());
+		treeViewer.setInput(testingSession != null ? testingSession.getModelAccessor().getRootSuite() : null);
 	}
 	
 	public TreeViewer getTreeViewer() {

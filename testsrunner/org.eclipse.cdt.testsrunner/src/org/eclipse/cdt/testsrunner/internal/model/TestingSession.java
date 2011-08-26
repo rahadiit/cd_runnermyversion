@@ -11,7 +11,9 @@
 package org.eclipse.cdt.testsrunner.internal.model;
 
 import java.io.InputStream;
+import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -46,6 +48,7 @@ public class TestingSession implements ITestingSession {
 	private boolean wasStopped = false;
 	private boolean finished = false;
 	private String statusMessage = "Starting...";
+	private long startTime;
 	
 	
 	class TestCasesCounter implements IModelVisitor {
@@ -85,6 +88,7 @@ public class TestingSession implements ITestingSession {
 		this.launch = launch;
 		this.testsRunnerInfo = testsRunnerInfo;
 		this.testsRunner = testsRunnerInfo.instantiateTestsRunner();
+		this.startTime = System.currentTimeMillis();
 		// TODO: Compare also test runner types here! If not equal -- previousSession => null
 		if ((previousSession != null) && (launch.getLaunchConfiguration() != previousSession.launch.getLaunchConfiguration())) {
 			previousSession = null;
@@ -189,6 +193,12 @@ public class TestingSession implements ITestingSession {
 	
 	public String getStatusMessage() {
 		return statusMessage;
+	}
+
+	public String getName() {
+		String launchConfName = launch.getLaunchConfiguration().getName();
+		String startTimeStr = DateFormat.getDateTimeInstance().format(new Date(startTime));
+		return MessageFormat.format("{0} ({1})", launchConfName, startTimeStr);
 	}
 
 }

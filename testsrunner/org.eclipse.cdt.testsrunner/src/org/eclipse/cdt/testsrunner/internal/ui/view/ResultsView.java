@@ -50,6 +50,7 @@ public class ResultsView extends ViewPart {
 	private Action previousAction;
 	private Action rerunAction;
 	private ToggleOrientationAction[] toggleOrientationActions;
+	private Action historyAction;
 	
 	/**
 	 * The current orientation preference (Horizontal, Vertical, Auto).
@@ -120,6 +121,8 @@ public class ResultsView extends ViewPart {
 		rerunAction = new RerunAction(sessionsManager);
 		rerunAction.setEnabled(false);
 		
+		historyAction = new HistoryDropDownAction(sessionsManager, parent.getShell());
+		
 		// Configure toolbar
 		IToolBarManager toolBar = actionBars.getToolBarManager();
 		toolBar.add(nextAction);
@@ -128,6 +131,7 @@ public class ResultsView extends ViewPart {
 		toolBar.add(scrollLockAction);
 		toolBar.add(new Separator());
 		toolBar.add(rerunAction);
+		toolBar.add(historyAction);
 		
 		// Configure view menu
 		IMenuManager viewMenu = actionBars.getMenuManager();

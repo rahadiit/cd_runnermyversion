@@ -62,4 +62,8 @@ public class DummyUISession implements ITestingSession {
 		return ""; //$NON-NLS-1$
 	}
 
+	public String getName() {
+		return "Dummy";
+	}
+
 }
