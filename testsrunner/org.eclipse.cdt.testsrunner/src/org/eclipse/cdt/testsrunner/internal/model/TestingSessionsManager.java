@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager;
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager.TestsRunnerInfo;
 import org.eclipse.cdt.testsrunner.model.ITestingSession;
@@ -41,7 +40,7 @@ public class TestingSessionsManager {
 	public TestingSession newSession(ILaunch launch) throws CoreException {
 		// TODO: Handle incorrect tests runner somehow
 		ILaunchConfiguration launchConf = launch.getLaunchConfiguration();
-		String testsRunnerId = launchConf.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String)null);
+		String testsRunnerId = launchConf.getAttribute("org.eclipse.cdt.launch.TESTS_RUNNER", (String)null);
 		TestsRunnerInfo testsRunnerInfo = testsRunnersManager.getTestsRunner(testsRunnerId);
 		// TODO: Maybe we should use not active but really the last session (case: if user switched to pre-last session and relaunch testing)
 		// TODO: Alternatively, we should implement smart "last" session selection here.

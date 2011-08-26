@@ -97,7 +97,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			TestingSession testingSession = Activator.getDefault().getTestingSessionsManager().newSession(launch);
 			
 			// Unpack tests filters
-			List<String> packedTestsFilter = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_FILTER, Collections.EMPTY_LIST);
+			List<String> packedTestsFilter = config.getAttribute("org.eclipse.cdt.launch.TESTS_FILTER", Collections.EMPTY_LIST);
 			String [][] testsFilter = TestPathUtils.unpackTestPaths(packedTestsFilter.toArray(new String[packedTestsFilter.size()]));
 			// Configure test module run parameters with Tests Runner 
 			try {

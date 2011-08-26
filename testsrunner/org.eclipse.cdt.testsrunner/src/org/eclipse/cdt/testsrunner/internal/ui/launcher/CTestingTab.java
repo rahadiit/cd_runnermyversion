@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.launcher;
 
-import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.cdt.launch.internal.ui.LaunchImages;
 import org.eclipse.cdt.launch.ui.CLaunchConfigurationTab;
 import org.eclipse.cdt.testsrunner.internal.Activator;
@@ -122,7 +121,7 @@ public class CTestingTab extends CLaunchConfigurationTab {
 	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#setDefaults(org.eclipse.debug.core.ILaunchConfigurationWorkingCopy)
 	 */
 	public void setDefaults(ILaunchConfigurationWorkingCopy config) {
-		config.setAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String) null);
+		config.setAttribute("org.eclipse.cdt.launch.TESTS_RUNNER", (String) null);
 	}
 
 	/* (non-Javadoc)
@@ -130,7 +129,7 @@ public class CTestingTab extends CLaunchConfigurationTab {
 	 */
 	public void initializeFrom(ILaunchConfiguration configuration) {
 		try {
-			String testsRunnerId = configuration.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String) null);
+			String testsRunnerId = configuration.getAttribute("org.eclipse.cdt.launch.TESTS_RUNNER", (String) null);
 			int comboIndex = 0;
 			for (int i = 1; i < testsRunnerCombo.getItemCount(); i++) {
 				TestsRunnerInfo testsRunnerInfo = getTestsRunnerInfo(i);
@@ -152,7 +151,7 @@ public class CTestingTab extends CLaunchConfigurationTab {
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
 		TestsRunnerInfo testsRunnerInfo = getCurrentTestsRunnerInfo();
 		String testsRunnerId = testsRunnerInfo != null ? testsRunnerInfo.getId() : null;
-		configuration.setAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, testsRunnerId);
+		configuration.setAttribute("org.eclipse.cdt.launch.TESTS_RUNNER", testsRunnerId);
 	}
 
 	@Override
