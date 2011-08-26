@@ -71,6 +71,7 @@ public class BoostXmlLogHandler extends DefaultHandler {
 
 		} else if (STRING_TO_MESSAGE_LEVEL.containsKey(qName)
 				|| qName == XML_NODE_LAST_CHECKPOINT) {
+			elementData = null;
 			fileName = attrs.getValue(XML_ATTR_MESSAGE_FILE);
 			lineNumber = Integer.parseInt(attrs.getValue(XML_ATTR_MESSAGE_LINE).trim());
 			
@@ -78,8 +79,11 @@ public class BoostXmlLogHandler extends DefaultHandler {
 			elementData = null;
 			fileName = null;
 			lineNumber = -1;
+
+		} else if (qName == XML_NODE_TESTING_TIME ) {
+			elementData = null;
 			
-		} else if (qName == XML_NODE_TESTING_TIME || qName == XML_NODE_TEST_LOG) {
+		} else if (qName == XML_NODE_TEST_LOG) {
 			/* just skip, do nothing */
 			
 		} else {
