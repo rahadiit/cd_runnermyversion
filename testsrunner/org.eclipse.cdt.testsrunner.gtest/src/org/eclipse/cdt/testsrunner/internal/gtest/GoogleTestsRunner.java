@@ -38,6 +38,10 @@ public class GoogleTestsRunner implements ITestsRunner {
 					}
 					sb.append(testPathPart);
 				}
+				// If it is a test suite
+				if (testPath.length <= 1) {
+					sb.append(".*");
+				}				
 			}
 		}
 		
