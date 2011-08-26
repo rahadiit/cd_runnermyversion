@@ -24,6 +24,7 @@ public class ProgressCountPanel extends Composite {
 
 	private CounterPanel counterPanel;
 	private ProgressBar progressBar;
+	private DummyUISession dummyUISession = new DummyUISession();
 
 	
 	public ProgressCountPanel(Composite parent, ResultsView.Orientation currOrientation) {
@@ -32,7 +33,6 @@ public class ProgressCountPanel extends Composite {
 		setLayout(layout);
 		setPanelOrientation(currOrientation);
 
-		DummyUISession dummyUISession = new DummyUISession();
 		counterPanel = new CounterPanel(this, dummyUISession);
 		counterPanel.setLayoutData(
 			new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_FILL));
@@ -53,8 +53,9 @@ public class ProgressCountPanel extends Composite {
 	}
 	
 	public void setTestingSession(ITestingSession testingSession) {
-		counterPanel.setTestingSession(testingSession);
-		progressBar.setTestingSession(testingSession);
+		ITestingSession newSession = (testingSession != null) ? testingSession : dummyUISession;
+		counterPanel.setTestingSession(newSession);
+		progressBar.setTestingSession(newSession);
 	}
 	
 	public void updateInfoFromSession() {

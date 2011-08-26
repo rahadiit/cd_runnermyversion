@@ -11,6 +11,7 @@
 package org.eclipse.cdt.testsrunner.internal.model;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
@@ -27,10 +28,11 @@ import org.eclipse.debug.core.ILaunchConfiguration;
  */
 public class TestingSessionsManager {
 	
-	private List<TestingSession> testingSessions = new ArrayList<TestingSession>();
 	private TestsRunnersManager testsRunnersManager;
-	private int activeSessionIndex;
+	private LinkedList<TestingSession> sessions = new LinkedList<TestingSession>();
+	private TestingSession activeSession;
 	private List<ITestingSessionsManagerListener> listeners = new ArrayList<ITestingSessionsManagerListener>();
+	private int historySize = 10;
 
 	public TestingSessionsManager(TestsRunnersManager testsRunnersManager) {
 		this.testsRunnersManager = testsRunnersManager;
@@ -42,22 +44,41 @@ public class TestingSessionsManager {
 		String testsRunnerId = launchConf.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String)null);
 		TestsRunnerInfo testsRunnerInfo = testsRunnersManager.getTestsRunner(testsRunnerId);
 		// TODO: Maybe we should use not active but really the last session (case: if user switched to pre-last session and relaunch testing)
-		TestingSession lastSession = testingSessions.isEmpty() ? null : testingSessions.get(activeSessionIndex);
-		TestingSession newTestingSession = new TestingSession(launch, testsRunnerInfo, lastSession);
-		testingSessions.add(newTestingSession);
-		setActiveSession(testingSessions.size()-1);
+		// TODO: Alternatively, we should implement smart "last" session selection here.
+		TestingSession newTestingSession = new TestingSession(launch, testsRunnerInfo, activeSession);
+		sessions.addFirst(newTestingSession);
+		setActiveSession(newTestingSession);
+		truncateHistory();
 		return newTestingSession;
 	}
 	
-	public ITestingSession getActiveSession() {
-		return testingSessions.isEmpty() ? null : testingSessions.get(activeSessionIndex);
+	public List<? extends ITestingSession> getSessions() {
+		return sessions;
 	}
 	
-	public void setActiveSession(int newActiveIndex) {
-		activeSessionIndex = newActiveIndex;
-		// Notify listeners
-		for (ITestingSessionsManagerListener listener : listeners) {
-			listener.sessionActivated(testingSessions.get(activeSessionIndex));
+	public void setSessions(List<ITestingSession> newSessions) {
+		sessions.clear();
+		for (ITestingSession newSession : newSessions) {
+			sessions.add((TestingSession) newSession);
+		}
+		truncateHistory();
+	}
+	
+	public int getSessionsCount() {
+		return sessions.size();
+	}
+	
+	public ITestingSession getActiveSession() {
+		return activeSession;
+	}
+	
+	public void setActiveSession(ITestingSession newActiveSession) {
+		if (activeSession != newActiveSession) {
+			activeSession = (TestingSession) newActiveSession;
+			// Notify listeners
+			for (ITestingSessionsManagerListener listener : listeners) {
+				listener.sessionActivated(activeSession);
+			}
 		}
 	}
 	
@@ -67,6 +88,26 @@ public class TestingSessionsManager {
 
 	public void removeListener(ITestingSessionsManagerListener listener) {
 		listeners.remove(listener);
+	}
+
+	public int getHistorySize() {
+		return historySize;
+	}
+
+	public void setHistorySize(int historySize) {
+		this.historySize = historySize;
+		truncateHistory();
+	}
+	
+	private void truncateHistory() {
+		// The most frequently this method will be used to remove one element, so removeAll() is unnecessary here
+		while (sessions.size() > historySize) {
+			sessions.removeLast();
+		}
+		if (!sessions.contains(activeSession)) {
+			ITestingSession newActiveSession = sessions.isEmpty() ? null : sessions.getFirst();
+			setActiveSession(newActiveSession);
+		}
 	}
 	
 }

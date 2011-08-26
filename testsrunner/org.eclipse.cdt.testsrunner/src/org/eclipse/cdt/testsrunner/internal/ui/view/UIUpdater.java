@@ -136,14 +136,16 @@ public class UIUpdater {
 			if (testingSession != newTestingSession) {
 				unsubscribeFromSessionEvent();
 				testingSession = newTestingSession;
-				testingSession.getModelAccessor().addChangesListener(sessionListener);
+				if (testingSession != null) {
+					testingSession.getModelAccessor().addChangesListener(sessionListener);
+				}
 				
 				Display.getDefault().syncExec(new Runnable() {
 					
 					public void run() {
 						progressCountPanel.setTestingSession(testingSession);
 						testsHierarchyViewer.setTestingSession(testingSession);
-						resultsView.setCaption(testingSession.getStatusMessage());
+						resultsView.setCaption(testingSession != null ? testingSession.getStatusMessage() : "");
 					}
 				});
 				// TODO: Update actions!

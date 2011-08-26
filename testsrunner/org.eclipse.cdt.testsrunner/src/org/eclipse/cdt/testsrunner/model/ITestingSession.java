@@ -38,6 +38,8 @@ public interface ITestingSession {
 	public ITestsRunnerInfo getTestsRunnerInfo();
 
 	public String getStatusMessage();
+
+	public String getName();
 	
 }
 	
