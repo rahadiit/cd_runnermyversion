@@ -9,7 +9,8 @@
             id="org.eclipse.cdt.testsrunner.qttest"
             name="Qt Tests Runner">
          <features
-               multipleTestFilter="true">
+               multipleTestFilter="true"
+               testingTimeMeasurement="true">
          </features>
       </runner>
    </extension>
