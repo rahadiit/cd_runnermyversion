@@ -29,6 +29,7 @@ public class TestsRunnersManager {
 	private static final String TESTS_RUNNER_EXTENSION_POINT_ID = "org.eclipse.cdt.testsrunner.TestsRunner"; //$NON-NLS-1$
 	private static final String TESTS_RUNNER_FEATURES_ELEMENT = "features"; //$NON-NLS-1$
 	private static final String TESTS_RUNNER_FEATURE_MULTIPLE_TEST_FILTER_ATTRIBUTE = "multipleTestFilter"; //$NON-NLS-1$
+	private static final String TESTS_RUNNER_FEATURE_TESTING_TIME_MEASUREMENT_ATTRIBUTE = "testingTimeMeasurement"; //$NON-NLS-1$
 	private static final String TESTS_RUNNER_ID_ATTRIBUTE = "id"; //$NON-NLS-1$
 	private static final String TESTS_RUNNER_NAME_ATTRIBUTE = "name"; //$NON-NLS-1$
 	private static final String TESTS_RUNNER_CLASS_ATTRIBUTE = "class"; //$NON-NLS-1$
@@ -90,6 +91,10 @@ public class TestsRunnersManager {
 		
 		public boolean isAllowedMultipleTestFilter() {
 			return getBooleanFeatureValue(TESTS_RUNNER_FEATURE_MULTIPLE_TEST_FILTER_ATTRIBUTE, false);
+		}
+		
+		public boolean isAllowedTestingTimeMeasurement() {
+			return getBooleanFeatureValue(TESTS_RUNNER_FEATURE_TESTING_TIME_MEASUREMENT_ATTRIBUTE, false);
 		}
 	}
 	

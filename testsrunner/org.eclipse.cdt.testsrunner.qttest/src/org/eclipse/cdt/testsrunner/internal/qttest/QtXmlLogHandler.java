@@ -93,7 +93,6 @@ public class QtXmlLogHandler extends DefaultHandler {
 	private String fileName;
 	private int lineNumber;
 	private ITestMessage.Level messageLevel;
-	private long testStartTime;
 	
 	QtXmlLogHandler(ITestModelUpdater modelUpdater) {
 		this.modelUpdater = modelUpdater;
@@ -111,7 +110,6 @@ public class QtXmlLogHandler extends DefaultHandler {
 			// NOTE: Terminology mapping: Qt Test Function is actually a Test Case
 			String testCaseName = attrs.getValue(XML_ATTR_TEST_FUNCTION_NAME);
 			modelUpdater.enterTestCase(testCaseName);
-			testStartTime = System.currentTimeMillis();
 
 		} else if (qName == XML_NODE_MESSAGE) {
 			fileName = attrs.getValue(XML_ATTR_FILE);
@@ -148,8 +146,6 @@ public class QtXmlLogHandler extends DefaultHandler {
 			modelUpdater.exitTestSuite();
 
 		} else if (qName == XML_NODE_TEST_FUNCTION) {
-			modelUpdater.setTestingTime((int)(System.currentTimeMillis()-testStartTime));
-			testStartTime = 0;
 			modelUpdater.exitTestCase();
 		
 		} else if (qName == XML_NODE_MESSAGE || qName == XML_NODE_INCIDENT) {

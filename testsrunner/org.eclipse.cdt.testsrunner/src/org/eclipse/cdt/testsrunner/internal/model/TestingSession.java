@@ -99,7 +99,7 @@ public class TestingSession implements ITestingSession {
 			previousSession.getModelAccessor().getRootSuite().visit(testCasesCounter);
 			totalCounter = testCasesCounter.result;
 		}
-		this.modelManager = new TestModelManager(previousSession);
+		this.modelManager = new TestModelManager(previousSession, testsRunnerInfo.isAllowedTestingTimeMeasurement());
 		this.modelManager.addChangesListener(new ITestingSessionListener() {
 			
 			public void testingStarted() {}

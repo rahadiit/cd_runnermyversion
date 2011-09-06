@@ -36,8 +36,9 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 	private Stack<TestSuite> testSuitesStack = new Stack<TestSuite>();
 	private TestCase currentTestCase = null;
 	private Set<TestSuite> usedTestSuites = new HashSet<TestSuite>();
-	
 	private List<ITestingSessionListener> listeners = new ArrayList<ITestingSessionListener>();
+	private boolean timeMeasurement = false;
+	private long testCaseStartTime = 0;
 
 	
 	class HierarchyCopier implements IModelVisitor {
@@ -70,11 +71,12 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 	}
 	
 
-	public TestModelManager(ITestingSession previousSession) {
+	public TestModelManager(ITestingSession previousSession, boolean timeMeasurement) {
 		testSuitesStack.push(new TestSuite("<root>", null)); //$NON-NLS-1$
 		if (previousSession != null) {
 			previousSession.getModelAccessor().getRootSuite().visit(new HierarchyCopier());
 		}
+		this.timeMeasurement = timeMeasurement;
 	}
 
 	public void testingStarted() {
@@ -160,6 +162,9 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 		for (ITestingSessionListener listener : getListenersCopy()) {
 			listener.enterTestCase(currentTestCase);
 		}
+		if (timeMeasurement) {
+			testCaseStartTime = System.currentTimeMillis();
+		}
 	}
 
 
@@ -173,6 +178,12 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 
 	public void exitTestCase() {
 		if (currentTestCase != null) {
+			// Set test execution time (if time measurement is turned on)
+			if (timeMeasurement) {
+				int testingTime = (int)(System.currentTimeMillis()-testCaseStartTime);
+				currentTestCase.setTestingTime(currentTestCase.getTestingTime()+testingTime);
+				testCaseStartTime = 0;
+			}
 			TestCase testCase = currentTestCase;
 			currentTestCase = null;
 			// Notify listeners

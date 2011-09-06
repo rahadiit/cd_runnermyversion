@@ -101,6 +101,13 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="testingTimeMeasurement" type="boolean">
+            <annotation>
+               <documentation>
+                  Defines whether tests execution time are provided by testing framework. Otherwise turns on time measurement in Tests Runner Core. It is less accurate, but useful if testing framework does not provide time measurement.
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
