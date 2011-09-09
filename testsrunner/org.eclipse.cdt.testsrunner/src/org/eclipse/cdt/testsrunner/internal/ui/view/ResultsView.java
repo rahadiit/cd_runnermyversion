@@ -12,7 +12,7 @@ package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 import org.eclipse.cdt.testsrunner.internal.Activator;
 import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
-import org.eclipse.cdt.testsrunner.model.ITestItem.Status;
+import org.eclipse.cdt.testsrunner.model.ITestingSession;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -203,25 +203,15 @@ public class ResultsView extends ViewPart {
 		return null;
 	}
 
-	public void updateActionsBeforeRunning() {
-		previousAction.setEnabled(false);
-		nextAction.setEnabled(false);
-		rerunAction.setEnabled(false);
+	public void updateActionsFromSession() {
+		ITestingSession session = sessionsManager.getActiveSession();
+		boolean hasErrors = session.hasErrors();
+		previousAction.setEnabled(hasErrors);
+		nextAction.setEnabled(hasErrors);
+		boolean isFinished = session.isFinished();
+		rerunAction.setEnabled(isFinished);
 	}
-	
-	public void updateActionsOnTestCase(Status status) {
-		// Optimization: fPreviousAction and fNextAction should be enabled or disabled together
-		// so check only fNextAction.
-		if (!nextAction.isEnabled() && status.isError()) {
-			previousAction.setEnabled(true);
-			nextAction.setEnabled(true);
-		}
-	}
-	
-	public void updateActionsAfterRunning() {
-		rerunAction.setEnabled(true);
-	}
-	
+
 	public void setCaption(String message) {
 		setContentDescription(message);
 	}
