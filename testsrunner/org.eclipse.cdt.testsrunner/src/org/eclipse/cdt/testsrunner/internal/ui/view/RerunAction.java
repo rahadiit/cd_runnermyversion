@@ -43,9 +43,7 @@ public class RerunAction extends Action {
 		if (activeSession != null) {
 			ILaunch launch = activeSession.getLaunch();
 			DebugUITools.launch(launch.getLaunchConfiguration(), launch.getLaunchMode());
-		}
-		else
-		{
+		} else {
 			setEnabled(false);
 		}
 	}

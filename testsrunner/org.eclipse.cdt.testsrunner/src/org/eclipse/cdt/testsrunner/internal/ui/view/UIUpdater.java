@@ -73,13 +73,12 @@ public class UIUpdater {
 		}
 	
 		public void exitTestCase(final ITestCase testCase) {
+			resultsView.updateActionsFromSession();
 			Display.getDefault().syncExec(new Runnable() {
 				
 				public void run() {
 					progressCountPanel.updateInfoFromSession();
 					testsHierarchyViewer.getTreeViewer().update(testCase, null);
-					// TODO: Move from here!
-					resultsView.updateActionsOnTestCase(testCase.getStatus());
 				}
 			});
 		}
@@ -102,27 +101,25 @@ public class UIUpdater {
 		}
 
 		public void testingStarted() {
+			resultsView.updateActionsFromSession();
 			Display.getDefault().syncExec(new Runnable() {
 				
 				public void run() {
 					resultsView.setCaption(testingSession.getStatusMessage());
 					progressCountPanel.updateInfoFromSession();
 					testsHierarchyViewer.getTreeViewer().refresh();
-					// TODO: Move from here!
-					resultsView.updateActionsBeforeRunning();
 				}
 			});
 		}
 
 		public void testingFinished() {
+			resultsView.updateActionsFromSession();
 			Display.getDefault().syncExec(new Runnable() {
 				
 				public void run() {
 					progressCountPanel.updateInfoFromSession();
 					testsHierarchyViewer.getTreeViewer().refresh();
 					testsHierarchyViewer.getTreeViewer().expandToLevel(2);
-					// TODO: Move from here!
-					resultsView.updateActionsAfterRunning();
 					resultsView.setCaption(testingSession.getStatusMessage());
 				}
 			});
@@ -140,6 +137,7 @@ public class UIUpdater {
 					testingSession.getModelAccessor().addChangesListener(sessionListener);
 				}
 				
+				resultsView.updateActionsFromSession();
 				Display.getDefault().syncExec(new Runnable() {
 					
 					public void run() {
