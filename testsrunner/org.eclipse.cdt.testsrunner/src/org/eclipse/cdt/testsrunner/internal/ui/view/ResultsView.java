@@ -205,10 +205,10 @@ public class ResultsView extends ViewPart {
 
 	public void updateActionsFromSession() {
 		ITestingSession session = sessionsManager.getActiveSession();
-		boolean hasErrors = session.hasErrors();
+		boolean hasErrors = session != null && session.hasErrors();
 		previousAction.setEnabled(hasErrors);
 		nextAction.setEnabled(hasErrors);
-		boolean isFinished = session.isFinished();
+		boolean isFinished = session != null && session.isFinished();
 		rerunAction.setEnabled(isFinished);
 	}
 
