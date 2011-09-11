@@ -49,8 +49,8 @@ public class CounterPanel extends Composite {
 		setLayout(gridLayout);
 
 		currentCounterLabel = createLabel("Runs: ", null);
-		failedCounterLabel = createLabel("Errors: ", errorIcon);
-		abortedCounterLabel = createLabel("Failures: ", failureIcon);
+		abortedCounterLabel = createLabel("Errors: ", errorIcon);
+		failedCounterLabel = createLabel("Failures: ", failureIcon);
 		setTestingSession(testingSession);
 	}
 
