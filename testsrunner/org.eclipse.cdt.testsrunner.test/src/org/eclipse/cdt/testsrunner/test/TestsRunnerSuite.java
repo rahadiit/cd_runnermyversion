@@ -15,6 +15,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.eclipse.cdt.testsrunner.testsrunners.BoostTestCase;
+import org.eclipse.cdt.testsrunner.testsrunners.QtTestCase;
 
 
 public class TestsRunnerSuite extends TestSuite {
@@ -37,6 +38,7 @@ public class TestsRunnerSuite extends TestSuite {
 		final TestsRunnerSuite suite = new TestsRunnerSuite();
 		// tests runners
 		suite.addTestSuite(BoostTestCase.class);
+		suite.addTestSuite(QtTestCase.class);
 		return suite;
 	}
 }
