@@ -335,15 +335,4 @@ public class TestsHierarchyViewer {
 		getTreeViewer().refresh();
 	}
 
-	public void add(Object parent, Object child) {
-		if (showTestsHierarchy()) {
-			getTreeViewer().add(parent, child);
-		} else {
-			if (child instanceof ITestCase) {
-				Object root = getTreeViewer().getInput();
-				getTreeViewer().add(root, child);
-			}
-		}
-	}
-	
 }
