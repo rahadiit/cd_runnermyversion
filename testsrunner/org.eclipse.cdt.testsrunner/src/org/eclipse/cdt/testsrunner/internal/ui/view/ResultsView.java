@@ -49,6 +49,7 @@ public class ResultsView extends ViewPart {
 	private ResultsPanel resultsPanel;
 	private UIUpdater uiUpdater;
 	private TestingSessionsManager sessionsManager;
+	private boolean isDisposed = false;
 	
 	private Action nextAction;
 	private Action previousAction;
@@ -168,6 +169,7 @@ public class ResultsView extends ViewPart {
 	}
 
 	public void dispose() {
+		isDisposed = true;
 		if (uiUpdater != null) {
 			uiUpdater.dispose();
 		}
@@ -265,6 +267,10 @@ public class ResultsView extends ViewPart {
 		memento.putBoolean(TAG_SHOW_TIME, showTimeAction.isChecked());
 		memento.putBoolean(TAG_SCROLL_LOCK, scrollLockAction.isChecked());
 		memento.putInteger(TAG_HISTORY_SIZE, sessionsManager.getHistorySize());
+	}
+
+	public boolean isDisposed() {
+		return isDisposed;
 	}
 	
 }
