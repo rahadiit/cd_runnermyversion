@@ -197,7 +197,7 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 	}
 
 	public void addTestMessage(String file, int line, Level level, String text) {
-		TestLocation location = (file == null || file.isEmpty() || line == 0) ? null : new TestLocation(file, line);
+		TestLocation location = (file == null || file.isEmpty() || line <= 0) ? null : new TestLocation(file, line);
 		currentTestCase.addTestMessage(new TestMessage(location, level, text));
 	}
 	
