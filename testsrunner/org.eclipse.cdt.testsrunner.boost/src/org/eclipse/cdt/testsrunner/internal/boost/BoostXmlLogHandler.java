@@ -3,6 +3,7 @@ package org.eclipse.cdt.testsrunner.internal.boost;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
 import org.eclipse.cdt.testsrunner.model.ITestModelUpdater;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
@@ -48,8 +49,11 @@ public class BoostXmlLogHandler extends DefaultHandler {
         STRING_TO_MESSAGE_LEVEL = Collections.unmodifiableMap(aMap);
     }
 
+	private static final String DEFAULT_LOCATION_FILE = null;
+	private static final int DEFAULT_LOCATION_LINE = -1;
+    
 	private ITestModelUpdater modelUpdater;
-	private String elementData;
+	private Stack<StringBuilder> elementDataStack = new Stack<StringBuilder>();
 	private String fileName;
 	private int lineNumber;
 	private ITestItem.Status testStatus;
@@ -60,6 +64,7 @@ public class BoostXmlLogHandler extends DefaultHandler {
 	
 	public void startElement(String namespaceURI, String localName, String qName, Attributes attrs) throws SAXException {
 		
+		elementDataStack.push(new StringBuilder());
 		if (qName == XML_NODE_TEST_SUITE) {
 			String testSuiteName = attrs.getValue(XML_ATTR_TEST_SUITE_NAME);
 			modelUpdater.enterTestSuite(testSuiteName);
@@ -71,44 +76,34 @@ public class BoostXmlLogHandler extends DefaultHandler {
 
 		} else if (STRING_TO_MESSAGE_LEVEL.containsKey(qName)
 				|| qName == XML_NODE_LAST_CHECKPOINT) {
-			elementData = null;
 			fileName = attrs.getValue(XML_ATTR_MESSAGE_FILE);
-			lineNumber = Integer.parseInt(attrs.getValue(XML_ATTR_MESSAGE_LINE).trim());
+			String lineNumberStr = attrs.getValue(XML_ATTR_MESSAGE_LINE);
+			lineNumber = lineNumberStr != null ? Integer.parseInt(lineNumberStr.trim()) : DEFAULT_LOCATION_LINE;
 			
 		} else if (qName == XML_NODE_EXCEPTION) {
-			elementData = null;
-			fileName = null;
-			lineNumber = -1;
+			fileName = DEFAULT_LOCATION_FILE;
+			lineNumber = DEFAULT_LOCATION_LINE;
 
 		} else if (qName == XML_NODE_TESTING_TIME ) {
-			elementData = null;
 			
 		} else if (qName == XML_NODE_TEST_LOG) {
 			/* just skip, do nothing */
 			
 		} else {
-			String message = "Invalid XML format: Element \""+qName+"\" is not accepted!";
-			Activator.logErrorMessage(message);
-			throw new SAXException(message);
+			logAndThrowErrorForElement(qName);
 		}
 	}
 	
 	private void addCurrentMessage(ITestMessage.Level level) throws SAXException {
-		if (elementData == null) {
-			String message = "Invalid XML format: Empty message text is not accepted!";
-			Activator.logErrorMessage(message);
-			throw new SAXException(message);
-		}
-		modelUpdater.addTestMessage(fileName, lineNumber, level, elementData);
-		elementData = null;
-		fileName = null;
-		lineNumber = -1;
-		if (level == ITestMessage.Level.Error) {
+		modelUpdater.addTestMessage(fileName, lineNumber, level, elementDataStack.peek().toString());
+		fileName = DEFAULT_LOCATION_FILE;
+		lineNumber = DEFAULT_LOCATION_LINE;
+		if (level == ITestMessage.Level.Error || level == ITestMessage.Level.FatalError) {
 			if (testStatus != ITestItem.Status.Aborted) {
 				testStatus = ITestItem.Status.Failed;
 			}
 			
-		} else if (level == ITestMessage.Level.FatalError || level == ITestMessage.Level.Exception) {
+		} else if (level == ITestMessage.Level.Exception) {
 			testStatus = ITestItem.Status.Aborted;
 		}
 	}
@@ -123,38 +118,43 @@ public class BoostXmlLogHandler extends DefaultHandler {
 			modelUpdater.exitTestCase();
 		
 		} else if (qName == XML_NODE_TESTING_TIME) {
-			modelUpdater.setTestingTime(Integer.parseInt(elementData.trim())/100);
+			modelUpdater.setTestingTime(Integer.parseInt(elementDataStack.peek().toString().trim())/1000);
 
 		} else if (STRING_TO_MESSAGE_LEVEL.containsKey(qName)) {
 			addCurrentMessage(STRING_TO_MESSAGE_LEVEL.get(qName));
 
 		} else if (qName == XML_NODE_EXCEPTION) {
-			if (fileName != null && lineNumber != -1) {
-				elementData += "\nLast check point was here.";
+			if (fileName != DEFAULT_LOCATION_FILE && !fileName.isEmpty() && lineNumber >= 0) {
+				elementDataStack.peek().append("\nLast check point was here.");
 			}
-			addCurrentMessage(ITestMessage.Level.FatalError);
+			addCurrentMessage(ITestMessage.Level.Exception);
 
 		} else if (qName == XML_NODE_TEST_LOG || qName == XML_NODE_LAST_CHECKPOINT) {
 			/* just skip, do nothing */
 			
 		} else {
-			String message = "Invalid XML format: Element \""+qName+"\" is not accepted!";
-			Activator.logErrorMessage(message);
-			throw new SAXException(message);
+			logAndThrowErrorForElement(qName);
 		}
-	}
-
-	public void characters(char[] ch, int start, int length) {
-	    StringBuilder sb = new StringBuilder();
-	    if (elementData != null) {
-	    	sb.append(elementData);
-	    }
-		for (int i = start; i < start + length; i++) {
-			sb.append(ch[i]);
-		}
-		elementData = sb.toString();
+		elementDataStack.pop();
 	}
 	
+	public void characters(char[] ch, int start, int length) {
+		StringBuilder builder = elementDataStack.peek();
+		for (int i = start; i < start + length; i++) {
+			builder.append(ch[i]);
+		}
+	}
+	
+
+	private void logAndThrowErrorForElement(String tagName) throws SAXException {
+		logAndThrowError("Invalid XML format: Element \""+tagName+"\" is not accepted!");
+	}
+	
+	private void logAndThrowError(String message) throws SAXException {
+		Activator.logErrorMessage(message);
+		throw new SAXException(message);
+	}
+
 	
 	public void warning(SAXParseException ex) throws SAXException {
 		Activator.logErrorMessage("XML warning: "+ex.getMessage()); //$NON-NLS-1$
