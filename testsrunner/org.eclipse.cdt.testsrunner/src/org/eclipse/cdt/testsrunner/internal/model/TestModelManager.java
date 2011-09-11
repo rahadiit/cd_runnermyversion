@@ -74,9 +74,12 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 	public TestModelManager(ITestingSession previousSession, boolean timeMeasurement) {
 		testSuitesStack.push(new TestSuite("<root>", null)); //$NON-NLS-1$
 		if (previousSession != null) {
+			// Copy tests hierarchy
+			this.timeMeasurement = false;
 			previousSession.getModelAccessor().getRootSuite().visit(new HierarchyCopier());
 		}
 		this.timeMeasurement = timeMeasurement;
+		this.usedTestSuites.clear();
 	}
 
 	public void testingStarted() {
