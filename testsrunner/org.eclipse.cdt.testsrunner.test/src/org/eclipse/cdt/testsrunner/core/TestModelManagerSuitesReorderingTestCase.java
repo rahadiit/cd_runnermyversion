@@ -16,8 +16,7 @@ import org.eclipse.cdt.testsrunner.model.ITestSuite;
 
 
 /**
- * TODO: Add description here...
- *
+ * Tests on the test suites reordering in TestModelManager.
  */
 @SuppressWarnings("nls")
 public class TestModelManagerSuitesReorderingTestCase extends TestModelManagerBaseReorderingTestCase {

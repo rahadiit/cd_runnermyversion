@@ -11,8 +11,10 @@
 package org.eclipse.cdt.testsrunner.model;
 
 /**
- * TODO: Add descriptions
+ * Interface to the visitor through the test model.
  * 
+ * @noextend This interface is not intended to be extended by clients.
+ * @noimplement This interface is not intended to be implemented by clients.
  */
 public interface IModelVisitor {
 

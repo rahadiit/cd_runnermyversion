@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Anton Gorenkov - initial API and implementation
+ *     Anton Gorenkov  - initial implementation
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.test;
 
@@ -21,7 +21,11 @@ import org.eclipse.cdt.testsrunner.testsrunners.GoogleTestCase;
 import org.eclipse.cdt.testsrunner.testsrunners.QtTestCase;
 
 
+/**
+ * Test suite with all the tests on Tests Runner.
+ */
 public class TestsRunnerSuite extends TestSuite {
+	
 	public TestsRunnerSuite() {
 	}
 
@@ -42,7 +46,7 @@ public class TestsRunnerSuite extends TestSuite {
 		// Core
 		suite.addTestSuite(TestModelManagerSuitesReorderingTestCase.class);
 		suite.addTestSuite(TestModelManagerCasesReorderingTestCase.class);
-		// tests runners
+		// Tests Runners Plug-ins
 		suite.addTestSuite(BoostTestCase.class);
 		suite.addTestSuite(GoogleTestCase.class);
 		suite.addTestSuite(QtTestCase.class);

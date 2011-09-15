@@ -25,8 +25,7 @@ import org.eclipse.core.runtime.Plugin;
 
 
 /**
- * TODO: Add description here...
- *
+ * Base test case for Tests Runner Plug-ins testing.
  */
 @SuppressWarnings("nls")
 public abstract class BaseTestCase extends TestCase {

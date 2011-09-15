@@ -15,6 +15,7 @@ import java.net.URI;
 
 import org.eclipse.cdt.debug.ui.CDebugUIPlugin;
 import org.eclipse.cdt.debug.core.CDebugCorePlugin;
+import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
 import org.eclipse.cdt.testsrunner.model.ITestLocation;
 import org.eclipse.cdt.testsrunner.model.ITestMessage;
@@ -51,7 +52,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 /**
- * Toggles tests tree hierarchy auto-scroll
+ * Opens the editor in place where the currently selected message is pointed to.
  */
 public class OpenInEditorAction extends Action {
 
@@ -59,21 +60,15 @@ public class OpenInEditorAction extends Action {
 	private TestingSessionsManager testingSessionsManager;
 	private IWorkbench workbench;
 
+
 	public OpenInEditorAction(TableViewer tableViewer, TestingSessionsManager testingSessionsManager, IWorkbench workbench) {
 		super("&Go to File");
 		this.messagesViewer = tableViewer;
 		this.testingSessionsManager = testingSessionsManager;
 		this.workbench = workbench;
 		setToolTipText("Go to file pointed by the message"); // TODO: Add detailed tooltip
-		// TODO: Add image
-//		setDisabledImageDescriptor(Activator.getImageDescriptor("dlcl16/scroll_lock.gif")); //$NON-NLS-1$
-//		setHoverImageDescriptor(Activator.getImageDescriptor("elcl16/scroll_lock.gif")); //$NON-NLS-1$
-//		setImageDescriptor(Activator.getImageDescriptor("elcl16/scroll_lock.gif")); //$NON-NLS-1$
 	}
 
-	/**
-	 * @see org.eclipse.jface.action.IAction#run()
-	 */
 	@Override
 	public void run() {
 		Object selectedObject = ((IStructuredSelection)messagesViewer.getSelection()).getFirstElement();
@@ -127,11 +122,9 @@ public class OpenInEditorAction extends Action {
 		try {
 			openEditorAndSelect(result, messageLocation.getLine());
 		} catch (PartInitException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			TestsRunnerPlugin.log(e);
 		} catch (BadLocationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			TestsRunnerPlugin.log(e);
 		}
 	}
 	

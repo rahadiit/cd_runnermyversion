@@ -12,19 +12,17 @@ package org.eclipse.cdt.testsrunner.model;
 
 
 /**
- * TODO: Add descriptions
- * 
+ * Represents a failure in the Tests Runner operations.
  */
 public class TestingException extends Exception {
 
     /**
      * Constructs an exception with the given descriptive message.
      *
-     * @param msg Description of the exception which has occurred.
+     * @param msg Description of the occurred exception.
      */
     public TestingException(String msg) {
         super(msg);
     }
-
 
 }

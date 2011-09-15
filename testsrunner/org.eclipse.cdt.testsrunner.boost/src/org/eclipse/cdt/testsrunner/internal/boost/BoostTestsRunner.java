@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2011 Anton Gorenkov 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Anton Gorenkov - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.boost;
 
 import java.io.IOException;
@@ -12,6 +22,30 @@ import org.eclipse.cdt.testsrunner.model.ITestModelUpdater;
 import org.eclipse.cdt.testsrunner.model.TestingException;
 import org.xml.sax.SAXException;
 
+/**
+ * The Tests Runner Plug-in to run tests with Boost.Test framework.
+ * 
+ * Configures the test module to output in XML format, parses the output and
+ * provides the data for the Tests Runner Core.
+ * 
+ * @note There is a note about Tests Runner Plug-in accuracy. Communication
+ * between Boost test module and Boost Tests Runner Plug-in is done through
+ * standard output (which is buffered by default). Boost.Test (at least current
+ * version - 1.48.0) does not provide a way to flush the data about tests
+ * execution when they are available, so there may be a delay between test event
+ * happening (e.g. test case is started) and its displaying in the results view.
+ * The possible solution is to turn off the standard output buffering like this:
+ * <pre>
+ *     static struct DisableStdCoutBuffering
+ *     {
+ *         DisableStdCoutBuffering()
+ *         {
+ *             std::cout.setf(std::ios_base::unitbuf);
+ *         }
+ *     } s_disableStdCoutBuffering;
+ * </pre>
+ * It will make the results view showing progress more accurate.
+ */
 public class BoostTestsRunner implements ITestsRunner {
 
 	public String[] getAdditionalLaunchParameters(String[][] testPaths) throws TestingException {

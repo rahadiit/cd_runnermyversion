@@ -16,7 +16,8 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.viewers.TreeViewer;
 
 /**
- * TODO: Add description
+ * Launches the new debug session for the currently selected items of test
+ * hierarchy.
  */
 public class RedebugSelectedAction extends RelaunchSelectedAction {
 

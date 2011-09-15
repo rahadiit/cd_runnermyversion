@@ -5,9 +5,9 @@
          point="org.eclipse.cdt.testsrunner.TestsRunner">
       <runner
             class="org.eclipse.cdt.testsrunner.internal.qttest.QtTestsRunner"
-            description="Tests runner for a test module based on Qt4 Testing framework"
+            description="%QtTestsRunner.description"
             id="org.eclipse.cdt.testsrunner.qttest"
-            name="Qt Tests Runner">
+            name="%QtTestsRunner.name">
          <features
                multipleTestFilter="true"
                testingTimeMeasurement="true">

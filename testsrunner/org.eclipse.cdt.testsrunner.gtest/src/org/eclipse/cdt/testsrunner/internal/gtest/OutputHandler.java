@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2011 Anton Gorenkov 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Anton Gorenkov - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.gtest;
 
 import java.io.BufferedReader;
@@ -14,24 +24,75 @@ import org.eclipse.cdt.testsrunner.model.ITestModelUpdater;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestMessage;
 import org.eclipse.cdt.testsrunner.model.TestingException;
+import org.xml.sax.SAXException;
 
 
+/**
+ * <p>
+ * Parses the output of Google Testing Framework and notifies the Tests Runner
+ * Core about how the testing process is going.
+ * </p>
+ * <p>
+ * Unfortunately, gtest does not provide a realtime XML output (yes, it has XML
+ * output, but it is generated after testing process is done), so we have to
+ * parse its output that is less reliable.
+ * </p>
+ * <p>
+ * The parsing is done with a simple FSM (Final State Machine). There is an
+ * internal state that changes when input tokens (gtest output lines) come.
+ * There is a transitions table that is used to determine what is the next state
+ * depending on the current one and the input token. The state may define
+ * onEnter and onExit actions to do the useful job.
+ * </p>
+ */
 public class OutputHandler {
 	
+	/**
+	 * Base class for the FSM internal state.
+	 */
 	class State {
+		
+		/** Stores the regular expression by which the state should be entered. */
 		private Pattern enterPattern;
+		
+		/** The regular expression matcher. */
 		private Matcher matcher;
+		
+		/** Groups count in a regular expression. */
 		private int groupCount;
 		
+		/**
+		 * The constructor.
+		 * 
+		 * @param enterRegex the regular expression by which the state should be
+		 * entered
+		 */
 		State(String enterRegex) {
 			this(enterRegex, -1);
 		}
 		
+		/**
+		 * The constructor.
+		 * 
+		 * @param enterRegex the regular expression by which the state should be
+		 * entered
+		 * @param groupCount groups count in a regular expression. It is used
+		 * just to make debug easier and the parser more reliable.
+		 */
 		State(String enterRegex, int groupCount) {
 			enterPattern = Pattern.compile(enterRegex);
 			this.groupCount = groupCount;
 		}
 		
+		/**
+		 * Checks whether the specified string matches the enter pattern
+		 * (regular expression). If it is so the state should be entered.
+		 * 
+		 * @param line input line (token)
+		 * @return true if matches and false otherwise
+		 * @throws TestingException if groups count does not match the defined
+		 * in constructor number.
+		 */
 		public boolean match(String line) throws TestingException {
 			matcher = enterPattern.matcher(line);
 			boolean groupsCountOk = groupCount == -1 || matcher.groupCount() == groupCount;
@@ -51,42 +112,94 @@ public class OutputHandler {
 			return matches;
 		}
 		
+		/**
+		 * Returns the matched group value by index.
+		 * 
+		 * @param groupNumber group index
+		 * @return group value
+		 */
 		protected String group(int groupNumber) {
 			return matcher.group(groupNumber);
 		}
 		
+		/**
+		 * Action that triggers on state enter.
+		 * 
+		 * @param previousState previous state
+		 * @throws TestingException if testing error is detected
+		 */
 		public void onEnter(State previousState) throws TestingException {}
 
+		/**
+		 * Action that triggers on state exit.
+		 * 
+		 * @param previousState next state
+		 * @throws TestingException if testing error is detected
+		 */
 		public void onExit(State nextState) {}
 		
+		/**
+		 * Common routine that constructs full test suite name by name and type
+		 * parameter.
+		 * 
+		 * @param name test suite name
+		 * @param typeParameter type parameter
+		 * @return full test suite name
+		 */
 		protected String getTestSuiteName(String name, String typeParameter) {
 			return (typeParameter != null) ? MessageFormat.format("{0}({1})", name, typeParameter.trim()) : name; //$NON-NLS-1$
 		}
 	}
 	
 	
+	/**
+	 * The state is activated when a new test suite is started.
+	 */
 	class TestSuiteStart extends State {
+		
+		/** Stores the matched type parameter. */
 		private String typeParameter;
 		
 		TestSuiteStart(String enterRegex, int groupCount) {
 			super(enterRegex, groupCount);
 		}
 
+		/**
+		 * Stores type parameter and notify Tests Runner Core about test suite
+		 * start.
+		 */
 		public void onEnter(State previousState) {
 			typeParameter = group(3);
 			modelUpdater.enterTestSuite(getTestSuiteName(group(1), typeParameter));
 		}
 		
+		/**
+		 * Provides access to the matched type parameter.
+		 * 
+		 * @return type parameter value
+		 */
 		public String getTypeParameter() {
 			return typeParameter;
 		}
 	}
 	
+	
+	/**
+	 * The state is activated when a new test case is started.
+	 */
 	class TestCaseStart extends State {
+		
 		TestCaseStart(String enterRegex, int groupCount) {
 			super(enterRegex, groupCount);
 		}
 
+		/**
+		 * Extract current test case and test suite names and notify Tests
+		 * Runner Core about test case start.
+		 * 
+		 * @throws TestingException if extracted test suite name does not match
+		 * last entered test suite name.
+		 */
 		public void onEnter(State previousState) throws TestingException {
 			String testCaseName = group(2);
 			String lastTestSuiteName = modelUpdater.currentTestSuite().getName();
@@ -102,16 +215,36 @@ public class OutputHandler {
 			modelUpdater.enterTestCase(testCaseName);
 		}
 	}
+
 	
+	/**
+	 * The state is activated when an error message's location is started.
+	 */
 	class ErrorMessageLocation extends State {
+		
+		/** Stores the message location file name. */
 		private String messageFileName;
+
+		/** Stores the message location line number. */
 		private int messageLineNumber;
+		
+		/** Stores the first part of the message. */
 		private String messagePart;
 		
 		ErrorMessageLocation(String enterRegex, int groupCount) {
 			super(enterRegex, groupCount);
 		}
 		
+		/**
+		 * Extract the data for the message location (file name, line number).
+		 * The data may be provided in a common style ("/path/file:line" with
+		 * the message text starting on the next line) or Visual Studio style
+		 * ("/path/file(line):" with the message text continuing on the same
+		 * line). It is also possible not to specify line number at all
+		 * ("/path/file:").
+		 * 
+		 * @throws TestingException if location format cannot be recognized.
+		 */
 		public void onEnter(State previousState) throws TestingException {
 			String fileNameIfLinePresent = group(2);
 			String fileNameIfLineAbsent = group(6);
@@ -145,27 +278,52 @@ public class OutputHandler {
 			messagePart = group(8);
 		}
 		
+		/**
+		 * Provides access to the message location file name.
+		 * 
+		 * @return file name
+		 */
 		public String getMessageFileName() {
 			return messageFileName;
 		}
 		
+		/**
+		 * Provides access to the message location line number.
+		 * 
+		 * @return line number
+		 */
 		public int getMessageLineNumber() {
 			return messageLineNumber;
 		}
 		
+		/**
+		 * Provides access to the first part of the message.
+		 * 
+		 * @return message part
+		 */
 		public String getMessagePart() {
 			return messagePart;
 		}
 	}
 	
+	
+	/**
+	 * The state is activated when an error message text is started or continued.
+	 */
 	class ErrorMessage extends State {
 
+		/** Stores the error message text that was already read. */
 		private StringBuilder messagePart = new StringBuilder();
 
 		ErrorMessage(String enterRegex, int groupCount) {
 			super(enterRegex, groupCount);
 		}
 
+		/**
+		 * Collects the error message parts into internal buffer. If the
+		 * previous state is not the same (it should be
+		 * stateErrorMessageLocation) - get the message part from it.
+		 */
 		public void onEnter(State previousState) {
 			boolean needEndOfLine = (this == previousState);
 			if (this != previousState) {
@@ -181,6 +339,9 @@ public class OutputHandler {
 			messagePart.append(group(1));
 		}
 
+		/**
+		 * Notifies the Tests Runner Core about new test message.
+		 */
 		public void onExit(State nextState) {
 			if (this != nextState) {
 				modelUpdater.addTestMessage(
@@ -194,12 +355,20 @@ public class OutputHandler {
 		}
 	}
 	
+
+	/**
+	 * The state is activated when a test trace is started or continued.
+	 */
 	class TestTrace extends ErrorMessageLocation {
 		
 		TestTrace(String enterRegex, int groupCount) {
 			super(enterRegex, groupCount);
 		}
 
+		/**
+		 * Notifies the Tests Runner Core about new test message with test trace
+		 * info.
+		 */
 		public void onEnter(State previousState) throws TestingException {
 			super.onEnter(previousState);
 			modelUpdater.addTestMessage(
@@ -209,16 +378,26 @@ public class OutputHandler {
 				getMessagePart()
 			);
 		}
-
-		
 	}
 	
+
+	/**
+	 * The state is activated when a test case is finished.
+	 */
 	class TestCaseEnd extends State {
 
 		TestCaseEnd(String enterRegex, int groupCount) {
 			super(enterRegex, groupCount);
 		}
 		
+		/**
+		 * Sets the test case execution time, status and notify Tests Runner
+		 * Core about test case end.
+		 * 
+		 * @throws TestingException if current test suite or case name does not
+		 * match last entered test suite or case name or if test status is not
+		 * known.
+		 */
 		public void onEnter(State previousState) throws TestingException {
 			String lastTestSuiteName = modelUpdater.currentTestSuite().getName();
 			String explicitTypeParameter = group(5); 
@@ -266,12 +445,22 @@ public class OutputHandler {
 		}
 	}
 	
+
+	/**
+	 * The state is activated when a test suite is finished.
+	 */
 	class TestSuiteEnd extends State {
 
 		TestSuiteEnd(String enterRegex, int groupCount) {
 			super(enterRegex, groupCount);
 		}
 		
+		/**
+		 * Notify Tests Runner Core about test suite end.
+		 * 
+		 * @throws TestingException if current test suite name does not match
+		 * last entered test suite name.
+		 */
 		public void onEnter(State previousState) throws TestingException {
 			String lastTestSuiteName = modelUpdater.currentTestSuite().getName();
 			String currTestSuiteName = getTestSuiteName(group(1), stateTestSuiteStart.getTypeParameter());
@@ -288,8 +477,12 @@ public class OutputHandler {
 	}
 	
 	
-	private ITestModelUpdater modelUpdater;
+    /** The default file name for test message location. */
+	private static final String DEFAULT_LOCATION_FILE = null;
 
+	/** The default line number for test message location. */
+	private static final int DEFAULT_LOCATION_LINE = 1;
+    
 	// Common regular expression parts
 	static private String regexTestSuiteName = "([^,]+)"; //$NON-NLS-1$
 	static private String regexParameterInstantiation = "(\\s*,\\s+where\\s+TypeParam\\s*=([^,(]+))?"; //$NON-NLS-1$
@@ -312,12 +505,13 @@ public class OutputHandler {
 	 *   - group 6 (if filename only was specified)
 	 */
 	static private String regexLocation = "((.*)(:(\\d+)|\\((\\d+)\\))|(.*[^):])):"; //$NON-NLS-1$
-	
+
+	// Test statuses representation 
 	static private String testStatusOk = "OK"; //$NON-NLS-1$
 	static private String testStatusFailed = "FAILED"; //$NON-NLS-1$
 	
 
-	// All available states
+	// All available states in FSM
 	private State stateInitial = new State(""); //$NON-NLS-1$
 	private State stateInitialized = new State(".*Global test environment set-up.*"); //$NON-NLS-1$
 	private TestSuiteStart stateTestSuiteStart = new TestSuiteStart("\\[-*\\]\\s+"+regexTestCount+"\\s+from\\s+"+regexTestSuiteName+regexParameterInstantiation, 3); //$NON-NLS-1$ //$NON-NLS-2$
@@ -333,30 +527,41 @@ public class OutputHandler {
 	// NOTE: This state is a special workaround for empty test modules (they haven't got global test environment set-up/tear-down). They should be always passed.
 	private State stateEmptyTestModuleFinal = new State(".*\\[\\s*PASSED\\s*\\]\\s+0\\s+tests.*"); //$NON-NLS-1$
 	
-	private State currentState;
+	// Transitions table
 	private Map<State, State[] > transitions = new HashMap<State, State[]>();
 	{
 		// NOTE: Next states order is important!
-		transitions.put(from(stateInitial), to(stateInitialized, stateEmptyTestModuleFinal));
-		transitions.put(from(stateInitialized), to(stateTestSuiteStart));
-		transitions.put(from(stateTestSuiteStart), to(stateTestCaseStart));
-		transitions.put(from(stateTestCaseStart), to(stateTestCaseEnd, stateErrorMessageLocation));
-		transitions.put(from(stateErrorMessageLocation), to(stateTestTraceStart, stateTestCaseEnd, stateErrorMessageLocation, stateErrorMessage));
-		transitions.put(from(stateErrorMessage), to(stateTestTraceStart, stateTestCaseEnd, stateErrorMessageLocation, stateErrorMessage));
-		transitions.put(from(stateTestTraceStart), to(stateTestTrace));
-		transitions.put(from(stateTestTrace), to(stateTestCaseEnd, stateErrorMessageLocation, stateTestTrace));
-		transitions.put(from(stateTestCaseEnd), to(stateTestCaseStart, stateTestSuiteEnd));
-		transitions.put(from(stateTestSuiteEnd), to(stateTestSuiteStart, stateFinal));
+		transitions.put( from(stateInitial),              to(stateInitialized, stateEmptyTestModuleFinal) );
+		transitions.put( from(stateInitialized),          to(stateTestSuiteStart) );
+		transitions.put( from(stateTestSuiteStart),       to(stateTestCaseStart) );
+		transitions.put( from(stateTestCaseStart),        to(stateTestCaseEnd, stateErrorMessageLocation) );
+		transitions.put( from(stateErrorMessageLocation), to(stateTestTraceStart, stateTestCaseEnd, stateErrorMessageLocation, stateErrorMessage) );
+		transitions.put( from(stateErrorMessage),         to(stateTestTraceStart, stateTestCaseEnd, stateErrorMessageLocation, stateErrorMessage) );
+		transitions.put( from(stateTestTraceStart),       to(stateTestTrace) );
+		transitions.put( from(stateTestTrace),            to(stateTestCaseEnd, stateErrorMessageLocation, stateTestTrace) );
+		transitions.put( from(stateTestCaseEnd),          to(stateTestCaseStart, stateTestSuiteEnd) );
+		transitions.put( from(stateTestSuiteEnd),         to(stateTestSuiteStart, stateFinal) );
 	}
+
+	/** Current FSM state. */
+	private State currentState;
 	
-	private static final String DEFAULT_LOCATION_FILE = null;
-	private static final int DEFAULT_LOCATION_LINE = 1;
-    
+	/** The interface to notify the Tests Runner Core */
+	private ITestModelUpdater modelUpdater;
+
 	
 	OutputHandler(ITestModelUpdater modelUpdater) {
 		this.modelUpdater = modelUpdater;
 	}
 	
+	/**
+	 * Runs the parsing process. Initializes the FSM, selects new states with
+	 * transitions table and checks whether the parsing completes successfully.
+	 * 
+	 * @param inputStream gtest test module output stream
+	 * @throws IOException if stream reading error happens
+	 * @throws TestingException if testing error happens
+	 */
 	public void run(InputStream inputStream) throws IOException, TestingException {
 		// Initialize input stream reader
 		InputStreamReader streamReader = new InputStreamReader(inputStream);
@@ -397,15 +602,33 @@ public class OutputHandler {
         }
 	}
 	
+	/**
+	 * Throws the testing exception with unknown internal error prefix and the specified description.
+	 * 
+	 * @param additionalInfo additional description of what happens
+	 * @throws SAXException the exception that will be thrown
+	 */
 	private void generateInternalError(String additionalInfo) throws TestingException
 	{
 		throw new TestingException("Unknown error during parsing Google Test module output: "+additionalInfo);
 	}
 
+	/**
+	 * Helper functions to make code more readable.
+	 * 
+	 * @param fromState state to return
+	 * @return passed state
+	 */
 	private State from(State fromState) {
 		return fromState;
 	}
 	
+	/**
+	 * Helper functions to make code more readable.
+	 * 
+	 * @param toStates states array to return
+	 * @return passed states array
+	 */
 	private State[] to(State... toStates) {
 		return toStates;
 	}

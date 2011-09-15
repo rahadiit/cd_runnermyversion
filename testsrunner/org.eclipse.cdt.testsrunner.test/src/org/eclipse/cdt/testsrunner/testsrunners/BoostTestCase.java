@@ -17,8 +17,7 @@ import org.eclipse.cdt.testsrunner.model.ITestMessage;
 
 
 /**
- * Test for {@see BoostTestsRunner} class
- *
+ * Tests for {@see BoostTestsRunner} class
  */
 @SuppressWarnings("nls")
 public class BoostTestCase extends BaseTestCase {

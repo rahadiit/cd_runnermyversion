@@ -14,15 +14,17 @@ import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestMessage;
 
 /**
- * TODO: Add descriptions
- * 
+ * Represents the message that was produced during the testing process.
  */
 public class TestMessage implements ITestMessage {
 
+	/** Test message location. */
 	private TestLocation location;
 
+	/** Test message level */
 	private Level level;
 
+	/** Test message text */
 	private String text;
 
 	

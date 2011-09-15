@@ -13,15 +13,18 @@ package org.eclipse.cdt.testsrunner.internal.model;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 
 /**
- * TODO: Add descriptions
- * 
+ * Common implementation for the structural item of test hierarchy (test suite
+ * or test case).
  */
 public abstract class TestItem implements ITestItem {
 
-	private final ITestItem[] NO_CHILDREN= new ITestItem[0];
+	/** Test item has no children by default. */
+	private static final ITestItem[] NO_CHILDREN = new ITestItem[0];
 
+	/** Test item name. */
 	private final String name;
 	
+	/** Item parent test suite. May be <code>null</code> for root test suite. */
 	private TestSuite parent;
 
 	

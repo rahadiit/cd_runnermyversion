@@ -5,9 +5,9 @@
          point="org.eclipse.cdt.testsrunner.TestsRunner">
       <runner
             class="org.eclipse.cdt.testsrunner.internal.gtest.GoogleTestsRunner"
-            description="Tests runner for a test module based on Google C++ Testing Framework"
+            description="%GoogleTestsRunner.description"
             id="org.eclipse.cdt.testsrunner.gtest"
-            name="Google Tests Runner">
+            name="%GoogleTestsRunner.name">
          <features
                multipleTestFilter="true">
          </features>

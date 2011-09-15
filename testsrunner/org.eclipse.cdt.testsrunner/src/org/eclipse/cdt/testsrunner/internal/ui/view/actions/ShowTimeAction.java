@@ -15,7 +15,7 @@ import org.eclipse.cdt.testsrunner.internal.ui.view.TestsHierarchyViewer;
 import org.eclipse.jface.action.Action;
 
 /**
- * Toggles tests tree hierarchy auto-scroll
+ * Toggles the test execution time showing in tests hierarchy viewer.
  */
 public class ShowTimeAction extends Action {
 

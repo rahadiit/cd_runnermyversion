@@ -17,7 +17,6 @@ import java.util.Set;
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.cdt.launch.AbstractCLaunchDelegate;
 import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
-import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager.TestsRunnerInfo;
 import org.eclipse.cdt.testsrunner.internal.ui.view.TestPathUtils;
 import org.eclipse.cdt.testsrunner.launcher.ITestsRunner;
 import org.eclipse.cdt.testsrunner.model.TestingException;
@@ -35,9 +34,16 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate2;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 
-public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
+/**
+ * Launch delegate implementation that redirects its queries to CDI launch C/C++
+ * local application delegate, correcting the arguments attribute (to take into
+ * account auto generated test module parameters) and setting up the custom
+ * process factory (to handle testing process IO streams).
+ */
+public abstract class BaseTestsLaunchDelegate extends AbstractCLaunchDelegate {
 	
     @Override
     public ILaunch getLaunch(ILaunchConfiguration config, String mode) throws CoreException {
@@ -55,7 +61,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			
 			ILaunchConfigurationWorkingCopy backupConfig = config.getWorkingCopy();
 			try {
-				// Changes launch configuration a bit and redirect it to the preferred C Application Launch delegate 
+				// Changes launch configuration a bit and redirect it to the preferred C/C++ Application Launch delegate 
 				updatedLaunchConfiguration(config);
 				getPreferredDelegate(config, mode).launch(config, mode, launch, monitor);
 			}
@@ -66,14 +72,27 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 		}
 	}
 	
+	/**
+	 * Make the necessary changes to the launch configuration before passing it
+	 * to the underlying delegate. Currently, updates the program arguments with
+	 * the value that was obtained from Tests Runner Plug-in.
+	 * 
+	 * @param config launch configuration
+	 */
 	private void updatedLaunchConfiguration(ILaunchConfiguration config) throws CoreException {
 		ILaunchConfigurationWorkingCopy newConfig = config.getWorkingCopy();
 		setProgramArguments(newConfig);
 		newConfig.doSave();
 	}
 	
+	/**
+	 * Updates the program arguments with the value that was obtained from Tests
+	 * Runner Plug-in.
+	 * 
+	 * @param config launch configuration
+	 */
 	private void setProgramArguments(ILaunchConfigurationWorkingCopy config) throws CoreException {
-		List<String> packedTestsFilter = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_FILTER, Collections.EMPTY_LIST);
+		List<?> packedTestsFilter = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_FILTER, Collections.EMPTY_LIST);
 		String [][] testsFilter = TestPathUtils.unpackTestPaths(packedTestsFilter.toArray(new String[packedTestsFilter.size()]));
 
 		// Configure test module run parameters with a Tests Runner 
@@ -102,6 +121,12 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 		}
 	}
 	
+	/**
+	 * Resolves Tests Runner Plug-in interface by the value written in launch
+	 * configuration.
+	 * 
+	 * @param config launch configuration
+	 */
 	private ITestsRunner getTestsRunner(ILaunchConfiguration config) throws CoreException {
 		TestsRunnerInfo testsRunnerInfo = TestsRunnerPlugin.getDefault().getTestsRunnersManager().getTestsRunner(config);
 		if (testsRunnerInfo == null) {
@@ -124,6 +149,15 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 		return testsRunner;
 	}
 
+	/**
+	 * Resolves the preferred launch delegate for the specified configuration to
+	 * launch C/C++ Local Application in the specified mode. The preferred
+	 * launch delegate ID is taken from <code>getPreferredDelegateId()</code>.
+	 * 
+	 * @param config launch configuration
+	 * @param mode mode
+	 * @return launch delegate
+	 */
 	private ILaunchConfigurationDelegate2 getPreferredDelegate(ILaunchConfiguration config, String mode) throws CoreException {
 	    ILaunchManager launchMgr = DebugPlugin.getDefault().getLaunchManager();
 	    ILaunchConfigurationType localCfg =
@@ -139,16 +173,24 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 		return null;
 	}	
 
-    public String getPreferredDelegateId() {
-        return "org.eclipse.cdt.cdi.launch.localCLaunch";
-    }
+	/**
+	 * Returns the launch delegate id which should be used to redirect the
+	 * launch (by default, CDI C/C++ Local Application launch delegate).
+	 * 
+	 * @return launch delegate ID
+	 */
+    public abstract String getPreferredDelegateId();
 	
+	/**
+	 * Activates the view showing testing results.
+	 */
 	private void activateTestingView() {
 		Display.getDefault().syncExec(new Runnable() {
 			public void run() {
 				IViewPart view;
 				try {
-					view = TestsRunnerPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.eclipse.cdt.testsrunner.resultsview");
+					IWorkbenchWindow activeWindow = TestsRunnerPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow();
+					view = activeWindow.getActivePage().showView("org.eclipse.cdt.testsrunner.resultsview"); //$NON-NLS-1$
 					TestsRunnerPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
 				} catch (PartInitException e) {
 					TestsRunnerPlugin.log(e);

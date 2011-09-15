@@ -16,25 +16,29 @@ import java.util.Map;
 import org.eclipse.cdt.dsf.gdb.launching.InferiorRuntimeProcess;
 import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.internal.model.TestingSession;
-import org.eclipse.cdt.testsrunner.model.ITestsRunnerInfo;
+import org.eclipse.cdt.testsrunner.launcher.ITestsRunnerInfo;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.IProcessFactory;
 import org.eclipse.debug.core.model.IProcess;
 
 /**
- * TODO: Add descriptions
- * 
+ * Custom testing process factory allows to handle the output stream of the
+ * testing process and prevent it from output to Console.
  */
 public class TestingProcessFactory implements IProcessFactory {
 
-	class ThreadRunnable implements Runnable {
+	/**
+	 * Runs data processing for the testing process and close IO stream when it
+	 * is done.
+	 */
+	private class TestingSessionRunner implements Runnable {
 
 		private TestingSession testingSession;
 		private InputStream iStream;
 		private ProcessWrapper processWrapper;
 		
-		ThreadRunnable(TestingSession testingSession, InputStream iStream, ProcessWrapper processWrapper) {
+		TestingSessionRunner(TestingSession testingSession, InputStream iStream, ProcessWrapper processWrapper) {
 			this.testingSession = testingSession;
 			this.iStream = iStream;
 			this.processWrapper = processWrapper;
@@ -45,11 +49,11 @@ public class TestingProcessFactory implements IProcessFactory {
 				testingSession.run(iStream);
 			}
 			finally {
+				// Streams should be closed anyway to avoid testing process hang up
 				processWrapper.allowStreamsClosing();
 			}
 		}
 	}
-	
 	
 	public IProcess newProcess(ILaunch launch, Process process, String label, Map attributes) {
 		
@@ -60,9 +64,9 @@ public class TestingProcessFactory implements IProcessFactory {
 					testsRunnerInfo.isOutputStreamRequired() ? process.getInputStream() :
 					testsRunnerInfo.isErrorStreamRequired() ? process.getErrorStream() : null;
 			ProcessWrapper processWrapper = new ProcessWrapper(process, testsRunnerInfo.isOutputStreamRequired(), testsRunnerInfo.isErrorStreamRequired());
-			Thread t = new Thread(new ThreadRunnable(testingSession, iStream, processWrapper));
+			Thread t = new Thread(new TestingSessionRunner(testingSession, iStream, processWrapper));
 			t.start();
-			// For CDI we can just create RuntimeProcess, but for DSF InferiorRuntimeProcess should be created
+			// For CDI we can just create RuntimeProcess, but for DSF the InferiorRuntimeProcess should be created
 			return new InferiorRuntimeProcess(launch, processWrapper, label, attributes);
 			
 		} catch (CoreException e) {

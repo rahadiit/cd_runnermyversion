@@ -18,7 +18,7 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
-import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager.TestsRunnerInfo;
+import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnerInfo;
 import org.eclipse.cdt.testsrunner.launcher.ITestsRunner;
 import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
@@ -34,26 +34,75 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
 
 /**
- * TODO: Add descriptions
- * 
+ * Stores the information about tests running.
  */
 public class TestingSession implements ITestingSession {
 
+	/** Launch object the is connected to the tests running. */
 	private ILaunch launch;
+	
+	/** Information about used Tests Runner Plug-in. */
 	private TestsRunnerInfo testsRunnerInfo;
+
+	/** Main interface to Tests Runner Plug-in. */
 	private ITestsRunner testsRunner;
+	
+	/**
+	 * Test Model manager that is used to fill and update the model for the
+	 * session.
+	 */
 	private TestModelManager modelManager;
+	
+	/**
+	 * Total tests counter. It is -1 by default, that means that total tests
+	 * count is not available.
+	 * 
+	 * @see getTotalCounter()
+	 */
 	private int totalCounter = -1;
+
+	/** Already finished tests counter. */
 	private int currentCounter = 0;
+	
+	/**
+	 * Test counters map by test status. They are used to quickly provide simple
+	 * statistics without model scanning.
+	 * 
+	 */
 	private Map<ITestItem.Status, Integer> statusCounters = new EnumMap<ITestItem.Status, Integer>(ITestItem.Status.class);
+
+	/**
+	 * The flag stores whether the testing session contains errors at the
+	 * moment.
+	 * 
+	 * @see hasErrors()
+	 */
 	private boolean hasErrors = false;
+	
+	/**
+	 * The flag stores whether the testing session was stopped by user.
+	 * 
+	 * @see wasStopped()
+	 */
 	private boolean wasStopped = false;
+	
+	/**
+	 * The flag stores whether the testing session has been finished (with or
+	 * without errors).
+	 */
 	private boolean finished = false;
+	
+	/** Stores current status of the testing session. */
 	private String statusMessage = "Starting...";
+	
+	/** Stores the time when the testing session was created. */
 	private long startTime;
 	
 	
-	class TestCasesCounter implements IModelVisitor {
+	/**
+	 * Counts the number of the test cases in tests hierarchy.
+	 */
+	private class TestCasesCounter implements IModelVisitor {
 		
 		public int result = 0;
 		
@@ -69,22 +118,14 @@ public class TestingSession implements ITestingSession {
 	}
 
 	
-	class TestingTimeCounter implements IModelVisitor {
-		
-		public int result = 0;
-		
-		public void visit(ITestCase testCase) {
-			result += testCase.getTestingTime();
-		}
-		
-		public void visit(ITestSuite testSuite) {}
-		public void visit(ITestMessage testMessage) {}
-		public void leave(ITestSuite testSuite) {}
-		public void leave(ITestCase testCase) {}
-		public void leave(ITestMessage testMessage) {}
-	}
-
-	
+	/**
+	 * The constructor.
+	 * 
+	 * @param launch connected launch object
+	 * @param testsRunnerInfo the information about the tests runner
+	 * @param previousSession is used to determine total tests count & for tests
+	 * hierarchy reusing if it is considered as similar
+	 */
 	public TestingSession(ILaunch launch, TestsRunnerInfo testsRunnerInfo, TestingSession previousSession) {
 		this.launch = launch;
 		this.testsRunnerInfo = testsRunnerInfo;
@@ -127,15 +168,19 @@ public class TestingSession implements ITestingSession {
 		});
 	}
 
+	/**
+	 * Starts the processing of the test module output.
+	 * 
+	 * @param inputStream test module output stream
+	 */
 	public void run(InputStream inputStream) {
 		modelManager.testingStarted();
 		try {
 			testsRunner.run(modelManager, inputStream);
-			TestingTimeCounter testingTimeCounter = new TestingTimeCounter();
 			// If testing session was stopped, the status is set in stop()
 			if (!wasStopped()) {
-				getModelAccessor().getRootSuite().visit(testingTimeCounter);
-				statusMessage = MessageFormat.format("Finished after {0} seconds", testingTimeCounter.result/1000.0);
+				double testingTime = getModelAccessor().getRootSuite().getTestingTime();
+				statusMessage = MessageFormat.format("Finished after {0} seconds", testingTime/1000.0);
 			}
 		} catch (TestingException e) {
 			// If testing session was stopped, the status is set in stop()
@@ -152,9 +197,6 @@ public class TestingSession implements ITestingSession {
 		return currentCounter;
 	}
 
-	/**
-	 * NOTE: Total counter may be -1 if total tests count is unknown
-	 */
 	public int getTotalCounter() {
 		return totalCounter;
 	}

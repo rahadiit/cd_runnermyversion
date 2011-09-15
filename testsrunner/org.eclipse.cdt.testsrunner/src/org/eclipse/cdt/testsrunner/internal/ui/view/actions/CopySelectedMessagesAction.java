@@ -23,32 +23,29 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 
 /**
- * TODO: add description
+ * Copies the selected test messages to the clipboard.
  */
 public class CopySelectedMessagesAction extends Action {
 
 	private Clipboard clipboard;
 	private TableViewer tableViewer;
 
+
 	public CopySelectedMessagesAction(TableViewer tableViewer, Clipboard clipboard) {
 		super("Copy");
-		setToolTipText("Copy The Selected Tests To Clipboard");
+		setToolTipText("Copy Selected Messages To Clipboard");
 		setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
 		this.tableViewer = tableViewer;
 		this.clipboard = clipboard;
 	}
 
-	/**
-	 * @see org.eclipse.jface.action.IAction#run()
-	 */
-	@Override
 	public void run() {
 		ITableLabelProvider labelProvider = (ITableLabelProvider)tableViewer.getLabelProvider();
 		IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
 		if (!selection.isEmpty()) {
 			StringBuilder sb = new StringBuilder();
 			boolean needEOL = false;
-			for (Iterator it = selection.iterator(); it.hasNext();) {
+			for (Iterator<?> it = selection.iterator(); it.hasNext();) {
 				Object item = it.next();
 				if (needEOL) {
 					sb.append(System.getProperty("line.separator")); //$NON-NLS-1$

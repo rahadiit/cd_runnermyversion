@@ -30,36 +30,87 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.progress.UIJob;
 
 /**
- * TODO: Add description here
- * TODO: fix header comment
+ * Tracks and collects the changes in active testing session and updates the UI
+ * periodically. It allows to significantly improve the UI performance.
  */
 public class UIUpdater {
 	
+	/** Access to the results showing view. */
 	private ResultsView resultsView;
+	
+	/** Access to the tests hierarchy showing widget. */
 	private TestsHierarchyViewer testsHierarchyViewer;
+
+	/** Access to the statistics showing widget. */
 	private ProgressCountPanel progressCountPanel;
+	
+	/** Listener for the changes in active testing session. */
 	private ITestingSessionListener sessionListener;
+	
+	/**
+	 * Specifies whether tests hierarchy scrolling should be done during the
+	 * testing process.
+	 */
 	private boolean autoScroll = true;
+	
+	/** Access to the testing sessions manager. */
 	private TestingSessionsManager sessionsManager;
+	
+	/** Listener to handle active testing session change. */
 	private TestingSessionsManagerListener sessionsManagerListener;
+	
+	/** Reference to the active testing session. */
 	ITestingSession testingSession;
+	
+	/** Storage for the UI changes that should be done on update. */
 	UIChangesCache uiChangesCache = new UIChangesCache();
+	
+	/** A job that makes an UI update periodically. */
 	UpdateUIJob updateUIJob = null;
 	
+	/** Time interval over which the UI should be updated. */
 	private static final int REFRESH_INTERVAL = 200;
 	
 	
-	class UIChangesCache {
+	/** 
+	 * Storage for the UI changes that should be done on update.
+	 */
+	private class UIChangesCache {
 		
+		/**
+		 * Specifies whether Progress Counter Panel should be updated during the
+		 * next UI update.
+		 */
 		private boolean needProgressCountPanelUpdate;
+
+		/**
+		 * Specifies whether view actions should be updated during the next UI
+		 * update.
+		 */
 		private boolean needActionsUpdate;
 
-		private String newViewCaption;
+		/**
+		 * A test item which path should be shown as a view caption during the
+		 * next UI update.
+		 */
 		private ITestItem testItemForNewViewCaption;
 		
+		/**
+		 * Set of tree objects on which <code>refresh()</code> should be called
+		 * during the next UI update.
+		 */
  		private Set<Object> treeItemsToRefresh = new HashSet<Object>();
+
+		/**
+		 * Set of tree objects on which <code>update()</code> should be called
+		 * during the next UI update.
+		 */
  		private Set<Object> treeItemsToUpdate = new HashSet<Object>();
+
+ 		/** Tree object that should be revealed during the next UI update. */
  		private Object treeItemToReveal;
+ 		
+ 		/** Map of tree objects that should be expanded or collapsed to their new states. */
 		private Map<Object, Boolean> treeItemsToExpand = new LinkedHashMap<Object, Boolean>();
 		
 		
@@ -67,51 +118,80 @@ public class UIUpdater {
 			resetChanges();
 		}
 
-		
+		/**
+		 * Schedules the Progress Counter Panel update during the next UI update.
+		 */
 		public void scheduleProgressCountPanelUpdate() {
 			synchronized (this) {
 				needProgressCountPanelUpdate = true;
 			}
 		}
 		
+		/**
+		 * Schedules the view actions update during the next UI update.
+		 */
 		public void scheduleActionsUpdate() {
 			synchronized (this) {
 				needActionsUpdate = true;
 			}
 		}
 		
-		public void scheduleViewCaptionChange(String newCaption) {
-			synchronized (this) {
-				newViewCaption = newCaption;
-				testItemForNewViewCaption = null;
-			}
-		}
-		
+		/**
+		 * Schedules the view caption update to the path to specified test item
+		 * during the next UI update.
+		 * 
+		 * @param testItem specified test item
+		 */
 		public void scheduleViewCaptionChange(ITestItem testItem) {
 			synchronized (this) {
-				newViewCaption = null;
 				testItemForNewViewCaption = testItem;
 			}
 		}
 		
+		/**
+		 * Schedules the <code>update()</code> call for the specified tree
+		 * object during the next UI update.
+		 * 
+		 * @param item tree object to update
+		 */
 		public void scheduleTreeItemUpdate(Object item) {
 			synchronized (this) {
 				treeItemsToUpdate.add(item);
 			}
 		}
 		
+		/**
+		 * Schedules the revealing of the specified tree object. Overrides
+		 * the previously specified tree object to reveal (if any).
+		 * 
+		 * @param item tree object to reveal
+		 */
 		public void scheduleTreeItemReveal(Object item) {
 			synchronized (this) {
 				treeItemToReveal = item;
 			}
 		}
 		
+		/**
+		 * Schedules the expanding or collapsing of the specified tree object.
+		 * Overrides the previous state for the same tree object (if any).
+		 * 
+		 * @param item tree object to expand or collapse
+		 * @param expandedState true if the node is expanded, and false if
+		 * collapsed
+		 */
 		public void scheduleTreeItemExpand(Object item, boolean expandedState) {
 			synchronized (this) {
 				treeItemsToExpand.put(item, expandedState);
 			}
 		}
 		
+		/**
+		 * Schedules the <code>refresh()</code> call for the specified tree
+		 * object during the next UI update.
+		 * 
+		 * @param item tree object to refresh
+		 */
 		public void scheduleTreeItemRefresh(Object item) {
 			synchronized (this) {
 				treeItemsToRefresh.add(item);
@@ -119,6 +199,9 @@ public class UIUpdater {
 		}
 		
 		
+		/**
+		 * Apply any scheduled changes to UI.
+		 */
 		public void applyChanges() {
 			synchronized (this) {
 				TreeViewer treeViewer = testsHierarchyViewer.getTreeViewer();
@@ -131,9 +214,7 @@ public class UIUpdater {
 					resultsView.updateActionsFromSession();
 				}
 				// View caption update
-				if (newViewCaption != null) {
-					resultsView.setCaption(newViewCaption);
-				} else if (testItemForNewViewCaption != null) {
+				if (testItemForNewViewCaption != null) {
 					resultsView.setCaption(
 							testItemForNewViewCaption.getName()+" - "+
 							TestPathUtils.getTestItemPath(testItemForNewViewCaption.getParent())
@@ -161,16 +242,22 @@ public class UIUpdater {
 			}
 		}
 
+		/**
+		 * Reset all the scheduled changes to UI.
+		 */
 		public void resetChanges() {
 			synchronized (this) {
 				resetChangesImpl();
 			}
 		}
 		
+		/**
+		 * Reset all the scheduled changes to UI. Note, this method is not
+		 * synchronized so it should be used carefully
+		 */
 		private void resetChangesImpl() {
 			needProgressCountPanelUpdate = false;
 			needActionsUpdate = false;
-			newViewCaption = null;
 			testItemForNewViewCaption = null;
 			treeItemsToUpdate.clear();
 			treeItemToReveal = null;
@@ -179,8 +266,12 @@ public class UIUpdater {
 	}
 
 
+	/**
+	 * A job that makes an UI update periodically.
+	 */
 	private class UpdateUIJob extends UIJob {
 
+		/** Controls whether the job should be scheduled again. */
 		private boolean isRunning = true;
 
 		public UpdateUIJob() {
@@ -197,10 +288,16 @@ public class UIUpdater {
 			return Status.OK_STATUS;
 		}
 		
+		/**
+		 * Schedule self for running after time interval.
+		 */
 		public void scheduleSelf() {
 			schedule(REFRESH_INTERVAL);
 		}
 		
+		/**
+		 * Sets the flag that prevents planning this job again.
+		 */
 		public void stop() {
 			isRunning = false;
 		}
@@ -213,8 +310,16 @@ public class UIUpdater {
 	}
 
 	
-	class SessionListener implements ITestingSessionListener {
+	/**
+	 * Listener for the changes in active testing session.
+	 */
+	private class SessionListener implements ITestingSessionListener {
 		
+		/**
+		 * Common implementation for test case and test suite entering.
+		 * 
+		 * @param testItem test case or test suite
+		 */
 		private void enterTestItem(ITestItem testItem) {
 			uiChangesCache.scheduleViewCaptionChange(testItem);
 			uiChangesCache.scheduleTreeItemUpdate(testItem);
@@ -279,7 +384,10 @@ public class UIUpdater {
 	}
 
 
-	class TestingSessionsManagerListener implements ITestingSessionsManagerListener {
+	/**
+	 * Listener to handle active testing session change.
+	 */
+	private class TestingSessionsManagerListener implements ITestingSessionsManagerListener {
 		
 		public void sessionActivated(ITestingSession newTestingSession) {
 			if (testingSession != newTestingSession) {
@@ -307,7 +415,7 @@ public class UIUpdater {
 	}
 
 
-	UIUpdater(ResultsView resultsView, TestsHierarchyViewer testsHierarchyViewer, ProgressCountPanel progressCountPanel, TestingSessionsManager sessionsManager) {
+	public UIUpdater(ResultsView resultsView, TestsHierarchyViewer testsHierarchyViewer, ProgressCountPanel progressCountPanel, TestingSessionsManager sessionsManager) {
 		this.resultsView = resultsView;
 		this.testsHierarchyViewer = testsHierarchyViewer;
 		this.progressCountPanel = progressCountPanel;
@@ -317,32 +425,55 @@ public class UIUpdater {
 		sessionsManager.addListener(sessionsManagerListener);
 	}
 
-
+	/**
+	 * Returns whether tests hierarchy scrolling should be done during the
+	 * testing process.
+	 * 
+	 * @return auto scroll state
+	 */
 	public boolean getAutoScroll() {
 		return autoScroll;
 	}
 	
+	/**
+	 * Sets whether whether tests hierarchy scrolling should be done during the
+	 * testing process.
+	 * 
+	 * @param autoScroll new filter state
+	 */
 	public void setAutoScroll(boolean autoScroll) {
 		this.autoScroll = autoScroll;
 	}
 
+	/**
+	 * Disposes of the UI Updater. Make the necessary clean up.
+	 */
 	public void dispose() {
 		unsubscribeFromSessionEvent();
 		sessionsManager.removeListener(sessionsManagerListener);
 	}
 	
+	/**
+	 * Subscribes to the events of currently set testing session.
+	 */
 	private void subscribeToSessionEvent() {
 		if (testingSession != null) {
 			testingSession.getModelAccessor().addChangesListener(sessionListener);
 		}
 	}
 
+	/**
+	 * Unsubscribe from the events of currently set testing session.
+	 */
 	private void unsubscribeFromSessionEvent() {
 		if (testingSession != null) {
 			testingSession.getModelAccessor().removeChangesListener(sessionListener);
 		}
 	}
 	
+	/**
+	 * Starts the UI updating job. Stops the previously running (if any).
+	 */
 	private void startUpdateUIJob() {
 		stopUpdateUIJob();
 		uiChangesCache.resetChanges();
@@ -350,6 +481,9 @@ public class UIUpdater {
 		updateUIJob.scheduleSelf();
 	}
 	
+	/**
+	 * Stops the UI updating job (if any).
+	 */
 	private void stopUpdateUIJob() {
 		if (updateUIJob != null) {
 			updateUIJob.stop();
@@ -357,6 +491,10 @@ public class UIUpdater {
 		}
 	}
 
+	/**
+	 * Fakes the testing session activation and makes all necessary steps to
+	 * handle it.
+	 */
 	public void reapplyActiveSession() {
 		sessionsManagerListener.sessionActivated(sessionsManager.getActiveSession());
 	}

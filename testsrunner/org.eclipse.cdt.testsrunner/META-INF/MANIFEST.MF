@@ -26,6 +26,6 @@ Import-Package: org.eclipse.cdt.dsf.gdb.launching,
  org.eclipse.jface.text,
  org.eclipse.ui.ide,
  org.eclipse.ui.texteditor
-Export-Package: org.eclipse.cdt.testsrunner.internal.model,
+Export-Package: org.eclipse.cdt.testsrunner.internal.model;x-friends:="org.eclipse.cdt.testsrunner.test",
  org.eclipse.cdt.testsrunner.launcher,
  org.eclipse.cdt.testsrunner.model

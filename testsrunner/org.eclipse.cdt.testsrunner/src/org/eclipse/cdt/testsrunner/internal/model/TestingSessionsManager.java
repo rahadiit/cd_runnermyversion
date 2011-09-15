@@ -16,28 +16,57 @@ import java.util.List;
 import java.util.ListIterator;
 
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager;
-import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager.TestsRunnerInfo;
+import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnerInfo;
 import org.eclipse.cdt.testsrunner.model.ITestingSession;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 
 /**
- * TODO: Add descriptions
- * 
+ * Manages all the testing sessions (creates, activates, stores history).
  */
 public class TestingSessionsManager {
 	
+	/** Tests Runners Plug-ins Manager. */
 	private TestsRunnersManager testsRunnersManager;
+
+	/** Testing sessions history list (the first is the newest). */
 	private LinkedList<TestingSession> sessions = new LinkedList<TestingSession>();
+
+	/** Currently active testing session. */
 	private TestingSession activeSession;
+	
+	/** Listeners collection. */
 	private List<ITestingSessionsManagerListener> listeners = new ArrayList<ITestingSessionsManagerListener>();
-	private int historySize = 10;
+	
+	/** The size limit of the testing sessions history. */
+	private int historySizeLimit = 10;
 
 	public TestingSessionsManager(TestsRunnersManager testsRunnersManager) {
 		this.testsRunnersManager = testsRunnersManager;
 	}
 	
+	/**
+	 * Tries to find the last testing session for the specified launch
+	 * configuration and Tests Runner Plug-in.
+	 * 
+	 * <p>
+	 * Usually testing frameworks do not provide the information about tests
+	 * hierarchy and total tests count before the testing is finished. So we try
+	 * to reuse them from one the previous testing sessions that meets the
+	 * requirements:
+	 * <ul>
+	 * <li>it should be for the same launch configuration;
+	 * <li>it should be completed (finished and not stopped);
+	 * <li>it should has the same tests runner;
+	 * </ul>
+	 * This function tries to find a such session.
+	 * </p>
+	 * 
+	 * @param launchConfiguration required launch configuration
+	 * @param testsRunnerInfo required Tests Runner Plug-in
+	 * @return testing session or null if not found
+	 */
 	private TestingSession findActualPreviousSession(ILaunchConfiguration launchConfiguration, TestsRunnerInfo testsRunnerInfo) {
 		String testsRunnerName = testsRunnerInfo.getName();
 		ListIterator<TestingSession> sessionsIt = sessions.listIterator(sessions.size());
@@ -60,6 +89,12 @@ public class TestingSessionsManager {
 		return null;
 	}
 
+	/**
+	 * Creates a new testing session for the specified launch.
+	 * 
+	 * @param launch launch
+	 * @return new testing session
+	 */
 	public TestingSession newSession(ILaunch launch) throws CoreException {
 		TestsRunnerInfo testsRunnerInfo = testsRunnersManager.getTestsRunner(launch.getLaunchConfiguration());
 		TestingSession previousSession = findActualPreviousSession(launch.getLaunchConfiguration(), testsRunnerInfo);
@@ -70,10 +105,21 @@ public class TestingSessionsManager {
 		return newTestingSession;
 	}
 	
+	/**
+	 * Returns the testing sessions history (the first is the newest).
+	 * 
+	 * @return testing sessions list
+	 */
 	public List<? extends ITestingSession> getSessions() {
 		return sessions;
 	}
 	
+	/**
+	 * Rewrites the testing sessions history with the specified list. Truncates
+	 * the history if necessary.
+	 * 
+	 * @return testing sessions list
+	 */
 	public void setSessions(List<ITestingSession> newSessions) {
 		sessions.clear();
 		for (ITestingSession newSession : newSessions) {
@@ -82,14 +128,29 @@ public class TestingSessionsManager {
 		truncateHistory();
 	}
 	
+	/**
+	 * Returns the testing sessions history size.
+	 * 
+	 * @return history size
+	 */
 	public int getSessionsCount() {
 		return sessions.size();
 	}
 	
+	/**
+	 * Accesses the currently active testing session.
+	 * 
+	 * @return testing session
+	 */
 	public ITestingSession getActiveSession() {
 		return activeSession;
 	}
 	
+	/**
+	 * Sets the new active testing session.
+	 * 
+	 * @param newActiveSession testing session
+	 */
 	public void setActiveSession(ITestingSession newActiveSession) {
 		if (activeSession != newActiveSession) {
 			activeSession = (TestingSession) newActiveSession;
@@ -100,26 +161,51 @@ public class TestingSessionsManager {
 		}
 	}
 	
+	/**
+	 * Adds the given listener to this registered listeners collection.
+	 * Has no effect if an identical listener is already registered.
+	 *
+	 * @param listener the listener to add
+	 */
 	public void addListener(ITestingSessionsManagerListener listener) {
 		listeners.add(listener);
 	}
 
+	/**
+	 * Removes the given listener from registered listeners collection.
+	 * Has no effect if the listener is not already registered.
+	 *
+	 * @param listener the listener to remove
+	 */
 	public void removeListener(ITestingSessionsManagerListener listener) {
 		listeners.remove(listener);
 	}
 
-	public int getHistorySize() {
-		return historySize;
+	/**
+	 * Returns the size limit of the testing sessions history.
+	 * 
+	 * @return history size limit
+	 */
+	public int getHistorySizeLimit() {
+		return historySizeLimit;
 	}
 
-	public void setHistorySize(int historySize) {
-		this.historySize = historySize;
+	/**
+	 * Sets the size limit of the testing sessions history.
+	 * 
+	 * @param historySizeLimit new history size limit
+	 */
+	public void setHistorySizeLimit(int historySizeLimit) {
+		this.historySizeLimit = historySizeLimit;
 		truncateHistory();
 	}
 	
+	/**
+	 * Truncates the history list if it is longer than size limit.
+	 */
 	private void truncateHistory() {
 		// The most frequently this method will be used to remove one element, so removeAll() is unnecessary here
-		while (sessions.size() > historySize) {
+		while (sessions.size() > historySizeLimit) {
 			sessions.removeLast();
 		}
 		if (!sessions.contains(activeSession)) {

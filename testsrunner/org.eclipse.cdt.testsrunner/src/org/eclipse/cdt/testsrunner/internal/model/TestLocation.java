@@ -13,13 +13,14 @@ package org.eclipse.cdt.testsrunner.internal.model;
 import org.eclipse.cdt.testsrunner.model.ITestLocation;
 
 /**
- * TODO: Add descriptions
- * 
+ * Represents the location of the test object.
  */
 public class TestLocation implements ITestLocation {
 
+	/** Stores the file name in which testing object is located. */
 	private String file;
 
+	/** Stores the line number on which testing object is located. */
 	private int line;
 
 	

@@ -17,8 +17,7 @@ import org.eclipse.cdt.testsrunner.model.ITestMessage;
 
 
 /**
- * Test for {@see GoogleTestsRunner} class
- *
+ * Tests for {@see GoogleTestsRunner} class
  */
 @SuppressWarnings("nls")
 public class GoogleTestCase extends BaseTestCase {

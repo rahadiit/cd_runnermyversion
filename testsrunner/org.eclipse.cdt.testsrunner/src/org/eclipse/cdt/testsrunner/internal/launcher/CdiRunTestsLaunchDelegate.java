@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011 Anton Gorenkov 
+ * Copyright (c) 2011 Anton Gorenkov.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,24 +8,17 @@
  * Contributors:
  *     Anton Gorenkov - initial API and implementation
  *******************************************************************************/
-package org.eclipse.cdt.testsrunner.model;
+package org.eclipse.cdt.testsrunner.internal.launcher;
+
 
 /**
- * TODO: Add descriptions
- * 
+ * Launch delegate implementation that redirects its queries to CDI.
  */
-public interface ITestsRunnerInfo {
+public class CdiRunTestsLaunchDelegate extends BaseTestsLaunchDelegate {
 	
-	public String getName();
-
-	public String getId();
-
-	public String getDescription();
-
-	public boolean isAllowedMultipleTestFilter();
-	
-	public boolean isOutputStreamRequired();
-	
-	public boolean isErrorStreamRequired();
+    @Override
+    public String getPreferredDelegateId() {
+        return "org.eclipse.cdt.cdi.launch.localCLaunch"; //$NON-NLS-1$
+    }
 	
 }

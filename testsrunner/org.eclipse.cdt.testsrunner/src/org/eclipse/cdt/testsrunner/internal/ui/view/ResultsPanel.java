@@ -13,7 +13,7 @@ package org.eclipse.cdt.testsrunner.internal.ui.view;
 import java.util.Iterator;
 
 import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
-import org.eclipse.cdt.testsrunner.internal.ui.view.MessagesPanel.LevelFilter;
+import org.eclipse.cdt.testsrunner.internal.ui.view.MessagesViewer.LevelFilter;
 import org.eclipse.cdt.testsrunner.internal.ui.view.actions.MessageLevelFilterAction;
 import org.eclipse.cdt.testsrunner.internal.ui.view.actions.MessagesOrderingAction;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
@@ -38,13 +38,19 @@ import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbench;
 
 /**
- * TODO: Add description here
- * TODO: fix header comment
+ * The main widget of testing results view. It compounds tests hierarchy and
+ * messages viewer. Depending on orientation it may layout them vertically or
+ * horizontally.
  */
 public class ResultsPanel {
-	
+
+	/** Parent for the child widgets (messages & tests hierarchy viewer). */
 	private SashForm sashForm;
-	private MessagesPanel messagesPanel;
+	
+	/** Child widget: messages viewer. */
+	private MessagesViewer messagesViewer;
+
+	/** Child widget: tests hierarchy viewer. */
 	private TestsHierarchyViewer testsHierarchyViewer;
 
 	// Persistence tags
@@ -55,6 +61,7 @@ public class ResultsPanel {
 	static final String TAG_WARNING_FILTER_ACTION = "warningFilterAction"; //$NON-NLS-1$
 	static final String TAG_INFO_FILTER_ACTION = "infoFilterAction"; //$NON-NLS-1$
 
+	// Messages Viewer actions
 	Action messagesOrderingAction;
 	Action errorFilterAction;
 	Action warningFilterAction;
@@ -65,7 +72,6 @@ public class ResultsPanel {
 		sashForm = new SashForm(parent, SWT.VERTICAL);
 
 		// Configure tests hierarchy viewer
-		// TODO: Review and simplify (if possible) this separator implementation
 		ViewForm top = new ViewForm(sashForm, SWT.NONE);
 		Composite empty= new Composite(top, SWT.NONE);
 		empty.setLayout(new Layout() {
@@ -80,7 +86,7 @@ public class ResultsPanel {
 
 		// Configure test messages viewer
 		ViewForm bottom = new ViewForm(sashForm, SWT.NONE);
-		messagesPanel = new MessagesPanel(bottom, sessionsManager, workbench, site, clipboard);
+		messagesViewer = new MessagesViewer(bottom, sessionsManager, workbench, site, clipboard);
 		Composite topLeftPanel = new Composite(bottom, SWT.NONE);
 		RowLayout topLeftPanelLayout = new RowLayout(SWT.HORIZONTAL);
 		topLeftPanelLayout.spacing = 0;
@@ -89,7 +95,7 @@ public class ResultsPanel {
 		topLeftPanel.setLayout(topLeftPanelLayout);
 		ToolBar leftMessagesToolBar = new ToolBar(topLeftPanel, SWT.FLAT | SWT.WRAP);
 		ToolBarManager leftMessagesToolBarManager = new ToolBarManager(leftMessagesToolBar);
-		messagesOrderingAction = new MessagesOrderingAction(messagesPanel);
+		messagesOrderingAction = new MessagesOrderingAction(messagesViewer);
 		leftMessagesToolBarManager.add(messagesOrderingAction);
 		leftMessagesToolBarManager.update(true);
 		CLabel label = new CLabel(topLeftPanel, SWT.NONE);
@@ -97,15 +103,15 @@ public class ResultsPanel {
 		bottom.setTopLeft(topLeftPanel);
 		ToolBar rightMessagesToolBar = new ToolBar(bottom, SWT.FLAT | SWT.WRAP);
 		ToolBarManager rightMessagesToolBarManager = new ToolBarManager(rightMessagesToolBar);
-		errorFilterAction = new MessageLevelFilterAction(messagesPanel, LevelFilter.Error, true);
-		warningFilterAction = new MessageLevelFilterAction(messagesPanel, LevelFilter.Warning, true);
-		infoFilterAction = new MessageLevelFilterAction(messagesPanel, LevelFilter.Info, false);
+		errorFilterAction = new MessageLevelFilterAction(messagesViewer, LevelFilter.Error, true);
+		warningFilterAction = new MessageLevelFilterAction(messagesViewer, LevelFilter.Warning, true);
+		infoFilterAction = new MessageLevelFilterAction(messagesViewer, LevelFilter.Info, false);
 		rightMessagesToolBarManager.add(errorFilterAction);
 		rightMessagesToolBarManager.add(warningFilterAction);
 		rightMessagesToolBarManager.add(infoFilterAction);
 		rightMessagesToolBarManager.update(true);
 		bottom.setTopCenter(rightMessagesToolBar);
-		bottom.setContent(messagesPanel.getTableViewer().getControl());
+		bottom.setContent(messagesViewer.getTableViewer().getControl());
 
 		sashForm.setWeights(new int[]{50, 50});
 	
@@ -122,14 +128,29 @@ public class ResultsPanel {
 		sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
 	}
 	
+	/**
+	 * Provides access to the tests hierarchy viewer.
+	 * 
+	 * @return tests hierarchy viewer
+	 */
 	public TestsHierarchyViewer getTestsHierarchyViewer() {
 		return testsHierarchyViewer;
 	}
 
-	public MessagesPanel getMessagesPanel() {
-		return messagesPanel;
+	/**
+	 * Provides access to the messages viewer.
+	 * 
+	 * @return messages viewer
+	 */
+	public MessagesViewer getMessagesViewer() {
+		return messagesViewer;
 	}
 
+	/**
+	 * Handles selection change in tests hierarchy viewer and updates the
+	 * content of the messages viewer to show the messages for the selected
+	 * items.
+	 */
 	private void handleTestItemSelected() {
 		IStructuredSelection selection = (IStructuredSelection)testsHierarchyViewer.getTreeViewer().getSelection();
 		ITestItem[] testItems = new ITestItem[selection.size()];
@@ -138,22 +159,46 @@ public class ResultsPanel {
 			testItems[index] = (ITestItem)it.next();
 			++index;
 		}
-		messagesPanel.showItemsMessages(testItems);
+		messagesViewer.showItemsMessages(testItems);
 	}
 
-	public void setPanelOrientation(ResultsView.Orientation currentOrientation) {
-		sashForm.setOrientation(currentOrientation == ResultsView.Orientation.Horizontal ? SWT.HORIZONTAL : SWT.VERTICAL);
+	/**
+	 * Sets the widget orientation.
+	 * 
+	 * @param orientation new widget orientation (vertical or horizontal; auto
+	 * is not supported)
+	 */
+	public void setPanelOrientation(ResultsView.Orientation orientation) {
+		sashForm.setOrientation(orientation == ResultsView.Orientation.Horizontal ? SWT.HORIZONTAL : SWT.VERTICAL);
 	}
 
+	/**
+	 * Returns whether only failed tests (and messages for them) should be
+	 * shown.
+	 * 
+	 * @return filter state
+	 */
 	public boolean getShowFailedOnly() {
-		return messagesPanel.getShowFailedOnly();
+		return messagesViewer.getShowFailedOnly();
 	}
 	
+	/**
+	 * Sets whether only failed tests (and messages for them) should be shown.
+	 * 
+	 * @param showFailedOnly new filter state
+	 */
 	public void setShowFailedOnly(boolean showFailedOnly) {
 		testsHierarchyViewer.setShowFailedOnly(showFailedOnly);
-		messagesPanel.setShowFailedOnly(showFailedOnly);
+		messagesViewer.setShowFailedOnly(showFailedOnly);
 	}
 	
+	/**
+	 * Restores the value of the checkable action.
+	 * 
+	 * @param memento previously saved state to restore the action value from
+	 * @param key tag name that is used to restore the value
+	 * @param action action to restore
+	 */
 	private void restoreActionChecked(IMemento memento, String key, Action action) {
 		Boolean checked = memento.getBoolean(key);
 		if (checked != null) {
@@ -162,6 +207,11 @@ public class ResultsPanel {
 		}
 	}
 
+	/**
+	 * Restores the state of the widget.
+	 * 
+	 * @param memento previously saved state
+	 */
 	public void restoreState(IMemento memento) {
 		Integer weight0 = memento.getInteger(TAG_WEIGHT0);
 		Integer weight1 = memento.getInteger(TAG_WEIGHT1);
@@ -174,6 +224,11 @@ public class ResultsPanel {
 		restoreActionChecked(memento, TAG_INFO_FILTER_ACTION, infoFilterAction);
 	}
 
+	/**
+	 * Saves the state of the widget.
+	 * 
+	 * @param memento where to save the state
+	 */
 	public void saveState(IMemento memento) {
 		int[] weights = sashForm.getWeights();
 		memento.putInteger(TAG_WEIGHT0, weights[0]);
