@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Anton Gorenkov - initial API and implementation
+ *     Anton Gorenkov  - initial implementation
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.testsrunners;
 
@@ -26,7 +26,7 @@ import org.eclipse.cdt.testsrunner.model.ITestModelUpdater;
 import org.eclipse.cdt.testsrunner.model.ITestSuite;
 
 /**
- * TODO: Add descriptions
+ * Mock for the {@see ITestModelUpdater}.
  */
 @SuppressWarnings("nls")
 public class MockTestModelUpdater implements ITestModelUpdater {

@@ -20,7 +20,6 @@ import org.eclipse.cdt.testsrunner.model.ITestMessage;
 
 /**
  * Test for {@see QtTestsRunner} class
- *
  */
 @SuppressWarnings("nls")
 public class QtTestCase extends BaseTestCase {

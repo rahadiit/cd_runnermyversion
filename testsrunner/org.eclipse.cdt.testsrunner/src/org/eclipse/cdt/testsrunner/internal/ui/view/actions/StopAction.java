@@ -17,11 +17,12 @@ import org.eclipse.cdt.testsrunner.model.ITestingSession;
 import org.eclipse.jface.action.Action;
 
 /**
- * TODO: Add description here
+ * Stops running of the active testing session.
  */
 public class StopAction extends Action {
 
 	private TestingSessionsManager testingSessionsManager;
+
 
 	public StopAction(TestingSessionsManager testingSessionsManager) {
 		super("Stop");
@@ -32,9 +33,6 @@ public class StopAction extends Action {
 		this.testingSessionsManager = testingSessionsManager;
 	}
 
-	/**
-	 * @see org.eclipse.jface.action.IAction#run()
-	 */
 	@Override
 	public void run() {
 		ITestingSession activeSession = testingSessionsManager.getActiveSession();

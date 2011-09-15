@@ -15,11 +15,12 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 
 /**
- * TODO: Add description here
+ * Collapses the tests hierarchy tree in the viewer.
  */
 public class TestsHierarchyCollapseAllAction extends Action {
 
 	private AbstractTreeViewer testsHierarchyTreeViewer;
+
 
 	public TestsHierarchyCollapseAllAction(AbstractTreeViewer testsHierarchyTreeViewer) {
 		setText("Collapse All");

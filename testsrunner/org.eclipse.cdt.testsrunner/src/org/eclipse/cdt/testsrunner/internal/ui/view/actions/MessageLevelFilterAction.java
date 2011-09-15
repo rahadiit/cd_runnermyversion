@@ -11,30 +11,31 @@
 package org.eclipse.cdt.testsrunner.internal.ui.view.actions;
 
 
-import org.eclipse.cdt.testsrunner.internal.ui.view.MessagesPanel;
+import org.eclipse.cdt.testsrunner.internal.ui.view.MessagesViewer;
 import org.eclipse.jface.action.Action;
 import org.eclipse.ui.PlatformUI;
 
 /**
- *  TODO :Add description here...
+ * Represents a filtering action for test messages. It is used for all kind of
+ * filters (info, warnings, errors).
  */
 public class MessageLevelFilterAction extends Action {
 
-	private MessagesPanel.LevelFilter levelFilter;
-	private MessagesPanel messagePanel;
+	private MessagesViewer.LevelFilter levelFilter;
+	private MessagesViewer messagesViewer;
 	
 	
-	public MessageLevelFilterAction(MessagesPanel messagePanel, MessagesPanel.LevelFilter levelFilter, boolean checked) {
+	public MessageLevelFilterAction(MessagesViewer messagePanel, MessagesViewer.LevelFilter levelFilter, boolean checked) {
 		super("", AS_CHECK_BOX); //$NON-NLS-1$
 		this.levelFilter = levelFilter;
-		this.messagePanel = messagePanel;
-		if (levelFilter == MessagesPanel.LevelFilter.Info) {
+		this.messagesViewer = messagePanel;
+		if (levelFilter == MessagesViewer.LevelFilter.Info) {
 			setText("&Info");
 			setToolTipText("Show information messages");
-		} else if (levelFilter == MessagesPanel.LevelFilter.Warning) {
+		} else if (levelFilter == MessagesViewer.LevelFilter.Warning) {
 			setText("&Warning");
 			setToolTipText("Show warning messages");
-		} else if (levelFilter == MessagesPanel.LevelFilter.Error) {
+		} else if (levelFilter == MessagesViewer.LevelFilter.Error) {
 			setText("&Errors");
 			setToolTipText("Show error messages");
 		}
@@ -48,9 +49,9 @@ public class MessageLevelFilterAction extends Action {
 	@Override
 	public void run() {
 		if (isChecked()) {
-			messagePanel.addLevelFilter(levelFilter, true);
+			messagesViewer.addLevelFilter(levelFilter, true);
 		} else {
-			messagePanel.removeLevelFilter(levelFilter);
+			messagesViewer.removeLevelFilter(levelFilter);
 		}
 	}
 

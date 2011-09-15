@@ -24,31 +24,29 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 
 /**
- * TODO: add description
+ * Copies the name of the selected test items (test suites or cases) to the
+ * clipboard.
  */
 public class CopySelectedTestsAction extends Action {
 
 	private TreeViewer treeViewer;
 	private Clipboard clipboard;
 
+
 	public CopySelectedTestsAction(TreeViewer treeViewer, Clipboard clipboard) {
 		super("Copy");
-		setToolTipText("Copy The Selected Tests To Clipboard");
+		setToolTipText("Copy Selected Test Names To Clipboard");
 		setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
 		this.treeViewer = treeViewer;
 		this.clipboard = clipboard;
 	}
 
-	/**
-	 * @see org.eclipse.jface.action.IAction#run()
-	 */
-	@Override
 	public void run() {
 		IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
 		if (!selection.isEmpty()) {
 			StringBuilder sb = new StringBuilder();
 			boolean needEOL = false;
-			for (Iterator it = selection.iterator(); it.hasNext();) {
+			for (Iterator<?> it = selection.iterator(); it.hasNext();) {
 				if (needEOL) {
 					sb.append(System.getProperty("line.separator")); //$NON-NLS-1$
 				} else {

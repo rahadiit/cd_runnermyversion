@@ -16,7 +16,8 @@ import org.eclipse.cdt.testsrunner.internal.ui.view.TestsHierarchyViewer;
 import org.eclipse.jface.action.Action;
 
 /**
- * Toggles tests tree hierarchy auto-scroll
+ * Specifies whether tests hierarchy should be shown in hierarchical or flat
+ * view.
  */
 public class ShowTestsInHierarchyAction extends Action {
 

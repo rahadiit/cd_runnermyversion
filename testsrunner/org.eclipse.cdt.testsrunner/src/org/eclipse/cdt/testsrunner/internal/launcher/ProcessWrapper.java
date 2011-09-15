@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2011 Anton Gorenkov 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Anton Gorenkov - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.launcher;
 
 import java.io.ByteArrayInputStream;
@@ -12,20 +22,44 @@ import java.io.OutputStream;
  */
 class ProcessWrapper extends Process {
 	
+	/** The real underlying process. */
 	private Process wrappedProcess;
 	
+	/** The flag shows whether input stream should be replaced with empty dummy. */
 	private boolean hideInputStream;
+
+	/** The flag shows whether error stream should be replaced with empty dummy. */
 	private boolean hideErrorStream;
 	
 
+	/** Buffer for empty dummy stream. */
 	private byte buffer[] = new byte[0];
+
+	/** Empty dummy stream. */
 	private InputStream emptyInputStream = new ByteArrayInputStream(buffer);
 	
+	/**
+	 * The synchronization event: before it happens <code>waitFor()</code> will
+	 * not be called on underlying process object. See also the comments in
+	 * <code>waitFor()</code>.
+	 */
 	private Object waitForSync = new Object();
+
+	/**
+	 * Flag that shows that process output was not processed yet so the IO
+	 * streams could not be closed yet.
+	 */
 	private boolean streamsClosingIsAllowed = false;
 
 	
-	ProcessWrapper(Process wrappedProcess, boolean hideInputStream, boolean hideErrorStream) {
+	/**
+	 * The constructor
+	 * 
+	 * @param wrappedProcess underlying process
+	 * @param hideInputStream process input stream should be hidden
+	 * @param hideErrorStream process error stream should be hidden
+	 */
+	public ProcessWrapper(Process wrappedProcess, boolean hideInputStream, boolean hideErrorStream) {
 		this.wrappedProcess = wrappedProcess;
 		this.hideInputStream = hideInputStream;
 		this.hideErrorStream = hideErrorStream;
@@ -68,6 +102,9 @@ class ProcessWrapper extends Process {
 		return wrappedProcess.waitFor();
 	}
 	
+	/**
+	 * Sets up the flag the allows IO streams closing.
+	 */
 	public void allowStreamsClosing() {
 		synchronized (waitForSync) {
 			streamsClosingIsAllowed = true;

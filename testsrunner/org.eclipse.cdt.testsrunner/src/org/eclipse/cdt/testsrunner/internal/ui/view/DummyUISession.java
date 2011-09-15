@@ -10,15 +10,16 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
+import org.eclipse.cdt.testsrunner.launcher.ITestsRunnerInfo;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestModelAccessor;
 import org.eclipse.cdt.testsrunner.model.ITestingSession;
-import org.eclipse.cdt.testsrunner.model.ITestsRunnerInfo;
 import org.eclipse.debug.core.ILaunch;
 
 /**
- * TODO: Add descriptions
- * 
+ * Represents a simple testing session which is used for UI when there is no
+ * "real" testing sessions to show (e.g. when there was no launched testing
+ * session or when all of them were cleared).
  */
 public class DummyUISession implements ITestingSession {
 
@@ -63,7 +64,7 @@ public class DummyUISession implements ITestingSession {
 	}
 
 	public String getName() {
-		return "Dummy";
+		return "<dummy>"; //$NON-NLS-1$
 	}
 
 	public void stop() {

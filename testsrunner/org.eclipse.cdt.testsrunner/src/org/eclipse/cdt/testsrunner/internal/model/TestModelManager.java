@@ -29,23 +29,59 @@ import org.eclipse.cdt.testsrunner.model.ITestMessage.Level;
 import org.eclipse.cdt.testsrunner.model.ITestSuite;
 
 /**
- * TODO: Add descriptions
+ * Manages the testing model (creates, fill and update it) and notifies the
+ * listeners about updates.
  */
 public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 
-	public static final String ROOT_TEST_SUITE_NAME = "<root>";
+	/**
+	 * Name of the root test suite.
+	 * 
+	 * @note Root test suite is invisible (only its children are visible), so
+	 * the name is not important.
+	 */
+	public static final String ROOT_TEST_SUITE_NAME = "<root>"; //$NON-NLS-1$
 	
+	/** Stack of the currently entered (and not existed) test suites. */
 	private Stack<TestSuite> testSuitesStack = new Stack<TestSuite>();
+
+	/**
+	 * Currently running test case. There are no nested test cases, so the
+	 * collection is not necessary.
+	 */
 	private TestCase currentTestCase = null;
+	
+	/**
+	 * The mapping of test suite object to the index on which it was inserted to
+	 * the parent.
+	 * 
+	 * @note Test suites presence in this map means that test suite was visited
+	 * during the testing process (not visited test suites are removed when
+	 * testing is finished cause they are considered as renamed or removed).
+	 * @note Test suite insert position is important for insertion algorithm.
+	 */
 	private Map<TestItem, Integer> testSuitesIndex = new HashMap<TestItem, Integer>();
+	
+	/** Listeners collection. */
 	private List<ITestingSessionListener> listeners = new ArrayList<ITestingSessionListener>();
+	
+	/** Flag stores whether test execution time should be measured for the session. */
 	private boolean timeMeasurement = false;
+
+	/** Stores the test case start time or 0 there is no currently running test case. */
 	private long testCaseStartTime = 0;
 	
+	/** Instance of the insertion algorithm for test suites. */
 	private TestSuiteInserter testSuiteInserter = new TestSuiteInserter();
+
+	/** Instance of the insertion algorithm for test cases. */
 	private TestCaseInserter testCaseInserter = new TestCaseInserter();
 
 	
+	/**
+	 * Builds current tests hierarchy from the other one (copies only necessary
+	 * information).
+	 */
 	private class HierarchyCopier implements IModelVisitor {
 
 		public void visit(ITestSuite testSuite) {
@@ -77,28 +113,92 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 	
 
 	/**
-	 * Utility class: generalization of insertion algorithm for test suites and test cases
+	 * Utility class: generalization of insertion algorithm for test suites and
+	 * test cases.
+	 * 
+	 * <p>
+	 * The algorithm tries to find the place where the new item should be
+	 * inserted at. If the item with such name does not exist in the current top
+	 * most test suite, it should be inserted at the current position. If it
+	 * already exists (at the next or previous position) then it should be moved
+	 * from there to the current one.
+	 * </p>
+	 * 
+	 * @param <E> test item type (test suite or test case)
 	 */
 	private abstract class TestItemInserter<E extends TestItem> {
 
-		protected abstract E checkTestItemName(TestItem item, String name);
+		/**
+		 * Check whether item has the required type (test suite for suites inserter and
+		 * test case for cases one).
+		 * 
+		 * @param item test item to check
+		 * @return whether item has the required type
+		 */
+		protected abstract boolean isRequiredTestItemType(TestItem item);
 		
+		/**
+		 * Creates a new item type with the specified name and parent (test
+		 * suite for suites inserter and test case for cases one).
+		 * 
+		 * @param name name of the new test item
+		 * @param parent parent for the new test item
+		 * @return new test item
+		 */
 		protected abstract E createTestItem(String name, TestSuite parent);
 		
+		/**
+		 * Save new test item in the tracking structures (suite in stack, case
+		 * in current variable). Additional operations (e.g. listeners
+		 * notification about item entering) can be done too.
+		 * 
+		 * @param item new test item
+		 */
 		protected abstract void addNewTestItem(E item);
 
 		
+		/**
+		 * Returns the casted test item if it matches by name and type or
+		 * <code>null</code> if it doesn't.
+		 * 
+		 * @param item test item to check
+		 * @param name test item name
+		 * @return casted test item or null
+		 */
+		@SuppressWarnings("unchecked")
+		private E checkTestItem(TestItem item, String name) {
+			return (isRequiredTestItemType(item) && item.getName().equals(name)) ? (E)item : null;
+		}
+		
+		/**
+		 * Returns the last insert index for the specified test suite. Returns 0
+		 * if test suite was not inserted yet.
+		 * 
+		 * @param testSuite test suite to look up
+		 * @return insert index or 0
+		 */
 		private int getLastInsertIndex(TestSuite testSuite) {
 			Integer intLastInsertIndex = testSuitesIndex.get(testSuite);
 			return intLastInsertIndex != null ? intLastInsertIndex : 0;
 		}
 		
+		/**
+		 * Notifies the listeners about children update of the specified test
+		 * suite.
+		 * 
+		 * @param suite updated test suite
+		 */
 		private void notifyAboutChildrenUpdate(ITestSuite suite) {
 			for (ITestingSessionListener listener : getListenersCopy()) {
 				listener.childrenUpdate(suite);
 			}
 		}
 		
+		/**
+		 * Inserts the test item by the name.
+		 * 
+		 * @param name test item name
+		 */
 		public void insert(String name) {
 			TestSuite currTestSuite = testSuitesStack.peek();
 			int lastInsertIndex = getLastInsertIndex(currTestSuite);
@@ -107,7 +207,7 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 
 			// Optimization: Check whether we already pointing to the test suite with required name
 			try {
-				newTestItem = checkTestItemName(children.get(lastInsertIndex), name);
+				newTestItem = checkTestItem(children.get(lastInsertIndex), name);
 			} catch (IndexOutOfBoundsException e) {}
 			if (newTestItem != null) {
 				testSuitesIndex.put(currTestSuite, lastInsertIndex+1);
@@ -116,7 +216,7 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 			// Check whether the suite with required name was later in the hierarchy
 			if (newTestItem == null) {
 				for (int childIndex = lastInsertIndex; childIndex < children.size(); childIndex++) {
-					newTestItem = checkTestItemName(children.get(childIndex), name);
+					newTestItem = checkTestItem(children.get(childIndex), name);
 					if (newTestItem != null) {
 						testSuitesIndex.put(currTestSuite, childIndex);
 						break;
@@ -127,7 +227,7 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 			// Search in previous
 			if (newTestItem == null) {
 				for (int childIndex = 0; childIndex < lastInsertIndex; childIndex++) {
-					newTestItem = checkTestItemName(children.get(childIndex), name);
+					newTestItem = checkTestItem(children.get(childIndex), name);
 					if (newTestItem != null) {
 						children.add(lastInsertIndex, children.remove(childIndex));
 						notifyAboutChildrenUpdate(currTestSuite);
@@ -152,15 +252,17 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 	}
 	
 
+	/**
+	 * Utility class: insertion algorithm specialization for test suites.
+	 */
 	private class TestSuiteInserter extends TestItemInserter<TestSuite> {
 		
-		protected TestSuite checkTestItemName(TestItem item, String name) {
-			return (item instanceof TestSuite && item.getName().equals(name)) ? (TestSuite)item : null;
+		protected boolean isRequiredTestItemType(TestItem item) {
+			return (item instanceof TestSuite);
 		}
 		
 		protected TestSuite createTestItem(String name, TestSuite parent) {
 			return new TestSuite(name, parent);
-			
 		}
 		
 		protected void addNewTestItem(TestSuite testSuite) {
@@ -174,10 +276,13 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 	}
 
 
+	/**
+	 * Utility class: insertion algorithm specialization for test cases.
+	 */
 	private class TestCaseInserter extends TestItemInserter<TestCase> {
 		
-		protected TestCase checkTestItemName(TestItem item, String name) {
-			return (item instanceof TestCase && item.getName().equals(name)) ? (TestCase)item : null;
+		protected boolean isRequiredTestItemType(TestItem item) {
+			return (item instanceof TestCase);
 		}
 		
 		protected TestCase createTestItem(String name, TestSuite parent) {
@@ -207,6 +312,9 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 		this.testSuitesIndex.clear();
 	}
 
+	/**
+	 * Notifies the listeners that testing was started.
+	 */
 	public void testingStarted() {
 		// Notify listeners
 		for (ITestingSessionListener listener : getListenersCopy()) {
@@ -214,13 +322,17 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 		}
 	}
 
+	/**
+	 * Removes not visited test items and notifies the listeners that testing
+	 * was finished.
+	 */
 	public void testingFinished() {
 		// Remove all NotRun-tests and not used test suites (probably they were removed from test module)
-		getRootSuite().visit(new ModelVisitor() {
+		getRootSuite().visit(new IModelVisitor() {
 			
-			public void visit(TestSuite testSuite) {
-				for (Iterator<TestItem> it = testSuite.getChildrenList().iterator(); it
-						.hasNext();) {
+			public void visit(ITestSuite testSuite) {
+				List<TestItem> suiteChildren = ((TestSuite)testSuite).getChildrenList();
+				for (Iterator<TestItem> it = suiteChildren.iterator(); it.hasNext();) {
 					TestItem item = it.next();
 					if ((item instanceof ITestSuite && !testSuitesIndex.containsKey(item)) ||
 						(item instanceof ITestCase && item.getStatus() == ITestItem.Status.NotRun)) {
@@ -229,11 +341,11 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 				}
 			}
 
-			public void visit(TestMessage testMessage) {}
-			public void visit(TestCase testCase) {}
-			public void leave(TestSuite testSuite) {}
-			public void leave(TestCase testCase) {}
-			public void leave(TestMessage testMessage) {}
+			public void visit(ITestMessage testMessage) {}
+			public void visit(ITestCase testCase) {}
+			public void leave(ITestSuite testSuite) {}
+			public void leave(ITestCase testCase) {}
+			public void leave(ITestMessage testMessage) {}
 		});
 		testSuitesIndex.clear();
 		
@@ -323,6 +435,11 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 		}
 	}
 	
+	/**
+	 * Copies listeners before notifying them to avoid dead-locks.
+	 * 
+	 * @return listeners collection copy
+	 */
 	private ITestingSessionListener[] getListenersCopy() {
 		synchronized (listeners) {
 			return listeners.toArray(new ITestingSessionListener[listeners.size()]);

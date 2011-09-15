@@ -11,14 +11,20 @@
 package org.eclipse.cdt.testsrunner.model;
 
 /**
- * TODO: Add descriptions
+ * Base interface to the structural item of test hierarchy (test suite or test
+ * case).
  * 
  * @noextend This interface is not intended to be extended by clients.
  * @noimplement This interface is not intended to be implemented by clients.
  */
 public interface ITestItem {
 
-	// NOTE: Order of values is significant (cause enum values comparison is necessary)
+	/**
+	 * Represents status of the test item.
+	 * 
+	 * @note Order of values is significant (cause enumeration values comparison
+	 * is necessary)
+	 */
 	public enum Status {
 		NotRun,
 		Skipped,
@@ -31,18 +37,59 @@ public interface ITestItem {
 		}
 	}
 	
+	/**
+	 * @return name of the test item.
+	 */
 	public String getName();
 	
+	/**
+	 * Returns status of the test item.
+	 * For test case it is its own status.
+	 * For test suite it is the greatest status of all its children.
+	 * 
+	 * @return test item status
+	 */
 	public Status getStatus();
 
+	/**
+	 * Returns execution time of the test item.
+	 * For test case it is its own execution time.
+	 * For test suite it is the sum of execution time of all its children.
+	 * 
+	 * @return item execution time
+	 */
 	public int getTestingTime();
 
+	/**
+	 * Returns parent of the current test item or null if not available 
+	 * (e.g. it is a root test suite).
+	 * 
+	 * @return parent or null
+	 */
 	public ITestSuite getParent();
 	
+	/**
+	 * Returns <code>true</code> if test item has children.
+	 * Always returns <code>false</code> for test cases.
+	 * 
+	 * @return true if has children
+	 */
 	public boolean hasChildren();
 
+	/**
+	 * Returns all the children of the test item.
+	 * For test case always returns empty array.
+	 * For test suite returns all child test suites and test cases.
+	 * 
+	 * @return array of test item children
+	 */
 	public ITestItem[] getChildren();
 	
+	/**
+	 * Visitor pattern support for the tests hierarchy.
+	 * 
+	 * @param visitor - any object that supports visitor interface
+	 */
 	public void visit(IModelVisitor visitor);
 
 }

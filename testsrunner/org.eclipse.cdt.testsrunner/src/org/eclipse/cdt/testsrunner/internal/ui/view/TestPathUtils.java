@@ -16,13 +16,28 @@ import java.util.List;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 
 /**
- * TODO: Add comment here...
+ * The utilities collection to work with the test paths for items in test
+ * hierarchy.
  */
 public class TestPathUtils {
 
-	private static final String TEST_PATH_PART_DELIMITER = "#"; //$NON-NLS-1$
+	/**
+	 * The delimiter between parts of serialized test path. Should not be met in
+	 * test paths names.
+	 */
+	private static final String TEST_PATH_PART_DELIMITER = "\n"; //$NON-NLS-1$
+
+	/** The delimiter between parts of human readable test path. */
 	private static final String TEST_PATH_DELIMITER = "."; //$NON-NLS-1$
 	
+	/**
+	 * Returns the human readable path to the item in test hierarchy (e.g.
+	 * MySuite.MyInnerSuite.MyTest1).
+	 * 
+	 * @param testItem test item (test suite or test case)
+	 * 
+	 * @return path to test item
+	 */
 	public static String getTestItemPath(ITestItem testItem) {
 		StringBuilder itemPath = new StringBuilder();
 		List<ITestItem> parentItems = new ArrayList<ITestItem>();
@@ -38,11 +53,17 @@ public class TestPathUtils {
 				}
 			}
 		}
-		// TODO: Implement caching of the last path
 		return itemPath.toString();
 	}
 	
-	
+	/**
+	 * Unpack the paths from the string list.
+	 * 
+	 * @param testPaths packed test paths
+	 * @return array of test paths
+	 * 
+	 * @see packTestPaths()
+	 */
 	public static String[][] unpackTestPaths(String[] testPaths) {
 		String [][] result = new String[testPaths.length][];
 		for (int i = 0; i < result.length; i++) {
@@ -51,6 +72,14 @@ public class TestPathUtils {
 		return result;
 	}
 	
+	/**
+	 * Pack the paths to specified test items to string list.
+	 * 
+	 * @param testItems test items to pack
+	 * @return string list
+	 * 
+	 * @see unpackTestPaths()
+	 */
 	public static String[] packTestPaths(ITestItem[] testItems) {
 		String [] result = new String[testItems.length];
 		List<String> testPath = new ArrayList<String>();

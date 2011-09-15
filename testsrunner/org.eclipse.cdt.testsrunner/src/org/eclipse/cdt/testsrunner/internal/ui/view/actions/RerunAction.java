@@ -19,11 +19,12 @@ import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jface.action.Action;
 
 /**
- * Toggles tests tree hierarchy auto-scroll
+ * Restarts the last testing session (it may be run or debug session).
  */
 public class RerunAction extends Action {
 
 	private TestingSessionsManager testingSessionsManager;
+
 
 	public RerunAction(TestingSessionsManager testingSessionsManager) {
 		super("Rerun");
@@ -34,9 +35,6 @@ public class RerunAction extends Action {
 		this.testingSessionsManager = testingSessionsManager;
 	}
 
-	/**
-	 * @see org.eclipse.jface.action.IAction#run()
-	 */
 	@Override
 	public void run() {
 		ITestingSession activeSession = testingSessionsManager.getActiveSession();

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2009 QNX Software Systems and others.
+ * Copyright (c) 2011 Anton Gorenkov 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,46 +31,44 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
+/**
+ * The activator class controls the plug-in life cycle
+ */
 public class TestsRunnerPlugin extends AbstractUIPlugin {
 
-	public static final String PLUGIN_ID = "org.eclipse.cdt.testsrunner"; //$NON-NLS-1$
+	/** The plug-in ID. */
+	private static final String PLUGIN_ID = "org.eclipse.cdt.testsrunner"; //$NON-NLS-1$
+	
+	/** The path to the plugin icons */
 	private static final IPath ICONS_PATH= new Path("$nl$/icons"); //$NON-NLS-1$
 
-	/**
-	 * Launch UI plug-in instance
-	 */
+	/** Plug-in instance. */
 	private static TestsRunnerPlugin plugin;
 	
 	private TestsRunnersManager testsRunnersManager = new TestsRunnersManager();
 	private TestingSessionsManager testingSessionsManager = new TestingSessionsManager(testsRunnersManager);
 
-	/**
-	 * Constructor for LaunchUIPlugin.
-	 * 
-	 * @param descriptor
-	 */
+	
 	public TestsRunnerPlugin() {
 		super();
 		plugin = this;
 	}
 	
 	/**
-	 * Returns the Java Debug UI plug-in instance
+	 * Returns the Tests Runner plug-in instance
 	 * 
-	 * @return the Java Debug UI plug-in instance
+	 * @return the plug-in instance
 	 */
 	public static TestsRunnerPlugin getDefault() {
 		return plugin;
 	}
 
-	/**
-	 * Convenience method which returns the unique identifier of this plugin.
-	 */
+	/** Convenience method which returns the unique identifier of this plug-in. */
 	public static String getUniqueIdentifier() {
 		if (getDefault() == null) {
 			// If the default instance is not yet initialized,
 			// return a static identifier. This identifier must
-			// match the plugin id defined in plugin.xml
+			// match the plug-in id defined in plugin.xml
 			return PLUGIN_ID;
 		}
 		return getDefault().getBundle().getSymbolicName();
@@ -79,17 +77,16 @@ public class TestsRunnerPlugin extends AbstractUIPlugin {
 	/**
 	 * Logs the specified status with this plug-in's log.
 	 * 
-	 * @param status
-	 *            status to log
+	 * @param status status to log
 	 */
 	public static void log(IStatus status) {
 		getDefault().getLog().log(status);
 	}
+	
 	/**
 	 * Logs an internal error with the specified message.
 	 * 
-	 * @param message
-	 *            the error message to log
+	 * @param message the error message to log
 	 */
 	public static void logErrorMessage(String message) {
 		log(new Status(IStatus.ERROR, getUniqueIdentifier(), IStatus.ERROR, message, null));
@@ -98,18 +95,12 @@ public class TestsRunnerPlugin extends AbstractUIPlugin {
 	/**
 	 * Logs an internal error with the specified throwable
 	 * 
-	 * @param e
-	 *            the exception to be logged
+	 * @param e the exception to be logged
 	 */
 	public static void log(Throwable e) {
 		log(new Status(IStatus.ERROR, getUniqueIdentifier(), IStatus.ERROR, e.getMessage(), e));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
-	 */
 	@Override
     public void start(BundleContext context) throws Exception {
 		super.start(context);
@@ -117,37 +108,66 @@ public class TestsRunnerPlugin extends AbstractUIPlugin {
 		setDefaultLaunchDelegates();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
-	 */
 	@Override
     public void stop(BundleContext context) throws Exception {
 		super.stop(context);
 	}
 
+	/**
+	 * Access the plugin's Testing Sessions Manager instance.
+	 * 
+	 * @return sessions manager
+	 */
 	public TestingSessionsManager getTestingSessionsManager() {
 		return testingSessionsManager;
 	}
 
+	/**
+	 * Access the plugin's Test Runners manager instance.
+	 * 
+	 * @return tests runners manager
+	 */
 	public TestsRunnersManager getTestsRunnersManager() {
 		return testsRunnersManager;
 	}
 
+	/**
+	 * Returns the descriptor for image with <code>relativePath</code> path.
+	 * 
+	 * @param relativePath path relative to <code>ICONS_PATH</code>
+	 * @return image descriptor
+	 */
 	static public ImageDescriptor getImageDescriptor(String relativePath) {
 		return getDefault().getImageDescriptorImpl(relativePath);
 	}
 
+	/**
+	 * Returns the descriptor for image with <code>relativePath</code> path.
+	 * 
+	 * @param relativePath path relative to <code>ICONS_PATH</code>
+	 * @return image descriptor
+	 */
 	private ImageDescriptor getImageDescriptorImpl(String relativePath) {
 		IPath path= ICONS_PATH.append(relativePath);
 		return createImageDescriptor(getDefault().getBundle(), path, true);
 	}
 
+	/**
+	 * Returns the image with the specified path.
+	 * 
+	 * @param path path
+	 * @return image image
+	 */
 	public static Image createAutoImage(String path) {
 		return getDefault().createAutoImageImpl(path);
 	}
 
+	/**
+	 * Returns the image with the specified path.
+	 * 
+	 * @param path path
+	 * @return image image
+	 */
 	private Image createAutoImageImpl(String path) {
 		Image image = getImageRegistry().get(path);
 		if (image == null) {
@@ -162,15 +182,15 @@ public class TestsRunnerPlugin extends AbstractUIPlugin {
 	 * contain variables like $NL$. If no image could be found,
 	 * <code>useMissingImageDescriptor</code> decides if either the 'missing
 	 * image descriptor' is returned or <code>null</code>.
-	 *
+	 * 
 	 * @param bundle a bundle
 	 * @param path path in the bundle
-	 * @param useMissingImageDescriptor if <code>true</code>, returns the shared image descriptor
-	 *            for a missing image. Otherwise, returns <code>null</code> if the image could not
-	 *            be found
-	 * @return an {@link ImageDescriptor}, or <code>null</code> iff there's
-	 *         no image at the given location and
-	 *         <code>useMissingImageDescriptor</code> is <code>true</code>
+	 * @param useMissingImageDescriptor if <code>true</code>, returns the shared
+	 * image descriptor for a missing image. Otherwise, returns
+	 * <code>null</code> if the image could not be found
+	 * @return an {@link ImageDescriptor}, or <code>null</code> iff there's no
+	 * image at the given location and <code>useMissingImageDescriptor</code> is
+	 * <code>true</code>
 	 */
 	private ImageDescriptor createImageDescriptor(Bundle bundle, IPath path, boolean useMissingImageDescriptor) {
 		URL url= FileLocator.find(bundle, path, null);
@@ -183,6 +203,15 @@ public class TestsRunnerPlugin extends AbstractUIPlugin {
 		return null;
 	}
 	
+	/**
+	 * Setup the launch delegate with id <code>delegateId</code> as default for
+	 * launch configuration type <code>cfgType</code> for <code>mode</code>
+	 * launch mode.
+	 * 
+	 * @param cfgType launch configuration type
+	 * @param delegateId unique identifier of the launch delegate
+	 * @param mode launch mode
+	 */
 	private void setDefaultLaunchDelegate(ILaunchConfigurationType cfgType, String delegateId, String mode) {
 		HashSet<String> debugSet = new HashSet<String>();
 		debugSet.add(mode);
@@ -200,12 +229,15 @@ public class TestsRunnerPlugin extends AbstractUIPlugin {
 		}
 	}
 	
+	/**
+	 * Sets up the default launch delegates for the Tests Runner's launch configuration type.
+	 */
 	private void setDefaultLaunchDelegates() {
 		ILaunchManager launchMgr = DebugPlugin.getDefault().getLaunchManager();
-		ILaunchConfigurationType configurationType = launchMgr.getLaunchConfigurationType("org.eclipse.cdt.testsrunner.launch.CTestsRunner");
+		ILaunchConfigurationType configurationType = launchMgr.getLaunchConfigurationType("org.eclipse.cdt.testsrunner.launch.CTestsRunner"); //$NON-NLS-1$
 		
-		setDefaultLaunchDelegate(configurationType, "org.eclipse.cdt.testsrunner.launch.dsf.runTests", ILaunchManager.DEBUG_MODE);
-		setDefaultLaunchDelegate(configurationType, "org.eclipse.cdt.testsrunner.launch.runTests", ILaunchManager.RUN_MODE);
+		setDefaultLaunchDelegate(configurationType, "org.eclipse.cdt.testsrunner.launch.dsf.runTests", ILaunchManager.DEBUG_MODE); //$NON-NLS-1$
+		setDefaultLaunchDelegate(configurationType, "org.eclipse.cdt.testsrunner.launch.runTests", ILaunchManager.RUN_MODE); //$NON-NLS-1$
 	}
 	
 }

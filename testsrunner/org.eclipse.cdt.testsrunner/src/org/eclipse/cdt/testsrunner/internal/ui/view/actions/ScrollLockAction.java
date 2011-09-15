@@ -16,11 +16,12 @@ import org.eclipse.cdt.testsrunner.internal.ui.view.UIUpdater;
 import org.eclipse.jface.action.Action;
 
 /**
- * Toggles tests tree hierarchy auto-scroll
+ * Toggles the auto-scroll for tests hierarchy tree.
  */
 public class ScrollLockAction extends Action {
 
 	private UIUpdater modelSyncronizer;
+
 
 	public ScrollLockAction(UIUpdater modelSyncronizer) {
 		super("Scroll Lock");
@@ -32,9 +33,6 @@ public class ScrollLockAction extends Action {
 		setChecked(!this.modelSyncronizer.getAutoScroll());
 	}
 
-	/**
-	 * @see org.eclipse.jface.action.IAction#run()
-	 */
 	@Override
 	public void run() {
 		modelSyncronizer.setAutoScroll(!isChecked());

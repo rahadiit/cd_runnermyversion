@@ -13,7 +13,8 @@ package org.eclipse.cdt.testsrunner.internal.ui.launcher;
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.cdt.launch.ui.CLaunchConfigurationTab;
 import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
-import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager.TestsRunnerInfo;
+import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnerInfo;
+import org.eclipse.cdt.testsrunner.launcher.ITestsRunnerInfo;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -30,14 +31,16 @@ import org.eclipse.swt.widgets.Label;
 
 
 /**
- * A launch configuration tab that displays and edits program arguments,
- * and working directory launch configuration attributes.
+ * A launch configuration tab that displays and edits different testing options
+ * (e.g. Tests Runner Plug-in).
  * <p>
  * This class may be instantiated. This class is not intended to be subclassed.
  * </p>
+ * 
  * @noextend This class is not intended to be subclassed by clients.
  */
 public class CTestingTab extends CLaunchConfigurationTab {
+	
 	/**
 	 * Tab identifier used for ordering of tabs added using the 
 	 * <code>org.eclipse.debug.ui.launchConfigurationTabs</code>
@@ -48,14 +51,13 @@ public class CTestingTab extends CLaunchConfigurationTab {
 	private static final String TAB_ID = "org.eclipse.cdt.testsrunner.testingTab"; //$NON-NLS-1$
 
 	private static final String TESTING_PROCESS_FACTORY_ID = "org.eclipse.cdt.testsrunner.TestingProcessFactory"; //$NON-NLS-1$
-	
-	// Program arguments UI widgets
-	protected Label testsRunnerDescriptionLabel;
-	protected Combo testsRunnerCombo;
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#createControl(org.eclipse.swt.widgets.Composite)
-	 */
+	/** Shows the list of available Tests Runner Plug-ins. */
+	private Combo testsRunnerCombo;
+	
+	/** Shows the description for the currently selected Tests Runner Plug-in. */
+	private Label testsRunnerDescriptionLabel;
+
 	public void createControl(Composite parent) {
 		Composite pageComposite = new Composite(parent, SWT.NONE);
 		GridLayout pageCompositeLayout = new GridLayout(2, false);
@@ -96,16 +98,32 @@ public class CTestingTab extends CLaunchConfigurationTab {
 		setControl(pageComposite);
 	}
 	
-	private TestsRunnerInfo getCurrentTestsRunnerInfo() {
+	/**
+	 * Returns the information for the currently selected Tests Runner Plug-in.
+	 * 
+	 * @return Tests Runner Plug-in information
+	 */
+	private ITestsRunnerInfo getCurrentTestsRunnerInfo() {
 		return getTestsRunnerInfo(testsRunnerCombo.getSelectionIndex());
 	}
 
-	private TestsRunnerInfo getTestsRunnerInfo(int comboIndex) {
-		return (TestsRunnerInfo)testsRunnerCombo.getData(Integer.toString(comboIndex));
+	/**
+	 * Returns the information for the Tests Runner Plug-in specified by index.
+	 * 
+	 * @param comboIndex index in combo widget
+	 * @return Tests Runner Plug-in information
+	 */
+	private ITestsRunnerInfo getTestsRunnerInfo(int comboIndex) {
+		return (ITestsRunnerInfo)testsRunnerCombo.getData(Integer.toString(comboIndex));
 	}
 
+	/**
+	 * Returns the description for the currently selected Tests Runner Plug-in.
+	 * 
+	 * @return the description
+	 */
 	private String getCurrentTestsRunnerDescription() {
-		TestsRunnerInfo testsRunnerInfo = getCurrentTestsRunnerInfo();
+		ITestsRunnerInfo testsRunnerInfo = getCurrentTestsRunnerInfo();
 		if (testsRunnerInfo != null) {
 			return testsRunnerInfo.getDescription();
 		} else {
@@ -113,30 +131,21 @@ public class CTestingTab extends CLaunchConfigurationTab {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#isValid(org.eclipse.debug.core.ILaunchConfiguration)
-	 */
 	public boolean isValid(ILaunchConfiguration config) {
 		return getCurrentTestsRunnerInfo() != null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#setDefaults(org.eclipse.debug.core.ILaunchConfigurationWorkingCopy)
-	 */
 	public void setDefaults(ILaunchConfigurationWorkingCopy config) {
 		config.setAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String) null);
 		config.setAttribute(DebugPlugin.ATTR_PROCESS_FACTORY_ID, TESTING_PROCESS_FACTORY_ID);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#initializeFrom(org.eclipse.debug.core.ILaunchConfiguration)
-	 */
 	public void initializeFrom(ILaunchConfiguration configuration) {
 		try {
 			String testsRunnerId = configuration.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String) null);
 			int comboIndex = 0;
 			for (int i = 1; i < testsRunnerCombo.getItemCount(); i++) {
-				TestsRunnerInfo testsRunnerInfo = getTestsRunnerInfo(i);
+				ITestsRunnerInfo testsRunnerInfo = getTestsRunnerInfo(i);
 				if (testsRunnerInfo.getId().equals(testsRunnerId)) {
 					comboIndex = i;
 					break;
@@ -149,11 +158,8 @@ public class CTestingTab extends CLaunchConfigurationTab {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#performApply(org.eclipse.debug.core.ILaunchConfigurationWorkingCopy)
-	 */
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-		TestsRunnerInfo testsRunnerInfo = getCurrentTestsRunnerInfo();
+		ITestsRunnerInfo testsRunnerInfo = getCurrentTestsRunnerInfo();
 		String testsRunnerId = testsRunnerInfo != null ? testsRunnerInfo.getId() : null;
 		configuration.setAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, testsRunnerId);
 		configuration.setAttribute(DebugPlugin.ATTR_PROCESS_FACTORY_ID, TESTING_PROCESS_FACTORY_ID);
@@ -164,16 +170,10 @@ public class CTestingTab extends CLaunchConfigurationTab {
 		return TAB_ID;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#getName()
-	 */
 	public String getName() {
 		return "C/C++ Testing"; 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#getErrorMessage()
-	 */
 	public String getErrorMessage() {
 		String m = super.getErrorMessage();
 		if (m == null) {
@@ -184,9 +184,6 @@ public class CTestingTab extends CLaunchConfigurationTab {
 		return m;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#getImage()
-	 */
 	public Image getImage() {
 		return TestsRunnerPlugin.createAutoImage("obj16/test_notrun.gif"); //$NON-NLS-1$
 	}

@@ -14,116 +14,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
-import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
-import org.eclipse.cdt.testsrunner.launcher.ITestsRunner;
-import org.eclipse.cdt.testsrunner.model.ITestsRunnerInfo;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.ILaunchConfiguration;
 
 /**
- * TODO: Add descriptions
- * 
+ * Collects the data from the Tests Runner Plug-in extension points and provides
+ * the convenient access to it.
  */
 public class TestsRunnersManager {
 	
+	/** Tests Runner Plug-ins extension point ID. */
 	private static final String TESTS_RUNNER_EXTENSION_POINT_ID = "org.eclipse.cdt.testsrunner.TestsRunner"; //$NON-NLS-1$
-	private static final String TESTS_RUNNER_FEATURES_ELEMENT = "features"; //$NON-NLS-1$
-	private static final String TESTS_RUNNER_FEATURE_MULTIPLE_TEST_FILTER_ATTRIBUTE = "multipleTestFilter"; //$NON-NLS-1$
-	private static final String TESTS_RUNNER_FEATURE_TESTING_TIME_MEASUREMENT_ATTRIBUTE = "testingTimeMeasurement"; //$NON-NLS-1$
-	private static final String TESTS_RUNNER_FEATURE_DATA_STREAM_ATTRIBUTE = "dataStream"; //$NON-NLS-1$
-	private static final String TESTS_RUNNER_ID_ATTRIBUTE = "id"; //$NON-NLS-1$
-	private static final String TESTS_RUNNER_NAME_ATTRIBUTE = "name"; //$NON-NLS-1$
-	private static final String TESTS_RUNNER_CLASS_ATTRIBUTE = "class"; //$NON-NLS-1$
-	private static final String TESTS_RUNNER_DESCRIPTION_ATTRIBUTE = "description"; //$NON-NLS-1$
-	private static final String TESTS_RUNNER_ERROR_STREAM_VALUE = "error"; //$NON-NLS-1$
 
+	/** Tests Runner Plug-ins information collection. */
 	private TestsRunnerInfo[] testsRunners = null;
 
 	
-	public class TestsRunnerInfo implements ITestsRunnerInfo {
-		
-		private IConfigurationElement element;
-
-		public TestsRunnerInfo(IConfigurationElement element) {
-			this.element = element;
-		}
-
-		public String getName() {
-			return element.getAttribute(TESTS_RUNNER_NAME_ATTRIBUTE);
-		}
-
-		public String getId() {
-			return element.getAttribute(TESTS_RUNNER_ID_ATTRIBUTE);
-		}
-
-		public String getDescription() {
-			String result = element.getAttribute(TESTS_RUNNER_DESCRIPTION_ATTRIBUTE);
-			return result == null ? "" : result; //$NON-NLS-1$
-		}
-
-		public ITestsRunner instantiateTestsRunner() {
-			try {
-				Object object = element.createExecutableExtension(TESTS_RUNNER_CLASS_ATTRIBUTE);
-				if (object instanceof ITestsRunner) {
-					return (ITestsRunner)object;
-				}
-			} catch (CoreException e) {
-				TestsRunnerPlugin.log(e);
-			}
-			return null;
-		}
-		
-		private IConfigurationElement getFeatures() {
-			IConfigurationElement[] featuresElements = element.getChildren(TESTS_RUNNER_FEATURES_ELEMENT);
-			if (featuresElements.length == 1) {
-				return featuresElements[0];
-			}
-			return null;
-		}
-		
-		private String getFeatureAttributeValue(String featureName) {
-			IConfigurationElement features = getFeatures();
-			if (features != null) {
-				return features.getAttribute(featureName);
-			}
-			return null;
-		}
-		
-		private boolean getBooleanFeatureValue(String featureName, boolean defaultValue) {
-			String attrValue = getFeatureAttributeValue(featureName);
-			if (attrValue != null) {
-				return Boolean.parseBoolean(attrValue);
-			}
-			return defaultValue;
-		}
-		
-		public boolean isAllowedMultipleTestFilter() {
-			return getBooleanFeatureValue(TESTS_RUNNER_FEATURE_MULTIPLE_TEST_FILTER_ATTRIBUTE, false);
-		}
-		
-		public boolean isAllowedTestingTimeMeasurement() {
-			return getBooleanFeatureValue(TESTS_RUNNER_FEATURE_TESTING_TIME_MEASUREMENT_ATTRIBUTE, false);
-		}
-		
-		public boolean isOutputStreamRequired() {
-			return !isErrorStreamRequired();
-		}
-
-		public boolean isErrorStreamRequired() {
-			String attrValue = getFeatureAttributeValue(TESTS_RUNNER_FEATURE_DATA_STREAM_ATTRIBUTE);
-			if (attrValue != null) {
-				return attrValue.equals(TESTS_RUNNER_ERROR_STREAM_VALUE);
-			}
-			return false;
-		}
-	}
-	
-
-	public TestsRunnersManager() {
-	}
-
+	/**
+	 * Provides access to information about all registered Tests Runner
+	 * Plug-ins.
+	 * 
+	 * @return array of tests runner plug-ins descriptors
+	 */
 	public TestsRunnerInfo[] getTestsRunnersInfo() {
 		if (testsRunners == null) {
 			// Initialize tests runners info
@@ -136,12 +50,24 @@ public class TestsRunnersManager {
 		return testsRunners;
 	}
 
+	/**
+	 * Provides access to information about Tests Runner Plug-in referred in the
+	 * specified launch configuration.
+	 * 
+	 * @return tests runner plug-in descriptor
+	 */
 	public TestsRunnerInfo getTestsRunner(ILaunchConfiguration launchConf) throws CoreException {
 		String testsRunnerId = launchConf.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String)null);
 		return getTestsRunner(testsRunnerId);
 	}
 	
-	public TestsRunnerInfo getTestsRunner(String testsRunnerId) {
+	/**
+	 * Provides access to information about Tests Runner Plug-in with the
+	 * specified ID.
+	 * 
+	 * @return tests runner plug-in descriptor
+	 */
+	private TestsRunnerInfo getTestsRunner(String testsRunnerId) {
 		if (testsRunnerId!=null) {
 			for (TestsRunnerInfo testsRunner : getTestsRunnersInfo()) {
 				if (testsRunner.getId().equals(testsRunnerId)) {

@@ -16,7 +16,7 @@ import org.eclipse.cdt.testsrunner.internal.ui.view.ResultsPanel;
 import org.eclipse.jface.action.Action;
 
 /**
- *  TODO: Add description here (and check other actions)!
+ * Toggles the filter for the passed test items.
  */
 public class ShowFailedOnlyAction extends Action {
 

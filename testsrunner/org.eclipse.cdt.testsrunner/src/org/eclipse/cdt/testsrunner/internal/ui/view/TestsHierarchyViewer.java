@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,16 +55,24 @@ import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.actions.ActionFactory;
 
 /**
- * TODO: Add description here
- * TODO: fix header comment
+ * Shows the tests hierarchy in a flat or hierarchical view.
  */
 public class TestsHierarchyViewer {
 	
-	class TestTreeContentProvider implements ITreeContentProvider {
+	/**
+	 * The content provider for the tests hierarchy viewer.
+	 */
+	private class TestTreeContentProvider implements ITreeContentProvider {
 
-		class TestCasesCollector implements IModelVisitor {
+		/**
+		 * Utility class: recursively collects all the test cases of the
+		 * specified test item.
+		 * 
+		 * It is used for flat view of tests hierarchy.
+		 */
+		private class TestCasesCollector implements IModelVisitor {
 			
-			List<ITestCase> testCases = new ArrayList<ITestCase>();
+			public List<ITestCase> testCases = new ArrayList<ITestCase>();
 			
 			public void visit(ITestCase testCase) {
 				testCases.add(testCase);
@@ -98,16 +107,17 @@ public class TestsHierarchyViewer {
 			return ((ITestItem) object).hasChildren();
 		}
 
-		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-		}
+		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
 
-		public void dispose() {
-		}
-
+		public void dispose() {}
 	}
 
-	class TestLabelProvider extends LabelProvider implements IStyledLabelProvider {
+	/**
+	 * The label provider for the tests hierarchy viewer.
+	 */
+	private class TestLabelProvider extends LabelProvider implements IStyledLabelProvider {
 
+		/** Images for the test cases with the different statuses. */
 		private Map<ITestItem.Status, Image> testCaseImages = new HashMap<ITestItem.Status, Image>();
 		{
 			testCaseImages.put(ITestItem.Status.NotRun, TestsRunnerPlugin.createAutoImage("obj16/test_notrun.gif")); //$NON-NLS-1$
@@ -116,9 +126,11 @@ public class TestsHierarchyViewer {
 			testCaseImages.put(ITestItem.Status.Failed, TestsRunnerPlugin.createAutoImage("obj16/test_failed.gif")); //$NON-NLS-1$
 			testCaseImages.put(ITestItem.Status.Aborted, TestsRunnerPlugin.createAutoImage("obj16/test_aborted.gif")); //$NON-NLS-1$
 		}
+		
+		/** Running test case image (overrides the test case status image). */
 		private Image testCaseRunImage = TestsRunnerPlugin.createAutoImage("obj16/test_run.gif"); //$NON-NLS-1$
 
-
+		/** Images for the test suites with the different statuses. */
 		private Map<ITestItem.Status, Image> testSuiteImages = new HashMap<ITestItem.Status, Image>();
 		{
 			// NOTE: There is no skipped-icon for test suite, but it seems it is not a problem
@@ -128,7 +140,15 @@ public class TestsHierarchyViewer {
 			testSuiteImages.put(ITestItem.Status.Failed, TestsRunnerPlugin.createAutoImage("obj16/tsuite_failed.gif")); //$NON-NLS-1$
 			testSuiteImages.put(ITestItem.Status.Aborted, TestsRunnerPlugin.createAutoImage("obj16/tsuite_aborted.gif")); //$NON-NLS-1$
 		}
+
+		/** Running test suite image (overrides the test suite status image). */
 		private Image testSuiteRunImage = TestsRunnerPlugin.createAutoImage("obj16/tsuite_run.gif"); //$NON-NLS-1$
+		
+		/** Small optimization: the last test item cache */
+		private ITestItem lastTestItemCache = null;
+
+		/** Small optimization: test path for the last test item is cache */
+		private String lastTestItemPathCache = null;
 
 
 	    public Image getImage(Object element) {
@@ -158,7 +178,7 @@ public class TestsHierarchyViewer {
 			StringBuilder sb = new StringBuilder();
 			sb.append(testItem.getName());
 			if (!showTestsHierarchy) {
-				sb.append(TestPathUtils.getTestItemPath(testItem));
+				appendTestItemPath(sb, testItem);
 			}
 			if (showTime) {
 				sb.append(getTestingTimeString(element));
@@ -172,8 +192,7 @@ public class TestsHierarchyViewer {
 			labelBuf.append(testItem.getName());
 			StyledString name = new StyledString(labelBuf.toString());
 			if (!showTestsHierarchy) {
-				String itemPath = " - "+TestPathUtils.getTestItemPath(testItem);
-				labelBuf.append(itemPath);
+				appendTestItemPath(labelBuf, testItem);
 				name = StyledCellLabelProvider.styleDecoratedString(labelBuf.toString(), StyledString.QUALIFIER_STYLER, name);
 			}
 			if (showTime) {
@@ -184,14 +203,42 @@ public class TestsHierarchyViewer {
 			return name;
 		}
 		
+		/**
+		 * Appends path to the parent of the specified test item. Also
+		 * implements caching of the last path (cause the test item parent is
+		 * often the same).
+		 * 
+		 * @param sb string builder to append test item path to
+		 * @param testItem specified test item
+		 */
+		private void appendTestItemPath(StringBuilder sb, ITestItem testItem) {
+			sb.append(" - ");
+			ITestSuite testItemParent = testItem.getParent();
+			if (lastTestItemCache != testItemParent) {
+				lastTestItemCache = testItemParent;
+				lastTestItemPathCache = TestPathUtils.getTestItemPath(lastTestItemCache);
+			}
+			sb.append(lastTestItemPathCache);
+		}
+		
+		/**
+		 * Returns the execution time suffix for the test item.
+		 * 
+		 * @param element test item
+		 * @return execution time suffix
+		 */
 		private String getTestingTimeString(Object element) {
-			// TODO: Add a message template and internalize it!
-			return (element instanceof ITestItem) ? " ("+Double.toString(((ITestItem)element).getTestingTime()/1000.0)+" s)" : "";
+			return (element instanceof ITestItem)
+				? MessageFormat.format(" ({0} s)", Double.toString(((ITestItem)element).getTestingTime()/1000.0))
+				: "";
 		}
 		
 	}
 	
-	class FailedOnlyFilter extends ViewerFilter {
+	/**
+	 * Filters passed test cases and test suites.
+	 */
+	private class FailedOnlyFilter extends ViewerFilter {
 
 		@Override
 		public boolean select(Viewer viewer, Object parentElement, Object element) {
@@ -199,13 +246,25 @@ public class TestsHierarchyViewer {
 		}
 	}
 
-	
+	/** Testing session to show hierarchy of. */
 	private ITestingSession testingSession;
+	
+	/** Main widget. */
 	private TreeViewer treeViewer;
+	
+	/** Specifies whether test items execution time should be shown in hierarchy. */
 	private boolean showTime = true;
-	private FailedOnlyFilter failedOnlyFilter = null;
+
+	/** Specifies whether tests hierarchy should be shown in flat or hierarchical view. */
 	private boolean showTestsHierarchy = true;
+	
+	/** Failed only tree filter instance. Created on first demand. */
+	private FailedOnlyFilter failedOnlyFilter = null;
+	
+	/** System clipboard access to provide copy operations. */
 	private Clipboard clipboard;
+	
+	// Context menu actions
 	private Action expandAllAction;
 	private Action collapseAllAction;
 	private Action copyAction;
@@ -221,6 +280,11 @@ public class TestsHierarchyViewer {
 		initContextMenu(viewSite);
 	}
 	
+	/**
+	 * Initializes the viewer context menu. 
+	 * 
+	 * @param viewSite view
+	 */
 	private void initContextMenu(IViewSite viewSite) {
 		expandAllAction = new TestsHierarchyExpandAllAction(treeViewer);
 		collapseAllAction = new TestsHierarchyCollapseAllAction(treeViewer);
@@ -251,6 +315,11 @@ public class TestsHierarchyViewer {
 		actionBars.updateActionBars();
 	}
 	
+	/**
+	 * Handles the context menu showing.
+	 * 
+	 * @param manager context menu manager
+	 */
 	private void handleMenuAboutToShow(IMenuManager manager) {
 		IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
 		boolean isRelaunchEnabledForSelection = !selection.isEmpty() && 
@@ -266,23 +335,46 @@ public class TestsHierarchyViewer {
 		collapseAllAction.setEnabled(hasAnything);
 	}
 
+	/**
+	 * Sets the testing session to show.
+	 * 
+	 * @param testingSession testing session or null to set default empty
+	 * session
+	 */
 	public void setTestingSession(ITestingSession testingSession) {
 		this.testingSession = testingSession;
 		treeViewer.setInput(testingSession != null ? testingSession.getModelAccessor().getRootSuite() : null);
 	}
 	
+	/**
+	 * Provides access to the main widget of the tests hierarchy viewer.
+	 * 
+	 * @return main widget of the tests hierarchy viewer
+	 */
 	public TreeViewer getTreeViewer() {
 		return treeViewer;
 	}
 
+	/**
+	 * Move the selection to the next failed test case.
+	 */
 	public void showNextFailure() {
 		showFailure(true);
 	}
 	
+	/**
+	 * Move the selection to the previous failed test case.
+	 */
 	public void showPreviousFailure() {
 		showFailure(false);
 	}
 	
+	/**
+	 * Common implementation for movement the selection to the next or previous
+	 * failed test case.
+	 * 
+	 * @param next true if the next failed test case should be selected and false otherwise
+	 */
 	private void showFailure(boolean next) {
 		IStructuredSelection selection = (IStructuredSelection) getTreeViewer().getSelection();
 		ITestItem selected = (ITestItem) selection.getFirstElement();
@@ -301,6 +393,21 @@ public class TestsHierarchyViewer {
 			getTreeViewer().setSelection(new StructuredSelection(failedItem), true);
 	}
 	
+	/**
+	 * Returns the next or previous failed test case relatively to the
+	 * <code>currItem</code> that should be a child of <code>parentItem</code>.
+	 * If the such item was not found through the children, it steps up to the
+	 * parent and continues search.
+	 * 
+	 * @param parentItem parent test item to the current one
+	 * @param currItem current item search should be started from or null if
+	 * there is no any
+	 * @param next true if the next failed test case should be looked for and
+	 * false otherwise
+	 * @param checkCurrentChild specifies whether the search should be also
+	 * through the children for the current item
+	 * @return found item or null
+	 */
 	private ITestItem findFailedImpl(ITestItem parentItem, ITestItem currItem, boolean next, boolean checkCurrentChild) {
 		ITestItem result = findFailedChild(parentItem, currItem, next, checkCurrentChild);
 		if (result != null) {
@@ -314,6 +421,21 @@ public class TestsHierarchyViewer {
 		return null;
 	}
 	
+	/**
+	 * Returns the next or previous failed test case relatively to the
+	 * <code>currItem</code> that should be a child of <code>parentItem</code>.
+	 * Note that unlike <code>findFailedImpl()</code> this method search only
+	 * through the children items.
+	 * 
+	 * @param parentItem parent test item to the current one
+	 * @param currItem current item search should be started from or null if
+	 * there is no any
+	 * @param next true if the next failed test case should be looked for and
+	 * false otherwise
+	 * @param checkCurrentChild specifies whether the search should be also
+	 * through the children for the current item
+	 * @return found item or null
+	 */
 	private ITestItem findFailedChild(ITestItem parentItem, ITestItem currItem, boolean next, boolean checkCurrentChild) {
 		ITestItem[] children = parentItem.getChildren();
 		boolean doSearch = (currItem == null);
@@ -347,16 +469,36 @@ public class TestsHierarchyViewer {
 		return null;
 	}
 
+	/**
+	 * Returns whether test items execution time should be shown in tests
+	 * hierarchy.
+	 * 
+	 * @return true if time should be shown and false otherwise
+	 */
 	public boolean showTime() {
 		return showTime;
 	}
 
+	/**
+	 * Sets whether test items execution time should be shown in tests
+	 * hierarchy. Updates tests hierarchy viewer if the view is changed.
+	 * 
+	 * @param showTime true if time is shown and false otherwise
+	 */
 	public void setShowTime(boolean showTime) {
-		this.showTime = showTime;
-		getTreeViewer().refresh();
+		if (this.showTime != showTime) {
+			this.showTime = showTime;
+			getTreeViewer().refresh();
+		}
 	}
 	
+	/**
+	 * Sets whether only failed tests should be shown.
+	 * 
+	 * @param showFailedOnly new filter state
+	 */
 	public void setShowFailedOnly(boolean showFailedOnly) {
+		// Create filter on first demand
 		if (failedOnlyFilter == null) {
 			failedOnlyFilter = new FailedOnlyFilter();
 		}
@@ -367,13 +509,28 @@ public class TestsHierarchyViewer {
 		}
 	}
 
+	/**
+	 * Returns whether tests hierarchy should be shown in flat or hierarchical
+	 * mode.
+	 * 
+	 * @return tests hierarchy view mode
+	 */
 	public boolean showTestsHierarchy() {
 		return showTestsHierarchy;
 	}
 
+	/**
+	 * Sets whether tests hierarchy should be shown in flat or hierarchical
+	 * mode. Updates tests hierarchy viewer if the view is changed.
+	 * 
+	 * @param showTestsHierarchy true if tests hierarchy is shown in
+	 * hierarchical mode and false otherwise
+	 */
 	public void setShowTestsHierarchy(boolean showTestsHierarchy) {
-		this.showTestsHierarchy = showTestsHierarchy;
-		getTreeViewer().refresh();
+		if (this.showTestsHierarchy != showTestsHierarchy) {
+			this.showTestsHierarchy = showTestsHierarchy;
+			getTreeViewer().refresh();
+		}
 	}
 
 }

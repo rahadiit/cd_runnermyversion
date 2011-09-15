@@ -11,27 +11,28 @@
 package org.eclipse.cdt.testsrunner.internal.ui.view.actions;
 
 
-import org.eclipse.cdt.testsrunner.internal.ui.view.MessagesPanel;
+import org.eclipse.cdt.testsrunner.internal.ui.view.MessagesViewer;
 import org.eclipse.jface.action.Action;
 
 /**
- *  TODO: Add description here (and check other actions)!
+ * Toggles the short or long view for file paths in message locations. The short
+ * view shows only the file names instead of full paths.
  */
 public class ShowFileNameOnlyAction extends Action {
 
-	private MessagesPanel messagesPanel;
+	private MessagesViewer messagesViewer;
 
 
-	public ShowFileNameOnlyAction(MessagesPanel messagesPanel) {
+	public ShowFileNameOnlyAction(MessagesViewer messagesViewer) {
 		super("Show File Names Only", AS_CHECK_BOX); //$NON-NLS-1$
-		this.messagesPanel = messagesPanel;
+		this.messagesViewer = messagesViewer;
 		setToolTipText("Show Only File Names in Message Locations");
-		setChecked(messagesPanel.getShowFileNameOnly());
+		setChecked(messagesViewer.getShowFileNameOnly());
 	}
 
 	@Override
 	public void run() {
-		messagesPanel.setShowFileNameOnly(isChecked());
+		messagesViewer.setShowFileNameOnly(isChecked());
 	}
 
 }

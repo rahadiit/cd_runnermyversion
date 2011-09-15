@@ -15,11 +15,12 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 
 /**
- * TODO: Add description here
+ * Expands the tests hierarchy tree in the viewer.
  */
 public class TestsHierarchyExpandAllAction extends Action {
 
 	private AbstractTreeViewer testsHierarchyTreeViewer;
+
 
 	public TestsHierarchyExpandAllAction(AbstractTreeViewer testsHierarchyTreeViewer) {
 		setText("Expand All");

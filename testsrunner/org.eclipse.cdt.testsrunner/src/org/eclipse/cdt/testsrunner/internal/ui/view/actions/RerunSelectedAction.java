@@ -16,7 +16,8 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.viewers.TreeViewer;
 
 /**
- * TODO: Add description
+ * Launches the new run session for the currently selected items of test
+ * hierarchy.
  */
 public class RerunSelectedAction extends RelaunchSelectedAction {
 

@@ -17,11 +17,15 @@ import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestSuite;
 
 /**
- * TODO: Add descriptions
- * 
+ * Represents the test suite of the tests hierarchy.
  */
 public class TestSuite extends TestItem implements ITestSuite {
 
+	/**
+	 * Stores child test suites and test cases.
+	 * 
+	 * @note Children order is important.
+	 */
 	private List<TestItem> children = new ArrayList<TestItem>();
 	
 	
@@ -64,6 +68,11 @@ public class TestSuite extends TestItem implements ITestSuite {
 		visitor.leave(this);
 	}
 
+	/**
+	 * Returns list of children for the test suite.
+	 * 
+	 * @return children list
+	 */
 	public List<TestItem> getChildrenList() {
 		return children;
 	}

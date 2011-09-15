@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2011 Anton Gorenkov 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Anton Gorenkov - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.qttest;
 
 import java.io.IOException;
@@ -12,8 +22,21 @@ import org.eclipse.cdt.testsrunner.model.ITestModelUpdater;
 import org.eclipse.cdt.testsrunner.model.TestingException;
 import org.xml.sax.SAXException;
 
+/**
+ * The Tests Runner Plug-in to run tests with Qt Test library.
+ * 
+ * Configures the test module to output in XML format, parses the output and
+ * provides the data for the Tests Runner Core.
+ */
 public class QtTestsRunner implements ITestsRunner {
 
+	/**
+	 * Checks whether the specified path is "special" one ("initTestCase" or
+	 * "cleanupTestCase").
+	 * 
+	 * @param testPath test path to check
+	 * @return true if the path is special and false otherwise
+	 */
 	private boolean isSpecialTestPath(String[] testPath) {
 		// Root test suite should not be explicitly specified for rerun
 		if (testPath.length <= 1) {
@@ -21,9 +44,16 @@ public class QtTestsRunner implements ITestsRunner {
 		}
 		// "initTestCase" & "cleanupTestCase" are special test case names and they should be skipped too
 		String testName = testPath[testPath.length-1];
-		return testName.equals("initTestCase") || testName.equals("cleanupTestCase");
+		return testName.equals("initTestCase") || testName.equals("cleanupTestCase"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
+	/**
+	 * Returns the count of not "special" test paths.
+	 * 
+	 * @param testPaths test paths array
+	 * @return the count
+	 * @see isSpecialTestPath()
+	 */
 	private int getNonSpecialTestsCount(String[][] testPaths) {
 		int result = 0;
 		for (int i = 0; i < testPaths.length; i++) {

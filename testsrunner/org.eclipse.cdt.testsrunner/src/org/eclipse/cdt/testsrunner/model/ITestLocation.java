@@ -11,15 +11,25 @@
 package org.eclipse.cdt.testsrunner.model;
 
 /**
- * TODO: Add descriptions
+ * Describes the location of the test object.
  * 
  * @noextend This interface is not intended to be extended by clients.
  * @noimplement This interface is not intended to be implemented by clients.
  */
 public interface ITestLocation {
 
-	public String getFile();  // TODO: Change return value to IResource & add resource resolving
+	/**
+	 * Returns the file name in which testing object is located.
+	 * 
+	 * @return file name
+	 */
+	public String getFile();
 
+	/**
+	 * Returns the line number on which testing object is located.
+	 * 
+	 * @return line number
+	 */
 	public int getLine();
 
 }

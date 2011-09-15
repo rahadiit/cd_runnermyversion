@@ -44,24 +44,42 @@ import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.ViewPart;
 
 /**
- * TODO: Add description here
- * TODO: fix header comment
+ * Represents a view part showing the testing results (count statistics,
+ * red/green bar, tests hierarchy and test messages).
  */
 public class ResultsView extends ViewPart {
 
+	/**
+	 * Represents view orientation
+	 * 
+	 * @note <code>Auto</code> state may be not acceptable for some methods (see
+	 * their comments for details).
+	 */
 	public enum Orientation {
 		Horizontal,
 		Vertical,
 		Auto,
 	}
 	
+	/** View parent. */
 	private Composite parent;
+	
+	/** Child widget: statistics viewer. */
 	private ProgressCountPanel progressCountPanel;
+	
+	/** Tests hierarchy and message viewer. */
 	private ResultsPanel resultsPanel;
+	
+	/** User interface updater instance. */
 	private UIUpdater uiUpdater;
+	
+	/** The reference to the testing sessions manager instance. */
 	private TestingSessionsManager sessionsManager;
+	
+	/** Shows whether the results view was disposed. */
 	private boolean isDisposed = false;
 	
+	// Toolbar & view menu actions
 	private Action nextAction;
 	private Action previousAction;
 	private Action rerunAction;
@@ -84,6 +102,10 @@ public class ResultsView extends ViewPart {
 	 */
 	private Orientation currentOrientation;
 	
+	/**
+	 * Previously saved state. It is used to store the same state if the view
+	 * was not opened.
+	 */
 	private IMemento memento;
 	
 	// Persistence tags
@@ -112,7 +134,7 @@ public class ResultsView extends ViewPart {
 		progressCountPanel = new ProgressCountPanel(parent, currentOrientation);
 		resultsPanel = new ResultsPanel(parent, sessionsManager, workbench, getViewSite(), clipboard);
 		uiUpdater = new UIUpdater(this, resultsPanel.getTestsHierarchyViewer(), progressCountPanel, sessionsManager);
-		configureActionsBars(sessionsManager);
+		configureActionsBars();
 		
 		parent.addControlListener(new ControlListener() {
 			public void controlMoved(ControlEvent e) {
@@ -131,7 +153,10 @@ public class ResultsView extends ViewPart {
 		resultsPanel.getTestsHierarchyViewer().getTreeViewer().getControl().setFocus();
 	}
 
-	private void configureActionsBars(TestingSessionsManager sessionsManager) {
+	/**
+	 * Configures the view tool bar and menu.
+	 */
+	private void configureActionsBars() {
 		IActionBars actionBars = getViewSite().getActionBars();
 
 		// Create common action
@@ -153,7 +178,7 @@ public class ResultsView extends ViewPart {
 		showTestsInHierarchyAction = new ShowTestsInHierarchyAction(resultsPanel.getTestsHierarchyViewer());
 		showTimeAction = new ShowTimeAction(resultsPanel.getTestsHierarchyViewer());
 		scrollLockAction = new ScrollLockAction(uiUpdater);
-		showFileNameOnlyAction = new ShowFileNameOnlyAction(resultsPanel.getMessagesPanel());
+		showFileNameOnlyAction = new ShowFileNameOnlyAction(resultsPanel.getMessagesViewer());
 		rerunAction = new RerunAction(sessionsManager);
 		rerunAction.setEnabled(false);
 		stopAction = new StopAction(sessionsManager);
@@ -194,11 +219,20 @@ public class ResultsView extends ViewPart {
 		}
 	}
 	
+	/**
+	 * Changes the view orientation
+	 * 
+	 * @param orientation new view orientation (Horizontal, Vertical, Auto)
+	 */
 	public void setOrientation(Orientation orientation) {
 		this.orientation = orientation;
 		computeOrientation();
 	}
 	
+	/**
+	 * Checks whether actual orientation is changed and changes orientation of
+	 * the child widgets.
+	 */
 	private void computeOrientation() {
 		Orientation newActualOrientation = getActualOrientation(orientation);
 		if (newActualOrientation != currentOrientation) {
@@ -212,11 +246,18 @@ public class ResultsView extends ViewPart {
 		}
 	}
 	
-	private Orientation getActualOrientation(Orientation o) {
-		switch (o) {
+	/**
+	 * Recalculates actual view orientation depending on the specified by user
+	 * orientation value and current view size.
+	 * 
+	 * @param orientation by user specified orientation
+	 * @return actual orientation
+	 */
+	private Orientation getActualOrientation(Orientation orientation) {
+		switch (orientation) {
 			case Horizontal:
 			case Vertical:
-				return o;
+				return orientation;
 			case Auto:
 				Point size= parent.getSize();
 				return (size.x > size.y) ? Orientation.Horizontal : Orientation.Vertical;
@@ -224,6 +265,9 @@ public class ResultsView extends ViewPart {
 		return null;
 	}
 
+	/**
+	 * Updates view actions state from the active session.
+	 */
 	public void updateActionsFromSession() {
 		ITestingSession session = sessionsManager.getActiveSession();
 		boolean hasErrors = session != null && session.hasErrors();
@@ -233,6 +277,11 @@ public class ResultsView extends ViewPart {
 		stopAction.setEnabled(session != null && !session.isFinished());
 	}
 
+	/**
+	 * Changes the view caption.
+	 * 
+	 * @param message new view caption
+	 */
 	public void setCaption(String message) {
 		setContentDescription(message);
 	}
@@ -243,6 +292,13 @@ public class ResultsView extends ViewPart {
 		this.memento = memento;
 	}
 	
+	/**
+	 * Restores the value of the checkable action.
+	 * 
+	 * @param memento previously saved state to restore the action value from
+	 * @param key tag name that is used to restore the value
+	 * @param action action to restore
+	 */
 	private void restoreActionChecked(IMemento memento, String key, Action action) {
 		Boolean checked = memento.getBoolean(key);
 		if (checked != null) {
@@ -251,6 +307,11 @@ public class ResultsView extends ViewPart {
 		}
 	}
 
+	/**
+	 * Restores the state of the view.
+	 * 
+	 * @param memento previously saved state
+	 */
 	private void restoreState(IMemento memento) {
 		if (memento != null) {
 			Integer orientationIndex = memento.getInteger(TAG_ORIENTATION);
@@ -265,7 +326,7 @@ public class ResultsView extends ViewPart {
 			restoreActionChecked(memento, TAG_SHOW_FILE_NAME_ONLY_ACTION, showFileNameOnlyAction);
 			Integer historySize = memento.getInteger(TAG_HISTORY_SIZE);
 			if (historySize != null) {
-				sessionsManager.setHistorySize(historySize);
+				sessionsManager.setHistorySizeLimit(historySize);
 			}
 		}
 	}
@@ -287,9 +348,14 @@ public class ResultsView extends ViewPart {
 		memento.putBoolean(TAG_SHOW_TIME, showTimeAction.isChecked());
 		memento.putBoolean(TAG_SCROLL_LOCK, scrollLockAction.isChecked());
 		memento.putBoolean(TAG_SHOW_FILE_NAME_ONLY_ACTION, showFileNameOnlyAction.isChecked());
-		memento.putInteger(TAG_HISTORY_SIZE, sessionsManager.getHistorySize());
+		memento.putInteger(TAG_HISTORY_SIZE, sessionsManager.getHistorySizeLimit());
 	}
 
+	/**
+	 * Returns whether the view was disposed.
+	 * 
+	 * @return true if the view was disposed
+	 */
 	public boolean isDisposed() {
 		return isDisposed;
 	}

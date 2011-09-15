@@ -27,18 +27,29 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 
 /**
- * A progress bar with a red/green indication for success or failure.
+ * A progress bar with a red/green indication for testing success or failure.
  */
-// TODO: Fix description
-// TODO: Refactor for C/C++ unit tests
 public class ProgressBar extends Canvas {
+	
+	/** Default bar width */
 	private static final int DEFAULT_WIDTH = 160;
+
+	/** Default bar height */
 	private static final int DEFAULT_HEIGHT = 18;
 
+	/** Testing session to show progress bar for. */
 	private ITestingSession testingSession;
+	
+	/** Current bar width. */ 
 	private int colorBarWidth;
+	
+	/** The bar color when everything is OK (no tests failed and no testing errors). */
 	private Color okColor;
+
+	/** The bar color when there are tests failed and or testing errors. */
 	private Color failureColor;
+
+	/** The bar color when the testing session was stopped by user. */
 	private Color stoppedColor;
 
 	
@@ -72,16 +83,29 @@ public class ProgressBar extends Canvas {
 		setTestingSession(testingSession);
 	}
 	
+	/**
+	 * Sets the testing session to show information about.
+	 * 
+	 * @param testingSession testing session (null is not acceptable)
+	 */
 	public void setTestingSession(ITestingSession testingSession) {
 		this.testingSession = testingSession;
 		updateInfoFromSession();
 	}
 	
+	/**
+	 * Updates the progress from the currently set testing session.
+	 */
 	public void updateInfoFromSession() {
 		recalculateColorBarWidth();
 		redraw();
 	}
 
+	/**
+	 * Sets the color of the progress bar depending on the testing session.
+	 * 
+	 * @param gc gc
+	 */
 	private void setStatusColor(GC gc) {
 		if (testingSession.wasStopped())
 			gc.setBackground(stoppedColor);
@@ -91,6 +115,13 @@ public class ProgressBar extends Canvas {
 			gc.setBackground(okColor);
 	}
 
+	/**
+	 * Calculate the width of the progress rectangle in a widget.
+	 * 
+	 * @note If total tests count is known it is used to determine width of the
+	 * progress rectangle. If it isn't the width of progress rectangle is set to
+	 * the half of a widget.
+	 */
 	private void recalculateColorBarWidth() {
 		Rectangle r = getClientArea();
 		int newColorBarWidth;
@@ -102,6 +133,9 @@ public class ProgressBar extends Canvas {
 		colorBarWidth = Math.max(0, newColorBarWidth);
 	}
 
+	/**
+	 * Draws the widget border
+	 */
 	private void drawBevelRect(GC gc, int x, int y, int w, int h, Color topleft, Color bottomright) {
 		gc.setForeground(topleft);
 		gc.drawLine(x, y, x+w-1, y);
@@ -112,6 +146,11 @@ public class ProgressBar extends Canvas {
 		gc.drawLine(x, y+h, x+w, y+h);
 	}
 
+	/**
+	 * Handles paint event and redraws the widget if necessary.
+	 * 
+	 * @param event paint event
+	 */
 	private void paint(PaintEvent event) {
 		GC gc = event.gc;
 		Display disp= getDisplay();

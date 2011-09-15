@@ -16,7 +16,7 @@ import org.eclipse.cdt.testsrunner.internal.ui.view.ResultsView;
 import org.eclipse.jface.action.Action;
 
 /**
- * Toggles tests tree hierarchy auto-scroll
+ * Toggles the orientation of the view.
  */
 public class ToggleOrientationAction extends Action {
 

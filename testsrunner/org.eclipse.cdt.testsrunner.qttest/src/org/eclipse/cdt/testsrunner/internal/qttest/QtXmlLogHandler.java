@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2011 Anton Gorenkov 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Anton Gorenkov - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.qttest;
 
 import java.text.MessageFormat;
@@ -16,26 +26,37 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 
+/**
+ * Parses the Qt Test XML log and notifies the Tests Runner Core about how the
+ * testing process is going.
+ * 
+ * @note There is a terminology conflict between Qt Test library and Test
+ * Runner. Qt Test's "test case" is a "test suite" in Test Runner's terminology,
+ * Qt's "test function" is a "test case", the "incident" and "message" are
+ * "test messages". Be careful with it!
+ */
 public class QtXmlLogHandler extends DefaultHandler {
 	
+	// Qt Test XML log tags
 	private static final String XML_NODE_TEST_CASE = "TestCase"; //$NON-NLS-1$
 	private static final String XML_NODE_TEST_FUNCTION = "TestFunction"; //$NON-NLS-1$
 	private static final String XML_NODE_INCIDENT = "Incident"; //$NON-NLS-1$
 	private static final String XML_NODE_MESSAGE = "Message"; //$NON-NLS-1$
 	private static final String XML_NODE_DESCRIPTION = "Description"; //$NON-NLS-1$
-
 	private static final String XML_NODE_ENVIRONMENT = "Environment"; //$NON-NLS-1$
 	private static final String XML_NODE_QTVERSION = "QtVersion"; //$NON-NLS-1$
 	private static final String XML_NODE_QTESTVERSION = "QTestVersion"; //$NON-NLS-1$
 	private static final String XML_NODE_BENCHMARK = "BenchmarkResult"; //$NON-NLS-1$
 	private static final String XML_NODE_DATATAG = "DataTag"; //$NON-NLS-1$
 	
+	// Qt Test XML case statuses representation
 	private static final String XML_VALUE_INCIDENT_PASS = "pass"; //$NON-NLS-1$
 	private static final String XML_VALUE_INCIDENT_XFAIL = "xfail"; //$NON-NLS-1$
 	private static final String XML_VALUE_INCIDENT_FAIL = "fail"; //$NON-NLS-1$
 	private static final String XML_VALUE_INCIDENT_XPASS = "xpass"; //$NON-NLS-1$
 	private static final String XML_VALUE_INCIDENT_UNKNOWN = "??????"; //$NON-NLS-1$
 
+	// Qt Test XML log message levels representation
 	private static final String XML_VALUE_MESSAGE_WARN = "warn"; //$NON-NLS-1$
 	private static final String XML_VALUE_MESSAGE_SYSTEM = "system"; //$NON-NLS-1$
 	private static final String XML_VALUE_MESSAGE_QDEBUG = "qdebug"; //$NON-NLS-1$
@@ -45,6 +66,7 @@ public class QtXmlLogHandler extends DefaultHandler {
 	private static final String XML_VALUE_MESSAGE_INFO = "info"; //$NON-NLS-1$
 	private static final String XML_VALUE_MESSAGE_UNKNOWN = "??????"; //$NON-NLS-1$
 
+	// Qt Test XML log attributes
 	private static final String XML_ATTR_TEST_CASE_NAME = "name"; //$NON-NLS-1$
 	private static final String XML_ATTR_TEST_FUNCTION_NAME = "name"; //$NON-NLS-1$
 	private static final String XML_ATTR_TYPE = "type"; //$NON-NLS-1$
@@ -55,6 +77,7 @@ public class QtXmlLogHandler extends DefaultHandler {
 	private static final String XML_ATTR_BENCHMARK_ITERATIONS = "iterations"; //$NON-NLS-1$
 	private static final String XML_ATTR_DATA_TAG = "tag";  //$NON-NLS-1$
 	
+	/** Maps the string message level representation to the Tests Runner internal enum code. */
     private static final Map<String, ITestMessage.Level> STRING_TO_MESSAGE_LEVEL;
     static {
         Map<String, ITestMessage.Level> aMap = new HashMap<String, ITestMessage.Level>();
@@ -70,6 +93,7 @@ public class QtXmlLogHandler extends DefaultHandler {
         STRING_TO_MESSAGE_LEVEL = Collections.unmodifiableMap(aMap);
     }
 
+	/** Maps the string incident status representation to the test case status. */
     private static final Map<String, ITestCase.Status> STRING_TO_TEST_STATUS;
     static {
         Map<String, ITestCase.Status> aMap = new HashMap<String, ITestCase.Status>();
@@ -82,6 +106,7 @@ public class QtXmlLogHandler extends DefaultHandler {
         STRING_TO_TEST_STATUS = Collections.unmodifiableMap(aMap);
     }
 
+	/** Maps the string incident status representation to the test message level to log about it. */
     private static final Map<String, ITestMessage.Level> STRING_INCIDENT_TO_MESSAGE_LEVEL;
     static {
         Map<String, ITestMessage.Level> aMap = new HashMap<String, ITestMessage.Level>();
@@ -94,6 +119,7 @@ public class QtXmlLogHandler extends DefaultHandler {
         STRING_INCIDENT_TO_MESSAGE_LEVEL = Collections.unmodifiableMap(aMap);
     }
 
+	/** Maps the metrics unit ids to the user readable names. */
     private static final Map<String, String> XML_METRICS_TO_UNIT_NAME;
     static {
         Map<String,String> aMap = new HashMap<String, String>();
@@ -105,22 +131,47 @@ public class QtXmlLogHandler extends DefaultHandler {
         XML_METRICS_TO_UNIT_NAME = Collections.unmodifiableMap(aMap);
     }
 
+	/** The interface to notify the Tests Runner Core */
 	private ITestModelUpdater modelUpdater;
+	
+	/** Stores the text between current XML tag. */
 	private String elementData;
+	
+	/** Stores the text for currently parsed test message. */
 	private String messageText;
+
+	/** Stores the file name part of location for currently parsed test message. */
 	private String fileName;
+
+	/** Stores the line number part of location for currently parsed test message. */
 	private int lineNumber;
+	
+	/** Stores the message level for currently parsed test message. */
 	private ITestMessage.Level messageLevel;
+	
+	/** Stores the status for currently parsed test case. */
 	private ITestItem.Status testCaseStatus;
+	
+	/** Stores the name for currently parsed test case. */
 	private String testCaseName;
+
+	/** Stores the currently parsing data tag. */
 	private String currentDataTag;
+
+	/** Stores the last parsed data tag. */
 	private String lastDataTag;
+
+	/** Stores whether the test case was already added (means Tests Runner Core notified). */
 	private boolean testCaseAdded;
+
 	
 	QtXmlLogHandler(ITestModelUpdater modelUpdater) {
 		this.modelUpdater = modelUpdater;
 	}
 
+	/**
+	 * Notifies about test case exiting (if it was entered).
+	 */
 	private void exitTestCaseIfNecessary() {
 		if (testCaseAdded) {
 			modelUpdater.setTestStatus(testCaseStatus);
@@ -129,6 +180,9 @@ public class QtXmlLogHandler extends DefaultHandler {
 		}
 	}
 	
+	/**
+	 * Creates a new test case if a new data tag is met.
+	 */
 	private void createTestCaseIfNecessary() {
 		if (!lastDataTag.equals(currentDataTag)) {
 			exitTestCaseIfNecessary();
@@ -139,20 +193,38 @@ public class QtXmlLogHandler extends DefaultHandler {
 		}
 	}
 	
+	/**
+	 * Adds a new test message if there is a text for it.
+	 */
 	private void addTestMessageIfNecessary() {
 		if (messageText != null) {
 			modelUpdater.addTestMessage(fileName, lineNumber, messageLevel, messageText);
 		}
 	}
 	
+	/**
+	 * Sets a new status for the currently parsing test case.
+	 * 
+	 * @param newStatus new test status
+	 * 
+	 * @note Passed status is set by default and should not be set explicitly.
+	 * But in case of errors it should not override Failed or Skipped statuses.
+	 */
 	private void setCurrentTestCaseStatus(ITestItem.Status newStatus) {
-		// NOTE: Passed status is set by default and should not be set explicitly.
-		//       But in case of errors it should not override Failed or Skipped statuses.
+		// Passed status is set by default and should not be set explicitly.
+		// But in case of errors it should not override Failed or Skipped statuses.
 		if (newStatus != ITestItem.Status.Passed) {
 			testCaseStatus = newStatus;
 		}
 	}
 	
+	/**
+	 * Converts the metric unit ids to user readable names.
+	 * 
+	 * @param benchmarkMetric metric unit id
+	 * @return user readable name
+	 * @throws SAXException if metric unit id is not known
+	 */
 	private String getUnitsByBenchmarkMetric(String benchmarkMetric) throws SAXException {
 		String units = XML_METRICS_TO_UNIT_NAME.get(benchmarkMetric);
 		if (units == null) {
@@ -161,6 +233,14 @@ public class QtXmlLogHandler extends DefaultHandler {
 		return units;
 	}
 	
+	/**
+	 * Converts the message level string to the internal enumeration core.
+	 * 
+	 * @param map map to use
+	 * @param incidentTypeStr message level string
+	 * @return message level code
+	 * @throws SAXException if message level string is not known
+	 */
 	private ITestMessage.Level getMessageLevel(Map<String, ITestMessage.Level> map, String incidentTypeStr) throws SAXException {
 		Level result = map.get(incidentTypeStr);
 		if (result == null) {
@@ -273,27 +353,39 @@ public class QtXmlLogHandler extends DefaultHandler {
 	}
 	
 
+	/**
+	 * Throws the testing exception for the specified XML tag.
+	 * 
+	 * @param tagName XML tag name
+	 * @throws SAXException the exception that will be thrown
+	 */
 	private void logAndThrowErrorForElement(String tagName) throws SAXException {
 		logAndThrowError("Invalid XML format: Element \""+tagName+"\" is not accepted!");
 	}
 	
+	/**
+	 * Throws the testing exception with the specified message.
+	 * 
+	 * @param message the reason
+	 * @throws SAXException the exception that will be thrown
+	 */
 	private void logAndThrowError(String message) throws SAXException {
-		Activator.logErrorMessage(message);
+		QtTestsRunnerPlugin.logErrorMessage(message);
 		throw new SAXException(message);
 	}
 
 	
 	public void warning(SAXParseException ex) throws SAXException {
-		Activator.logErrorMessage("XML warning: "+ex.getMessage()); //$NON-NLS-1$
+		QtTestsRunnerPlugin.logErrorMessage("XML warning: "+ex.getMessage()); //$NON-NLS-1$
 	}
 
 	public void error(SAXParseException ex) throws SAXException {
-		Activator.logErrorMessage("XML error: "+ex.getMessage()); //$NON-NLS-1$
+		QtTestsRunnerPlugin.logErrorMessage("XML error: "+ex.getMessage()); //$NON-NLS-1$
 		throw ex;
 	}
 
 	public void fatalError(SAXParseException ex) throws SAXException {
-		Activator.logErrorMessage("XML fatal error: "+ex.getMessage()); //$NON-NLS-1$
+		QtTestsRunnerPlugin.logErrorMessage("XML fatal error: "+ex.getMessage()); //$NON-NLS-1$
 		throw ex;
 	}
 	
