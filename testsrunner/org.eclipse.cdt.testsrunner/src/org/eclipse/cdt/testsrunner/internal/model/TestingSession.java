@@ -90,7 +90,8 @@ public class TestingSession implements ITestingSession {
 		this.testsRunner = testsRunnerInfo.instantiateTestsRunner();
 		this.startTime = System.currentTimeMillis();
 		// TODO: Compare also test runner types here! If not equal -- previousSession => null
-		if ((previousSession != null) && (launch.getLaunchConfiguration() != previousSession.launch.getLaunchConfiguration())) {
+		if ((previousSession != null) &&
+			(!launch.getLaunchConfiguration().equals(previousSession.launch.getLaunchConfiguration()))) {
 			previousSession = null;
 		}
 		// Calculate approximate tests count by the previous similar testing session (if available)
