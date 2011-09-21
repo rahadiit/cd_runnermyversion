@@ -16,8 +16,11 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
+import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestItem.Status;
+import org.eclipse.cdt.testsrunner.model.ITestMessage;
 import org.eclipse.cdt.testsrunner.model.ITestMessage.Level;
 import org.eclipse.cdt.testsrunner.model.ITestModelUpdater;
 import org.eclipse.cdt.testsrunner.model.ITestSuite;
@@ -28,6 +31,47 @@ import org.eclipse.cdt.testsrunner.model.ITestSuite;
 @SuppressWarnings("nls")
 public class MockTestModelUpdater implements ITestModelUpdater {
 
+	private class FakeTestItem implements ITestItem {
+
+		private String name = null;
+		
+		protected void unexpectedMethodCall() {
+			Assert.fail("Unexpected method call");
+		}
+		
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+		
+		public void resetName() {
+			name = null;
+		}
+		
+		// Unimplemented methods
+		public Status getStatus()                { unexpectedMethodCall(); return null;  }
+		public int getTestingTime()              { unexpectedMethodCall(); return 0;     }
+		public ITestSuite getParent()            { unexpectedMethodCall(); return null;  }
+		public boolean hasChildren()             { unexpectedMethodCall(); return false; }
+		public ITestItem[] getChildren()         { unexpectedMethodCall(); return null;  }
+		public void visit(IModelVisitor visitor) { unexpectedMethodCall();               }
+	}
+	
+	private class FakeTestCase extends FakeTestItem implements ITestCase {
+		public ITestMessage[] getTestMessages()  { unexpectedMethodCall(); return null;  }
+	}
+	
+	private class FakeTestSuite extends FakeTestItem implements ITestSuite {
+		public ITestSuite getTestSuite(String name) { unexpectedMethodCall(); return null;  }
+		public ITestSuite[] getTestSuites()         { unexpectedMethodCall(); return null;  }
+		public ITestCase getTestCase(String name)   { unexpectedMethodCall(); return null;  }
+		public ITestCase[] getTestCases()           { unexpectedMethodCall(); return null;  }
+	}
+	
+	
 	private class MethodInfo {
 		
 		private String methodName;
@@ -91,18 +135,26 @@ public class MockTestModelUpdater implements ITestModelUpdater {
 	private LinkedList<MethodInfo> methodCalls = new LinkedList<MethodInfo>();
 	private boolean replayMode = false;
 	private Set<String> skippedMethods = new HashSet<String>();
+
+	// NOTE: Test suites nesting is not supported yet cause there is no need in it
+	private FakeTestSuite currentTestSuite = new FakeTestSuite();
+	private FakeTestCase currentTestCase = new FakeTestCase();
 	
 	
 	public void enterTestSuite(String name) {
 		genericImpl("enterTestSuite", name);
+		// NOTE: Test suites or cases nesting is not supported for mocking
+		currentTestSuite.setName(name);
 	}
 
 	public void exitTestSuite() {
 		genericImpl("exitTestSuite");
+		currentTestSuite.resetName();
 	}
 
 	public void enterTestCase(String name) {
 		genericImpl("enterTestCase", name);
+		currentTestCase.setName(name);
 	}
 
 
@@ -116,6 +168,7 @@ public class MockTestModelUpdater implements ITestModelUpdater {
 
 	public void exitTestCase() {
 		genericImpl("exitTestCase");
+		currentTestCase.resetName();
 	}
 
 	public void addTestMessage(String file, int line, Level level, String text) {
@@ -123,11 +176,11 @@ public class MockTestModelUpdater implements ITestModelUpdater {
 	}
 	
 	public ITestSuite currentTestSuite() {
-		return null;
+		return currentTestSuite;
 	}
 
 	public ITestCase currentTestCase() {
-		return null;
+		return currentTestCase;
 	}
 	
 	public void skipCalls(String methodName) {
