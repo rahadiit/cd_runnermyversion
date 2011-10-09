@@ -30,15 +30,18 @@ public class TestsRunnersManager {
 	private static final String TESTS_RUNNER_FEATURES_ELEMENT = "features"; //$NON-NLS-1$
 	private static final String TESTS_RUNNER_FEATURE_MULTIPLE_TEST_FILTER_ATTRIBUTE = "multipleTestFilter"; //$NON-NLS-1$
 	private static final String TESTS_RUNNER_FEATURE_TESTING_TIME_MEASUREMENT_ATTRIBUTE = "testingTimeMeasurement"; //$NON-NLS-1$
+	private static final String TESTS_RUNNER_FEATURE_DATA_STREAM_ATTRIBUTE = "dataStream"; //$NON-NLS-1$
 	private static final String TESTS_RUNNER_ID_ATTRIBUTE = "id"; //$NON-NLS-1$
 	private static final String TESTS_RUNNER_NAME_ATTRIBUTE = "name"; //$NON-NLS-1$
 	private static final String TESTS_RUNNER_CLASS_ATTRIBUTE = "class"; //$NON-NLS-1$
 	private static final String TESTS_RUNNER_DESCRIPTION_ATTRIBUTE = "description"; //$NON-NLS-1$
+	private static final String TESTS_RUNNER_ERROR_STREAM_VALUE = "error"; //$NON-NLS-1$
 
 	private TestsRunnerInfo[] testsRunners = null;
 
 	
 	public class TestsRunnerInfo implements ITestsRunnerInfo {
+		
 		private IConfigurationElement element;
 
 		public TestsRunnerInfo(IConfigurationElement element) {
@@ -78,13 +81,18 @@ public class TestsRunnersManager {
 			return null;
 		}
 		
-		private boolean getBooleanFeatureValue(String featureName, boolean defaultValue) {
+		private String getFeatureAttributeValue(String featureName) {
 			IConfigurationElement features = getFeatures();
 			if (features != null) {
-				String attrValue = features.getAttribute(featureName);
-				if (attrValue != null) {
-					return Boolean.parseBoolean(attrValue);
-				}
+				return features.getAttribute(featureName);
+			}
+			return null;
+		}
+		
+		private boolean getBooleanFeatureValue(String featureName, boolean defaultValue) {
+			String attrValue = getFeatureAttributeValue(featureName);
+			if (attrValue != null) {
+				return Boolean.parseBoolean(attrValue);
 			}
 			return defaultValue;
 		}
@@ -95,6 +103,18 @@ public class TestsRunnersManager {
 		
 		public boolean isAllowedTestingTimeMeasurement() {
 			return getBooleanFeatureValue(TESTS_RUNNER_FEATURE_TESTING_TIME_MEASUREMENT_ATTRIBUTE, false);
+		}
+		
+		public boolean isOutputStreamRequired() {
+			return !isErrorStreamRequired();
+		}
+
+		public boolean isErrorStreamRequired() {
+			String attrValue = getFeatureAttributeValue(TESTS_RUNNER_FEATURE_DATA_STREAM_ATTRIBUTE);
+			if (attrValue != null) {
+				return attrValue.equals(TESTS_RUNNER_ERROR_STREAM_VALUE);
+			}
+			return false;
 		}
 	}
 	

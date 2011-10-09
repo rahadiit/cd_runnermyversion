@@ -24,4 +24,8 @@ public interface ITestsRunnerInfo {
 
 	public boolean isAllowedMultipleTestFilter();
 	
+	public boolean isOutputStreamRequired();
+	
+	public boolean isErrorStreamRequired();
+	
 }

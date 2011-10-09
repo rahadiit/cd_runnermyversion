@@ -12,6 +12,7 @@ package org.eclipse.cdt.testsrunner.internal.launcher;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,6 +32,7 @@ import org.eclipse.cdt.launch.AbstractCLaunchDelegate;
 import org.eclipse.cdt.testsrunner.internal.Activator;
 import org.eclipse.cdt.testsrunner.internal.model.TestingSession;
 import org.eclipse.cdt.testsrunner.internal.ui.view.TestPathUtils;
+import org.eclipse.cdt.testsrunner.model.ITestsRunnerInfo;
 import org.eclipse.cdt.testsrunner.model.TestingException;
 import org.eclipse.cdt.launch.internal.ui.LaunchUIPlugin;
 import org.eclipse.cdt.utils.pty.PTY;
@@ -215,20 +217,46 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 				p = (PTY.isSupported())
 					? ProcessFactory.getFactory().exec(cmdLine, environ, workingDirectory, new PTY())
 					: ProcessFactory.getFactory().exec(cmdLine, environ, workingDirectory);
-				Display.getDefault().syncExec(new Runnable() {
-					public void run() {
-						IViewPart view;
-						try {
-							view = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.eclipse.cdt.testsrunner.resultsview");
-							Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
-						} catch (PartInitException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				});
-				testingSession.run(p.getInputStream());
 			}
+			Display.getDefault().syncExec(new Runnable() {
+				public void run() {
+					IViewPart view;
+					try {
+						view = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.eclipse.cdt.testsrunner.resultsview");
+						Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
+					} catch (PartInitException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			});
+			class ThreadRunnable implements Runnable {
+
+				private TestingSession testingSession;
+				private InputStream iStream;
+				private ProcessWrapper processWrapper;
+				
+				ThreadRunnable(TestingSession testingSession, InputStream iStream, ProcessWrapper processWrapper) {
+					this.testingSession = testingSession;
+					this.iStream = iStream;
+					this.processWrapper = processWrapper;
+				}
+				
+				public void run() {
+					testingSession.run(iStream);
+					processWrapper.allowStreamsClosing();
+				}
+				
+			}
+			ITestsRunnerInfo testsRunnerInfo = testingSession.getTestsRunnerInfo();
+			InputStream iStream = 
+					testsRunnerInfo.isOutputStreamRequired() ? p.getInputStream() :
+					testsRunnerInfo.isErrorStreamRequired() ? p.getErrorStream() : null;
+			ProcessWrapper processWrapper = new ProcessWrapper(p, testsRunnerInfo.isOutputStreamRequired(), testsRunnerInfo.isErrorStreamRequired());
+			Thread t = new Thread(new ThreadRunnable(testingSession, iStream, processWrapper));
+			t.start();
+			p = processWrapper;
+
 		} catch (IOException e) {
 			if (p != null) {
 				p.destroy();
