@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
 
+import org.eclipse.cdt.testsrunner.internal.Activator;
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager.TestsRunnerInfo;
 import org.eclipse.cdt.testsrunner.launcher.ITestsRunner;
 import org.eclipse.cdt.testsrunner.model.IModelVisitor;
@@ -29,6 +30,7 @@ import org.eclipse.cdt.testsrunner.model.ITestSuite;
 import org.eclipse.cdt.testsrunner.model.ITestingSession;
 import org.eclipse.cdt.testsrunner.model.ITestingSessionListener;
 import org.eclipse.cdt.testsrunner.model.TestingException;
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
 
 /**
@@ -84,15 +86,23 @@ public class TestingSession implements ITestingSession {
 
 	
 	public TestingSession(ILaunch launch, TestsRunnerInfo testsRunnerInfo, TestingSession previousSession) {
-		// TODO: Check also that session is finished (not stopped and not running) 
 		this.launch = launch;
 		this.testsRunnerInfo = testsRunnerInfo;
 		this.testsRunner = testsRunnerInfo.instantiateTestsRunner();
 		this.startTime = System.currentTimeMillis();
-		// TODO: Compare also test runner types here! If not equal -- previousSession => null
-		if ((previousSession != null) &&
-			(!launch.getLaunchConfiguration().equals(previousSession.launch.getLaunchConfiguration()))) {
-			previousSession = null;
+		// Check whether we can rely on the tests hierarchy of previous testing session:
+		//   - it should be for the same launch configuration (should have the same parameters)
+		//   - should be already terminated (to have complete tests hierarchy structure)
+		//   - should not be stopped by user (the same as terminated)
+		//   - should have the same tests runner
+		// Certainly, it is not full list of requirements, but it covers the most common cases
+		if (previousSession != null) {
+			if (!launch.getLaunchConfiguration().equals(previousSession.launch.getLaunchConfiguration())
+				|| !previousSession.isFinished()
+				|| previousSession.wasStopped()
+				|| !previousSession.getTestsRunnerInfo().getName().equals(getTestsRunnerInfo().getName())) {
+				previousSession = null;
+			}
 		}
 		// Calculate approximate tests count by the previous similar testing session (if available)
 		if (previousSession!=null) {
@@ -149,13 +159,18 @@ public class TestingSession implements ITestingSession {
 		modelManager.testingStarted();
 		try {
 			testsRunner.run(modelManager, inputStream);
-
 			TestingTimeCounter testingTimeCounter = new TestingTimeCounter();
-			getModelAccessor().getRootSuite().visit(testingTimeCounter);
-			statusMessage = MessageFormat.format("Finished after {0} seconds", testingTimeCounter.result/1000.0);
+			// If testing session was stopped, the status is set in stop()
+			if (!wasStopped()) {
+				getModelAccessor().getRootSuite().visit(testingTimeCounter);
+				statusMessage = MessageFormat.format("Finished after {0} seconds", testingTimeCounter.result/1000.0);
+			}
 		} catch (TestingException e) {
-			statusMessage = e.getLocalizedMessage();
-			hasErrors = true;
+			// If testing session was stopped, the status is set in stop()
+			if (!wasStopped()) {
+				statusMessage = e.getLocalizedMessage();
+				hasErrors = true;
+			}
 		}
 		finished = true;
 		modelManager.testingFinished();
@@ -211,4 +226,16 @@ public class TestingSession implements ITestingSession {
 		return MessageFormat.format("{0} ({1})", launchConfName, startTimeStr);
 	}
 
+	public void stop() {
+		if (!launch.isTerminated() && launch.canTerminate()) {
+			try {
+				launch.terminate();
+				wasStopped = true;
+				statusMessage = "Testing was stopped by user";
+			} catch (DebugException e) {
+				Activator.log(e);
+			}
+		}
+	}
+	
 }
