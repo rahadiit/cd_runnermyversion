@@ -54,6 +54,7 @@ public class ResultsView extends ViewPart {
 	private Action nextAction;
 	private Action previousAction;
 	private Action rerunAction;
+	private Action stopAction;
 	private ToggleOrientationAction[] toggleOrientationActions;
 	private Action historyAction;
 	private Action showFailedOnly;
@@ -141,6 +142,8 @@ public class ResultsView extends ViewPart {
 		scrollLockAction = new ScrollLockAction(uiUpdater);
 		rerunAction = new RerunAction(sessionsManager);
 		rerunAction.setEnabled(false);
+		stopAction = new StopAction(sessionsManager);
+		stopAction.setEnabled(false);
 		
 		historyAction = new HistoryDropDownAction(sessionsManager, parent.getShell());
 		
@@ -152,6 +155,7 @@ public class ResultsView extends ViewPart {
 		toolBar.add(scrollLockAction);
 		toolBar.add(new Separator());
 		toolBar.add(rerunAction);
+		toolBar.add(stopAction);
 		toolBar.add(historyAction);
 		
 		// Configure view menu
@@ -210,8 +214,8 @@ public class ResultsView extends ViewPart {
 		boolean hasErrors = session != null && session.hasErrors();
 		previousAction.setEnabled(hasErrors);
 		nextAction.setEnabled(hasErrors);
-		boolean isFinished = session != null && session.isFinished();
-		rerunAction.setEnabled(isFinished);
+		rerunAction.setEnabled(session != null && session.isFinished());
+		stopAction.setEnabled(session != null && !session.isFinished());
 	}
 
 	public void setCaption(String message) {
