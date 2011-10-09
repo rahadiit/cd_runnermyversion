@@ -305,6 +305,7 @@ public class UIUpdater {
 					resultsView.setCaption(testingSession.getStatusMessage());
 					progressCountPanel.updateInfoFromSession();
 					testsHierarchyViewer.getTreeViewer().refresh();
+					testsHierarchyViewer.getTreeViewer().collapseAll();
 					testsHierarchyViewer.getTreeViewer().expandToLevel(2);
 				}
 			});
