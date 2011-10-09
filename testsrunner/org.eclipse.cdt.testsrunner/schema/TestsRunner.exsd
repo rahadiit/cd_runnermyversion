@@ -108,6 +108,21 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="dataStream">
+            <annotation>
+               <documentation>
+                  Defines what stream (output or error) should be used to read the data from the testing process. Output is used by default.
+               </documentation>
+            </annotation>
+            <simpleType>
+               <restriction base="string">
+                  <enumeration value="error">
+                  </enumeration>
+                  <enumeration value="output">
+                  </enumeration>
+               </restriction>
+            </simpleType>
+         </attribute>
       </complexType>
    </element>
 
