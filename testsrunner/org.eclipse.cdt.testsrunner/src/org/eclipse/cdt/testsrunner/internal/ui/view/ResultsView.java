@@ -94,7 +94,6 @@ public class ResultsView extends ViewPart {
 		gridLayout.marginWidth = 0;
 		gridLayout.marginHeight = 0;
 		parent.setLayout(gridLayout);
-		// TODO: Load 'orientation' from preferences
 		currentOrientation = getActualOrientation(orientation);
 
 		progressCountPanel = new ProgressCountPanel(parent, currentOrientation);
@@ -111,6 +110,7 @@ public class ResultsView extends ViewPart {
 		});
 		
 		restoreState(memento);
+		uiUpdater.reapplyActiveSession();
 	}
 
 	@Override
