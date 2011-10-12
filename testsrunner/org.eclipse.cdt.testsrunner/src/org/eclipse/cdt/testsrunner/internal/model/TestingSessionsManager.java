@@ -13,6 +13,7 @@ package org.eclipse.cdt.testsrunner.internal.model;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.cdt.testsrunner.internal.Activator;
@@ -40,6 +41,28 @@ public class TestingSessionsManager {
 	public TestingSessionsManager(TestsRunnersManager testsRunnersManager) {
 		this.testsRunnersManager = testsRunnersManager;
 	}
+	
+	private TestingSession findActualPreviousSession(ILaunchConfiguration launchConfiguration, TestsRunnerInfo testsRunnerInfo) {
+		String testsRunnerName = testsRunnerInfo.getName();
+		ListIterator<TestingSession> sessionsIt = sessions.listIterator(sessions.size());
+		while(sessionsIt.hasPrevious()) {
+			TestingSession session = sessionsIt.previous();
+			// Find the latest testing session that matches the next requirements:
+			//   - it should be for the same launch configuration (should have the same parameters)
+			//   - should be already terminated (to have complete tests hierarchy structure)
+			//   - should not be stopped by user (the same as terminated)
+			//   - should have the same tests runner
+			if (session != null) {
+				if (launchConfiguration.equals(session.getLaunch().getLaunchConfiguration())
+					&& session.isFinished()
+					&& !session.wasStopped()
+					&& session.getTestsRunnerInfo().getName().equals(testsRunnerName)) {
+					return session;
+				}
+			}
+		}
+		return null;
+	}
 
 	public TestingSession newSession(ILaunch launch) throws CoreException {
 		// TODO: Handle incorrect tests runner somehow
@@ -56,7 +79,8 @@ public class TestingSessionsManager {
 		}
 		// TODO: Maybe we should use not active but really the last session (case: if user switched to pre-last session and relaunch testing)
 		// TODO: Alternatively, we should implement smart "last" session selection here.
-		TestingSession newTestingSession = new TestingSession(launch, testsRunnerInfo, activeSession);
+		TestingSession previousSession = findActualPreviousSession(launch.getLaunchConfiguration(), testsRunnerInfo);
+		TestingSession newTestingSession = new TestingSession(launch, testsRunnerInfo, previousSession);
 		sessions.addFirst(newTestingSession);
 		setActiveSession(newTestingSession);
 		truncateHistory();
