@@ -54,6 +54,9 @@ public class BoostTestsRunner implements ITestsRunner {
 		} catch (IOException e) {
 			throw new TestingException("I/O Error: "+e.getLocalizedMessage());
 			
+		} catch (NumberFormatException e) {
+			throw new TestingException("XML parse error: Cannot convert integer value.");
+
 		} catch (ParserConfigurationException e) {
 			throw new TestingException("XML parse error: "+e.getLocalizedMessage());
 

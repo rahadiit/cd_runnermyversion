@@ -40,6 +40,8 @@ public interface ITestingSession {
 	public String getStatusMessage();
 
 	public String getName();
+
+	public void stop();
 	
 }
 	

@@ -66,4 +66,7 @@ public class DummyUISession implements ITestingSession {
 		return "Dummy";
 	}
 
+	public void stop() {
+	}
+
 }

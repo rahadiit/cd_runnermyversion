@@ -11,16 +11,16 @@
 package org.eclipse.cdt.testsrunner.internal.model;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.Stack;
 
 import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestMessage;
 import org.eclipse.cdt.testsrunner.model.ITestModelAccessor;
 import org.eclipse.cdt.testsrunner.model.ITestModelUpdater;
-import org.eclipse.cdt.testsrunner.model.ITestingSession;
 import org.eclipse.cdt.testsrunner.model.ITestingSessionListener;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
@@ -33,14 +33,20 @@ import org.eclipse.cdt.testsrunner.model.ITestSuite;
  */
 public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 
+	public static final String ROOT_TEST_SUITE_NAME = "<root>";
+	
 	private Stack<TestSuite> testSuitesStack = new Stack<TestSuite>();
 	private TestCase currentTestCase = null;
-	private Set<TestSuite> usedTestSuites = new HashSet<TestSuite>();
-	
+	private Map<TestItem, Integer> testSuitesIndex = new HashMap<TestItem, Integer>();
 	private List<ITestingSessionListener> listeners = new ArrayList<ITestingSessionListener>();
+	private boolean timeMeasurement = false;
+	private long testCaseStartTime = 0;
+	
+	private TestSuiteInserter testSuiteInserter = new TestSuiteInserter();
+	private TestCaseInserter testCaseInserter = new TestCaseInserter();
 
 	
-	class HierarchyCopier implements IModelVisitor {
+	private class HierarchyCopier implements IModelVisitor {
 
 		public void visit(ITestSuite testSuite) {
 			// Do not copy root test suite
@@ -70,11 +76,135 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 	}
 	
 
-	public TestModelManager(ITestingSession previousSession) {
-		testSuitesStack.push(new TestSuite("<root>", null)); //$NON-NLS-1$
-		if (previousSession != null) {
-			previousSession.getModelAccessor().getRootSuite().visit(new HierarchyCopier());
+	/**
+	 * Utility class: generalization of insertion algorithm for test suites and test cases
+	 */
+	private abstract class TestItemInserter<E extends TestItem> {
+
+		protected abstract E checkTestItemName(TestItem item, String name);
+		
+		protected abstract E createTestItem(String name, TestSuite parent);
+		
+		protected abstract void addNewTestItem(E item);
+
+		
+		private int getLastInsertIndex(TestSuite testSuite) {
+			Integer intLastInsertIndex = testSuitesIndex.get(testSuite);
+			return intLastInsertIndex != null ? intLastInsertIndex : 0;
 		}
+		
+		private void notifyAboutChildrenUpdate(ITestSuite suite) {
+			for (ITestingSessionListener listener : getListenersCopy()) {
+				listener.childrenUpdate(suite);
+			}
+		}
+		
+		public void insert(String name) {
+			TestSuite currTestSuite = testSuitesStack.peek();
+			int lastInsertIndex = getLastInsertIndex(currTestSuite);
+			List<TestItem> children = currTestSuite.getChildrenList();
+			E newTestItem = null;
+
+			// Optimization: Check whether we already pointing to the test suite with required name
+			try {
+				newTestItem = checkTestItemName(children.get(lastInsertIndex), name);
+			} catch (IndexOutOfBoundsException e) {}
+			if (newTestItem != null) {
+				testSuitesIndex.put(currTestSuite, lastInsertIndex+1);
+			}
+			
+			// Check whether the suite with required name was later in the hierarchy
+			if (newTestItem == null) {
+				for (int childIndex = lastInsertIndex; childIndex < children.size(); childIndex++) {
+					newTestItem = checkTestItemName(children.get(childIndex), name);
+					if (newTestItem != null) {
+						testSuitesIndex.put(currTestSuite, childIndex);
+						break;
+					}
+				}
+			}
+			
+			// Search in previous
+			if (newTestItem == null) {
+				for (int childIndex = 0; childIndex < lastInsertIndex; childIndex++) {
+					newTestItem = checkTestItemName(children.get(childIndex), name);
+					if (newTestItem != null) {
+						children.add(lastInsertIndex, children.remove(childIndex));
+						notifyAboutChildrenUpdate(currTestSuite);
+						break;
+					}
+				}
+			}
+			
+			// Add new
+			if (newTestItem == null) {
+				newTestItem = createTestItem(name, currTestSuite);
+				children.add(lastInsertIndex, newTestItem);
+				testSuitesIndex.put(currTestSuite, lastInsertIndex+1);
+				notifyAboutChildrenUpdate(currTestSuite);
+			}
+			if (!testSuitesIndex.containsKey(newTestItem)) {
+				testSuitesIndex.put(newTestItem, 0);
+			}
+			addNewTestItem(newTestItem);
+		}
+		
+	}
+	
+
+	private class TestSuiteInserter extends TestItemInserter<TestSuite> {
+		
+		protected TestSuite checkTestItemName(TestItem item, String name) {
+			return (item instanceof TestSuite && item.getName().equals(name)) ? (TestSuite)item : null;
+		}
+		
+		protected TestSuite createTestItem(String name, TestSuite parent) {
+			return new TestSuite(name, parent);
+			
+		}
+		
+		protected void addNewTestItem(TestSuite testSuite) {
+			testSuitesStack.push(testSuite);
+
+			// Notify listeners
+			for (ITestingSessionListener listener : getListenersCopy()) {
+				listener.enterTestSuite(testSuite);
+			}
+		}
+	}
+
+
+	private class TestCaseInserter extends TestItemInserter<TestCase> {
+		
+		protected TestCase checkTestItemName(TestItem item, String name) {
+			return (item instanceof TestCase && item.getName().equals(name)) ? (TestCase)item : null;
+		}
+		
+		protected TestCase createTestItem(String name, TestSuite parent) {
+			return new TestCase(name, parent);
+		}
+		
+		protected void addNewTestItem(TestCase testCase) {
+			currentTestCase = testCase;
+			testCase.setStatus(ITestItem.Status.Skipped);
+			
+			// Notify listeners
+			for (ITestingSessionListener listener : getListenersCopy()) {
+				listener.enterTestCase(testCase);
+			}
+		}
+	}
+
+	
+	public TestModelManager(ITestSuite previousTestsHierarchy, boolean timeMeasurement) {
+		testSuitesStack.push(new TestSuite(ROOT_TEST_SUITE_NAME, null)); //$NON-NLS-1$
+		if (previousTestsHierarchy != null) {
+			// Copy tests hierarchy
+			this.timeMeasurement = false;
+			previousTestsHierarchy.visit(new HierarchyCopier());
+		}
+		this.timeMeasurement = timeMeasurement;
+		this.testSuitesIndex.clear();
 	}
 
 	public void testingStarted() {
@@ -89,14 +219,12 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 		getRootSuite().visit(new ModelVisitor() {
 			
 			public void visit(TestSuite testSuite) {
-				for (TestSuite childTestSuite : testSuite.getTestSuites()) {
-					if (!usedTestSuites.contains(childTestSuite)) {
-						testSuite.removeTestSuite(childTestSuite.getName());
-					}
-				}
-				for (TestCase testCase : testSuite.getTestCases()) {
-					if (testCase.getStatus() == ITestItem.Status.NotRun) {
-						testSuite.removeTestCase(testCase.getName());
+				for (Iterator<TestItem> it = testSuite.getChildrenList().iterator(); it
+						.hasNext();) {
+					TestItem item = it.next();
+					if ((item instanceof ITestSuite && !testSuitesIndex.containsKey(item)) ||
+						(item instanceof ITestCase && item.getStatus() == ITestItem.Status.NotRun)) {
+						it.remove();
 					}
 				}
 			}
@@ -107,7 +235,7 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 			public void leave(TestCase testCase) {}
 			public void leave(TestMessage testMessage) {}
 		});
-		usedTestSuites.clear();
+		testSuitesIndex.clear();
 		
 		// Notify listeners
 		for (ITestingSessionListener listener : getListenersCopy()) {
@@ -116,23 +244,7 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 	}
 	
 	public void enterTestSuite(String name) {
-		TestSuite currTestSuite = testSuitesStack.peek();
-		TestSuite newTestSuite = currTestSuite.getTestSuite(name);
-		if (newTestSuite == null) {
-			newTestSuite = new TestSuite(name, currTestSuite);
-			currTestSuite.addTestSuite(newTestSuite);
-			// Notify listeners
-			for (ITestingSessionListener listener : getListenersCopy()) {
-				listener.addTestSuite(currTestSuite, newTestSuite);
-			}
-		}
-		testSuitesStack.push(newTestSuite);
-		usedTestSuites.add(newTestSuite);
-		
-		// Notify listeners
-		for (ITestingSessionListener listener : getListenersCopy()) {
-			listener.enterTestSuite(newTestSuite);
-		}
+		testSuiteInserter.insert(name);
 	}
 
 	public void exitTestSuite() {
@@ -145,20 +257,9 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 	}
 
 	public void enterTestCase(String name) {
-		TestSuite currTestSuite = testSuitesStack.peek();
-		currentTestCase = currTestSuite.getTestCase(name);
-		if (currentTestCase == null) {
-			currentTestCase = new TestCase(name, currTestSuite);
-			currTestSuite.addTestCase(currentTestCase);
-			// Notify listeners
-			for (ITestingSessionListener listener : getListenersCopy()) {
-				listener.addTestCase(currTestSuite, currentTestCase);
-			}
-		}
-		currentTestCase.setStatus(ITestItem.Status.Skipped);
-		// Notify listeners
-		for (ITestingSessionListener listener : getListenersCopy()) {
-			listener.enterTestCase(currentTestCase);
+		testCaseInserter.insert(name);
+		if (timeMeasurement) {
+			testCaseStartTime = System.currentTimeMillis();
 		}
 	}
 
@@ -173,6 +274,12 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 
 	public void exitTestCase() {
 		if (currentTestCase != null) {
+			// Set test execution time (if time measurement is turned on)
+			if (timeMeasurement) {
+				int testingTime = (int)(System.currentTimeMillis()-testCaseStartTime);
+				currentTestCase.setTestingTime(currentTestCase.getTestingTime()+testingTime);
+				testCaseStartTime = 0;
+			}
 			TestCase testCase = currentTestCase;
 			currentTestCase = null;
 			// Notify listeners
@@ -183,7 +290,7 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 	}
 
 	public void addTestMessage(String file, int line, Level level, String text) {
-		TestLocation location = (file == null || file.isEmpty() || line == 0) ? null : new TestLocation(file, line);
+		TestLocation location = (file == null || file.isEmpty() || line <= 0) ? null : new TestLocation(file, line);
 		currentTestCase.addTestMessage(new TestMessage(location, level, text));
 	}
 	

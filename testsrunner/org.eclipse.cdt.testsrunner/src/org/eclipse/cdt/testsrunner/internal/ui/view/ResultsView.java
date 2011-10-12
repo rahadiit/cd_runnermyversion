@@ -12,7 +12,7 @@ package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 import org.eclipse.cdt.testsrunner.internal.Activator;
 import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
-import org.eclipse.cdt.testsrunner.model.ITestItem.Status;
+import org.eclipse.cdt.testsrunner.model.ITestingSession;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -49,10 +49,12 @@ public class ResultsView extends ViewPart {
 	private ResultsPanel resultsPanel;
 	private UIUpdater uiUpdater;
 	private TestingSessionsManager sessionsManager;
+	private boolean isDisposed = false;
 	
 	private Action nextAction;
 	private Action previousAction;
 	private Action rerunAction;
+	private Action stopAction;
 	private ToggleOrientationAction[] toggleOrientationActions;
 	private Action historyAction;
 	private Action showFailedOnly;
@@ -140,6 +142,8 @@ public class ResultsView extends ViewPart {
 		scrollLockAction = new ScrollLockAction(uiUpdater);
 		rerunAction = new RerunAction(sessionsManager);
 		rerunAction.setEnabled(false);
+		stopAction = new StopAction(sessionsManager);
+		stopAction.setEnabled(false);
 		
 		historyAction = new HistoryDropDownAction(sessionsManager, parent.getShell());
 		
@@ -151,6 +155,7 @@ public class ResultsView extends ViewPart {
 		toolBar.add(scrollLockAction);
 		toolBar.add(new Separator());
 		toolBar.add(rerunAction);
+		toolBar.add(stopAction);
 		toolBar.add(historyAction);
 		
 		// Configure view menu
@@ -168,6 +173,7 @@ public class ResultsView extends ViewPart {
 	}
 
 	public void dispose() {
+		isDisposed = true;
 		if (uiUpdater != null) {
 			uiUpdater.dispose();
 		}
@@ -203,25 +209,15 @@ public class ResultsView extends ViewPart {
 		return null;
 	}
 
-	public void updateActionsBeforeRunning() {
-		previousAction.setEnabled(false);
-		nextAction.setEnabled(false);
-		rerunAction.setEnabled(false);
+	public void updateActionsFromSession() {
+		ITestingSession session = sessionsManager.getActiveSession();
+		boolean hasErrors = session != null && session.hasErrors();
+		previousAction.setEnabled(hasErrors);
+		nextAction.setEnabled(hasErrors);
+		rerunAction.setEnabled(session != null && session.isFinished());
+		stopAction.setEnabled(session != null && !session.isFinished());
 	}
-	
-	public void updateActionsOnTestCase(Status status) {
-		// Optimization: fPreviousAction and fNextAction should be enabled or disabled together
-		// so check only fNextAction.
-		if (!nextAction.isEnabled() && status.isError()) {
-			previousAction.setEnabled(true);
-			nextAction.setEnabled(true);
-		}
-	}
-	
-	public void updateActionsAfterRunning() {
-		rerunAction.setEnabled(true);
-	}
-	
+
 	public void setCaption(String message) {
 		setContentDescription(message);
 	}
@@ -275,6 +271,10 @@ public class ResultsView extends ViewPart {
 		memento.putBoolean(TAG_SHOW_TIME, showTimeAction.isChecked());
 		memento.putBoolean(TAG_SCROLL_LOCK, scrollLockAction.isChecked());
 		memento.putInteger(TAG_HISTORY_SIZE, sessionsManager.getHistorySize());
+	}
+
+	public boolean isDisposed() {
+		return isDisposed;
 	}
 	
 }

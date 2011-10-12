@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
@@ -80,10 +82,10 @@ public class MessagesPanel {
 		
 		class MessagesCollector implements IModelVisitor {
 			
-			Set<ITestMessage> testMessages;
+			Collection<ITestMessage> testMessages;
 			boolean collect = true;
 			
-			MessagesCollector(Set<ITestMessage> testMessages) {
+			MessagesCollector(Collection<ITestMessage> testMessages) {
 				this.testMessages = testMessages;
 			}
 			
@@ -123,8 +125,8 @@ public class MessagesPanel {
 			return testMessages;
 		}
 		
-		private void collectMessages(ITestItem[] testItems) {
-			Set<ITestMessage> testMessagesSet = new TreeSet<ITestMessage>(new Comparator<ITestMessage>() {
+		private Collection<ITestMessage> createMessagesSet() {
+			return new TreeSet<ITestMessage>(new Comparator<ITestMessage>() {
 
 				public int compare(ITestMessage message1, ITestMessage message2) {
 					// Compare messages by location
@@ -163,10 +165,22 @@ public class MessagesPanel {
 					return text1.compareTo(text2);
 				}
 			});
+		}
+		
+		private Collection<ITestMessage> createMessagesList() {
+			return new ArrayList<ITestMessage>();
+		}
+
+		private Collection<ITestMessage> createMessagesCollection() {
+			return orderingMode ? createMessagesSet() : createMessagesList();
+		}
+		
+		private void collectMessages(ITestItem[] testItems) {
+			Collection<ITestMessage> testMessagesCollection = createMessagesCollection();
 			for (ITestItem testItem : testItems) {
-				testItem.visit(new MessagesCollector(testMessagesSet));
+				testItem.visit(new MessagesCollector(testMessagesCollection));
 			}
-			testMessages = testMessagesSet.toArray(new ITestMessage[testMessagesSet.size()]);
+			testMessages = testMessagesCollection.toArray(new ITestMessage[testMessagesCollection.size()]);
 		}
 	}
 
@@ -236,6 +250,7 @@ public class MessagesPanel {
 	private OpenInEditorAction openInEditorAction;
 	private boolean showFailedOnly = false;
 	private Set<ITestMessage.Level> acceptedMessageLevels = new HashSet<ITestMessage.Level>();
+	private boolean orderingMode = false;
 
 
 	public MessagesPanel(Composite parent, TestingSessionsManager sessionsManager, IWorkbench workbench) {
@@ -260,6 +275,11 @@ public class MessagesPanel {
 	public void showItemsMessages(ITestItem[] testItems) {
 		tableViewer.setInput(testItems);
 	}
+	
+	private void forceRecollectMessages() {
+		// NOTE: Set input again makes content provider to recollect messages (with filter applied)
+		tableViewer.setInput(tableViewer.getInput());
+	}
 
 	public boolean getShowFailedOnly() {
 		return showFailedOnly;
@@ -268,8 +288,18 @@ public class MessagesPanel {
 	public void setShowFailedOnly(boolean showFailedOnly) {
 		if (this.showFailedOnly != showFailedOnly) {
 			this.showFailedOnly = showFailedOnly;
-			// NOTE: Set input again makes content provider to recollect messages (with filter applied)
-			tableViewer.setInput(tableViewer.getInput());
+			forceRecollectMessages();
+		}
+	}
+
+	public boolean getOrderingMode() {
+		return showFailedOnly;
+	}
+	
+	public void setOrderingMode(boolean orderingMode) {
+		if (this.orderingMode != orderingMode) {
+			this.orderingMode = orderingMode;
+			forceRecollectMessages();
 		}
 	}
 

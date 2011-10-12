@@ -12,6 +12,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.resources;bundle-version="3.5.0",
  org.eclipse.debug.ui;bundle-version="3.5.0",
  org.eclipse.cdt.debug.core;bundle-version="6.0.0",
+ org.eclipse.cdt.debug.ui,
  org.eclipse.cdt.ui
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
@@ -23,5 +24,6 @@ Import-Package: org.eclipse.cdt.internal.ui.viewsupport,
  org.eclipse.jface.text,
  org.eclipse.ui.ide,
  org.eclipse.ui.texteditor
-Export-Package: org.eclipse.cdt.testsrunner.launcher,
+Export-Package: org.eclipse.cdt.testsrunner.internal.model,
+ org.eclipse.cdt.testsrunner.launcher,
  org.eclipse.cdt.testsrunner.model

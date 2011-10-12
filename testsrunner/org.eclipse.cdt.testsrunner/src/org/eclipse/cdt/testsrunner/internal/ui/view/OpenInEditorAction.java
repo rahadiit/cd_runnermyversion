@@ -13,6 +13,7 @@ package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 import java.net.URI;
 
+import org.eclipse.cdt.debug.ui.CDebugUIPlugin;
 import org.eclipse.cdt.debug.core.CDebugCorePlugin;
 import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
 import org.eclipse.cdt.testsrunner.model.ITestLocation;
@@ -20,10 +21,16 @@ import org.eclipse.cdt.testsrunner.model.ITestMessage;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.filesystem.URIUtil;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.model.IPersistableSourceLocator;
 import org.eclipse.debug.core.model.ISourceLocator;
+import org.eclipse.debug.core.sourcelookup.AbstractSourceLookupDirector;
+import org.eclipse.debug.core.sourcelookup.ISourceLookupParticipant;
 import org.eclipse.debug.core.sourcelookup.containers.LocalFileStorage;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.IDebugModelPresentation;
@@ -57,7 +64,7 @@ public class OpenInEditorAction extends Action {
 		this.messagesViewer = tableViewer;
 		this.testingSessionsManager = testingSessionsManager;
 		this.workbench = workbench;
-		setToolTipText("Go to file pointed by message"); // TODO: Add detailed tooltip
+		setToolTipText("Go to file pointed by the message"); // TODO: Add detailed tooltip
 		// TODO: Add image
 //		setDisabledImageDescriptor(Activator.getImageDescriptor("dlcl16/scroll_lock.gif")); //$NON-NLS-1$
 //		setHoverImageDescriptor(Activator.getImageDescriptor("elcl16/scroll_lock.gif")); //$NON-NLS-1$
@@ -69,28 +76,68 @@ public class OpenInEditorAction extends Action {
 	 */
 	@Override
 	public void run() {
-		//modelSyncronizer.setAutoScroll(!isChecked());
 		Object selectedObject = ((IStructuredSelection)messagesViewer.getSelection()).getFirstElement();
 		if (selectedObject != null && selectedObject instanceof ITestMessage) {
 			ITestLocation messageLocation = ((ITestMessage)selectedObject).getLocation();
 			if (messageLocation != null) {
-				// Get source locator
 				ILaunch launch = testingSessionsManager.getActiveSession().getLaunch();
-				ISourceLocator sourceLocator = launch.getSourceLocator();
-				ISourceLookupResult result = DebugUITools.lookupSource(messageLocation.getFile(), sourceLocator);
-				try {
-					openEditorAndSelect(result, messageLocation.getLine());
-				} catch (PartInitException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (BadLocationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				lookupSource(messageLocation, launch);
 			}
 		}
 	}
+
+	// NOTE: This method is copied from Linux Tools Project (http://www.eclipse.org/linuxtools).
+	// Valgrind Support Plugin is implementing similar functionality so it is just reused.
+	// See also org.eclipse.linuxtools.valgrind.ui/src/org/eclipse/linuxtools/internal/valgrind/ui/CoreMessagesViewer.java
+	private void lookupSource(ITestLocation messageLocation, ILaunch launch) {
+		ISourceLocator locator = launch.getSourceLocator();
+		if (locator instanceof AbstractSourceLookupDirector) {
+			AbstractSourceLookupDirector director = (AbstractSourceLookupDirector) locator;
+			ISourceLookupParticipant[] participants = director.getParticipants();
+			if (participants.length == 0) {
+				// source locator likely disposed, try recreating it
+				IPersistableSourceLocator sourceLocator;
+				ILaunchConfiguration config = launch.getLaunchConfiguration();
+				if (config != null) {
+					try {
+						String id = config.getAttribute(ILaunchConfiguration.ATTR_SOURCE_LOCATOR_ID, (String) null);
+						if (id == null) {
+							sourceLocator = CDebugUIPlugin.createDefaultSourceLocator();
+							sourceLocator.initializeDefaults(config);
+						} else {
+							sourceLocator = DebugPlugin.getDefault().getLaunchManager().newSourceLocator(id);
+							String memento = config.getAttribute(ILaunchConfiguration.ATTR_SOURCE_LOCATOR_MEMENTO, (String) null);
+							if (memento == null) {
+								sourceLocator.initializeDefaults(config);
+							} else {
+								sourceLocator.initializeFromMemento(memento);
+							}
+						}
+						
+						// replace old source locator
+						locator = sourceLocator;
+						launch.setSourceLocator(sourceLocator);
+					} catch (CoreException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		ISourceLookupResult result = DebugUITools.lookupSource(messageLocation.getFile(), locator);
+		try {
+			openEditorAndSelect(result, messageLocation.getLine());
+		} catch (PartInitException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BadLocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	
+	// NOTE: This method is copied from Linux Tools Project (http://www.eclipse.org/linuxtools).
+	// Valgrind Support Plugin is implementing similar functionality so it is just reused.
+	// See also org.eclipse.linuxtools.valgrind.ui/src/org/eclipse/linuxtools/internal/valgrind/ui/CoreMessagesViewer.java
 	private void openEditorAndSelect(ISourceLookupResult result, int line) throws PartInitException, BadLocationException {
 		IEditorInput input = result.getEditorInput();
 		String editorID = result.getEditorId();

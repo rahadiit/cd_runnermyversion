@@ -27,6 +27,7 @@ import org.eclipse.swt.custom.ViewForm;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.ToolBar;
@@ -47,10 +48,12 @@ public class ResultsPanel {
 	// Persistence tags
 	static final String TAG_WEIGHT0 = "weight0"; //$NON-NLS-1$
 	static final String TAG_WEIGHT1 = "weight1"; //$NON-NLS-1$
+	static final String TAG_MESSAGES_ORDERING_ACTION = "messagesOrderingAction"; //$NON-NLS-1$
 	static final String TAG_ERROR_FILTER_ACTION = "errorFilterAction"; //$NON-NLS-1$
 	static final String TAG_WARNING_FILTER_ACTION = "warningFilterAction"; //$NON-NLS-1$
 	static final String TAG_INFO_FILTER_ACTION = "infoFilterAction"; //$NON-NLS-1$
 
+	Action messagesOrderingAction;
 	Action errorFilterAction;
 	Action warningFilterAction;
 	Action infoFilterAction;
@@ -74,21 +77,32 @@ public class ResultsPanel {
 		top.setContent(testsHierarchyViewer.getTreeViewer().getControl());
 
 		// Configure test messages viewer
-		ViewForm bottom= new ViewForm(sashForm, SWT.NONE);
-		CLabel label = new CLabel(bottom, SWT.NONE);
-		label.setText("Messages");
-		bottom.setTopLeft(label);
+		ViewForm bottom = new ViewForm(sashForm, SWT.NONE);
 		messagesPanel = new MessagesPanel(bottom, sessionsManager, workbench);
-		ToolBar messagesToolBar = new ToolBar(bottom, SWT.FLAT | SWT.WRAP);
-		ToolBarManager messagesToolBarmanager= new ToolBarManager(messagesToolBar);
+		Composite topLeftPanel = new Composite(bottom, SWT.NONE);
+		RowLayout topLeftPanelLayout = new RowLayout(SWT.HORIZONTAL);
+		topLeftPanelLayout.spacing = 0;
+		topLeftPanelLayout.center = true;
+		topLeftPanelLayout.marginBottom = topLeftPanelLayout.marginLeft = topLeftPanelLayout.marginRight = topLeftPanelLayout.marginTop = 0;
+		topLeftPanel.setLayout(topLeftPanelLayout);
+		ToolBar leftMessagesToolBar = new ToolBar(topLeftPanel, SWT.FLAT | SWT.WRAP);
+		ToolBarManager leftMessagesToolBarManager = new ToolBarManager(leftMessagesToolBar);
+		messagesOrderingAction = new MessagesOrderingAction(messagesPanel);
+		leftMessagesToolBarManager.add(messagesOrderingAction);
+		leftMessagesToolBarManager.update(true);
+		CLabel label = new CLabel(topLeftPanel, SWT.NONE);
+		label.setText("Messages");
+		bottom.setTopLeft(topLeftPanel);
+		ToolBar rightMessagesToolBar = new ToolBar(bottom, SWT.FLAT | SWT.WRAP);
+		ToolBarManager rightMessagesToolBarManager = new ToolBarManager(rightMessagesToolBar);
 		errorFilterAction = new MessageLevelFilterAction(messagesPanel, LevelFilter.Error, true);
 		warningFilterAction = new MessageLevelFilterAction(messagesPanel, LevelFilter.Warning, true);
 		infoFilterAction = new MessageLevelFilterAction(messagesPanel, LevelFilter.Info, false);
-		messagesToolBarmanager.add(errorFilterAction);
-		messagesToolBarmanager.add(warningFilterAction);
-		messagesToolBarmanager.add(infoFilterAction);
-		messagesToolBarmanager.update(true);
-		bottom.setTopCenter(messagesToolBar);
+		rightMessagesToolBarManager.add(errorFilterAction);
+		rightMessagesToolBarManager.add(warningFilterAction);
+		rightMessagesToolBarManager.add(infoFilterAction);
+		rightMessagesToolBarManager.update(true);
+		bottom.setTopCenter(rightMessagesToolBar);
 		bottom.setContent(messagesPanel.getTableViewer().getControl());
 
 		sashForm.setWeights(new int[]{50, 50});
@@ -152,6 +166,7 @@ public class ResultsPanel {
 		if (weight0 != null && weight1 != null) {
 			sashForm.setWeights(new int[] {weight0, weight1});
 		}
+		restoreActionChecked(memento, TAG_MESSAGES_ORDERING_ACTION, messagesOrderingAction);
 		restoreActionChecked(memento, TAG_ERROR_FILTER_ACTION, errorFilterAction);
 		restoreActionChecked(memento, TAG_WARNING_FILTER_ACTION, warningFilterAction);
 		restoreActionChecked(memento, TAG_INFO_FILTER_ACTION, infoFilterAction);
@@ -161,6 +176,7 @@ public class ResultsPanel {
 		int[] weights = sashForm.getWeights();
 		memento.putInteger(TAG_WEIGHT0, weights[0]);
 		memento.putInteger(TAG_WEIGHT1, weights[1]);
+		memento.putBoolean(TAG_MESSAGES_ORDERING_ACTION, messagesOrderingAction.isChecked());
 		memento.putBoolean(TAG_ERROR_FILTER_ACTION, errorFilterAction.isChecked());
 		memento.putBoolean(TAG_WARNING_FILTER_ACTION, warningFilterAction.isChecked());
 		memento.putBoolean(TAG_INFO_FILTER_ACTION, infoFilterAction.isChecked());
