@@ -11,11 +11,9 @@
 package org.eclipse.cdt.testsrunner.internal.model;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
 
 import org.eclipse.cdt.testsrunner.model.IModelVisitor;
-import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestSuite;
 
 /**
@@ -24,41 +22,17 @@ import org.eclipse.cdt.testsrunner.model.ITestSuite;
  */
 public class TestSuite extends TestItem implements ITestSuite {
 
-	private Map<String, TestSuite> testSuites = new LinkedHashMap<String, TestSuite>();
-
-	private Map<String, TestCase> testCases = new LinkedHashMap<String, TestCase>();
-
+	private List<TestItem> children = new ArrayList<TestItem>();
+	
 	
 	public TestSuite(String name, TestSuite parent) {
 		super(name, parent);
 	}
 
-	public TestSuite getTestSuite(String name) {
-		return testSuites.get(name);
-	}
-
-	public TestSuite[] getTestSuites() {
-		return testSuites.values().toArray(new TestSuite[testSuites.size()]);
-	}
-
-	public TestCase getTestCase(String name) {
-		return testCases.get(name);
-	}
-
-	public TestCase[] getTestCases() {
-		return testCases.values().toArray(new TestCase[testCases.size()]);
-	}
-
 	public Status getStatus() {
 		Status result = Status.NotRun;
-		for (TestSuite testSuite : testSuites.values()) {
-			Status childStatus = testSuite.getStatus();
-			if (result.compareTo(childStatus) < 0) {
-				result = childStatus;
-			}
-		}
-		for (TestCase testCase : testCases.values()) {
-			Status childStatus = testCase.getStatus();
+		for (TestItem testItem : children) {
+			Status childStatus = testItem.getStatus();
 			if (result.compareTo(childStatus) < 0) {
 				result = childStatus;
 			}
@@ -68,56 +42,30 @@ public class TestSuite extends TestItem implements ITestSuite {
 
 	public int getTestingTime() {
 		int result = 0;
-		for (TestSuite testSuite : testSuites.values()) {
-			result += testSuite.getTestingTime();
-		}
-		for (TestCase testCase : testCases.values()) {
-			result += testCase.getTestingTime();
+		for (TestItem testItem : children) {
+			result += testItem.getTestingTime();
 		}
 		return result;
 	}
 	
 	public boolean hasChildren() {
-		return !testSuites.isEmpty() || !testCases.isEmpty();
+		return !children.isEmpty();
 	}
 
-	public ITestItem[] getChildren() {
-		ArrayList<ITestItem> result = new ArrayList<ITestItem>(testSuites.values());
-		result.addAll(testCases.values());
-		return result.toArray(new ITestItem[result.size()]);
+	public TestItem[] getChildren() {
+		return children.toArray(new TestItem[children.size()]);
 	}
 
-	
-	public void addTestSuite(TestSuite testSuite) {
-		testSuites.put(testSuite.getName(), testSuite);
-	}
-
-	public void addTestCase(TestCase testCase) {
-		testCases.put(testCase.getName(), testCase);
-	}
-	
-	public void clear() {
-		testSuites.clear();
-		testCases.clear();
-	}
-
-	public void removeTestSuite(String testSuiteName) {
-		testSuites.remove(testSuiteName);
-	}
-
-	public void removeTestCase(String testCaseName) {
-		testCases.remove(testCaseName);
-	}
-	
 	public void visit(IModelVisitor visitor) {
 		visitor.visit(this);
-		for (TestSuite testSuite : testSuites.values()) {
-			testSuite.visit(visitor);
-		}
-		for (TestCase testCase : testCases.values()) {
-			testCase.visit(visitor);
+		for (TestItem testItem : children) {
+			testItem.visit(visitor);
 		}
 		visitor.leave(this);
 	}
 
+	public List<TestItem> getChildrenList() {
+		return children;
+	}
+	
 }

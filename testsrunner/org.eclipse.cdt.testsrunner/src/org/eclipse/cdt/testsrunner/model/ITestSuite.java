@@ -17,15 +17,4 @@ package org.eclipse.cdt.testsrunner.model;
  * @noimplement This interface is not intended to be implemented by clients.
  */
 public interface ITestSuite extends ITestItem {
-
-	public ITestSuite getTestSuite(String name);
-	
-	public ITestSuite[] getTestSuites();
-
-	public ITestCase getTestCase(String name);
-	
-	public ITestCase[] getTestCases();
-
-	public boolean hasChildren();
-
 }

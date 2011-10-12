@@ -110,7 +110,8 @@ public class TestingSession implements ITestingSession {
 			previousSession.getModelAccessor().getRootSuite().visit(testCasesCounter);
 			totalCounter = testCasesCounter.result;
 		}
-		this.modelManager = new TestModelManager(previousSession, testsRunnerInfo.isAllowedTestingTimeMeasurement());
+		ITestSuite rootTestSuite = previousSession != null ? previousSession.getModelAccessor().getRootSuite() : null;
+		this.modelManager = new TestModelManager(rootTestSuite, testsRunnerInfo.isAllowedTestingTimeMeasurement());
 		this.modelManager.addChangesListener(new ITestingSessionListener() {
 			
 			public void testingStarted() {}
@@ -136,9 +137,7 @@ public class TestingSession implements ITestingSession {
 			
 			public void enterTestCase(ITestCase testCase) {}
 			
-			public void addTestSuite(ITestSuite parent, ITestSuite child) {}
-			
-			public void addTestCase(ITestSuite parent, ITestCase child) {}
+			public void childrenUpdate(ITestSuite parent) {}
 		});
 	}
 
