@@ -90,20 +90,6 @@ public class TestingSession implements ITestingSession {
 		this.testsRunnerInfo = testsRunnerInfo;
 		this.testsRunner = testsRunnerInfo.instantiateTestsRunner();
 		this.startTime = System.currentTimeMillis();
-		// Check whether we can rely on the tests hierarchy of previous testing session:
-		//   - it should be for the same launch configuration (should have the same parameters)
-		//   - should be already terminated (to have complete tests hierarchy structure)
-		//   - should not be stopped by user (the same as terminated)
-		//   - should have the same tests runner
-		// Certainly, it is not full list of requirements, but it covers the most common cases
-		if (previousSession != null) {
-			if (!launch.getLaunchConfiguration().equals(previousSession.launch.getLaunchConfiguration())
-				|| !previousSession.isFinished()
-				|| previousSession.wasStopped()
-				|| !previousSession.getTestsRunnerInfo().getName().equals(getTestsRunnerInfo().getName())) {
-				previousSession = null;
-			}
-		}
 		// Calculate approximate tests count by the previous similar testing session (if available)
 		if (previousSession!=null) {
 			TestCasesCounter testCasesCounter = new TestCasesCounter();
