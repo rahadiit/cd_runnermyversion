@@ -10,11 +10,10 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.cdt.testsrunner.internal.model.ITestingSessionsManagerListener;
 import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
@@ -58,8 +57,8 @@ public class UIUpdater {
 		private String newViewCaption;
 		private ITestItem testItemForNewViewCaption;
 		
-		private Map<Object, List<Object> > treeItemsToAdd = new LinkedHashMap<Object, List<Object>>();
- 		private List<Object> treeItemsToUpdate = new ArrayList<Object>();
+ 		private Set<Object> treeItemsToRefresh = new HashSet<Object>();
+ 		private Set<Object> treeItemsToUpdate = new HashSet<Object>();
  		private Object treeItemToReveal;
 		private Map<Object, Boolean> treeItemsToExpand = new LinkedHashMap<Object, Boolean>();
 		
@@ -95,17 +94,6 @@ public class UIUpdater {
 			}
 		}
 		
-		public void scheduleTreeItemAdd(Object parent, Object child) {
-			synchronized (this) {
-				List<Object> childrenToAdd = treeItemsToAdd.get(parent);
-				if (childrenToAdd == null) {
-					childrenToAdd = new ArrayList<Object>();
-					treeItemsToAdd.put(parent, childrenToAdd);
-				}
-				childrenToAdd.add(child);
-			}
-		}
-		
 		public void scheduleTreeItemUpdate(Object item) {
 			synchronized (this) {
 				treeItemsToUpdate.add(item);
@@ -121,6 +109,12 @@ public class UIUpdater {
 		public void scheduleTreeItemExpand(Object item, boolean expandedState) {
 			synchronized (this) {
 				treeItemsToExpand.put(item, expandedState);
+			}
+		}
+		
+		public void scheduleTreeItemRefresh(Object item) {
+			synchronized (this) {
+				treeItemsToRefresh.add(item);
 			}
 		}
 		
@@ -146,28 +140,9 @@ public class UIUpdater {
 						);
 				}
 				// Tree view update
-				// NOTE: Adding items should be done before update, expand, reveal etc.
-				if (!treeItemsToAdd.isEmpty()) {
-					// Incremental adding differs for plain and tests-in-hierarchy modes
-					if (testsHierarchyViewer.showTestsHierarchy()) {
-						for (Entry<Object, List<Object>> entry : treeItemsToAdd.entrySet()) {
-							treeViewer.add(entry.getKey(), entry.getValue().toArray());
-						}
-						
-					} else {
-						List<Object> testCases = new ArrayList<Object>();
-						for (Entry<Object, List<Object>> entry : treeItemsToAdd.entrySet()) {
-							treeViewer.add(entry.getKey(), entry.getValue().toArray());
-						}
-						for (List<Object> children : treeItemsToAdd.values()) {
-							for (Object child : children) {
-								if (child instanceof ITestCase) {
-									testCases.add(child);
-								}
-							}
-						}
-						Object root = treeViewer.getInput();
-						treeViewer.add(root, testCases.toArray());
+				if (!treeItemsToRefresh.isEmpty()) {
+					for (Object item : treeItemsToRefresh) {
+						treeViewer.refresh(item, false);
 					}
 				}
 				if (!treeItemsToUpdate.isEmpty()) {
@@ -197,7 +172,6 @@ public class UIUpdater {
 			needActionsUpdate = false;
 			newViewCaption = null;
 			testItemForNewViewCaption = null;
-			treeItemsToAdd.clear();
 			treeItemsToUpdate.clear();
 			treeItemToReveal = null;
 			treeItemsToExpand.clear();
@@ -241,7 +215,7 @@ public class UIUpdater {
 	
 	class SessionListener implements ITestingSessionListener {
 		
-		private void enterTestItem(final ITestItem testItem) {
+		private void enterTestItem(ITestItem testItem) {
 			uiChangesCache.scheduleViewCaptionChange(testItem);
 			uiChangesCache.scheduleTreeItemUpdate(testItem);
 			if (autoScroll) {
@@ -249,11 +223,11 @@ public class UIUpdater {
 			}
 		}
 		
-		public void enterTestSuite(final ITestSuite testSuite) {
+		public void enterTestSuite(ITestSuite testSuite) {
 			enterTestItem(testSuite);
 		}
 	
-		public void exitTestSuite(final ITestSuite testSuite) {
+		public void exitTestSuite(ITestSuite testSuite) {
 			uiChangesCache.scheduleTreeItemUpdate(testSuite);
 			if (autoScroll) {
 				uiChangesCache.scheduleTreeItemExpand(testSuite, false);
@@ -264,22 +238,14 @@ public class UIUpdater {
 			enterTestItem(testCase);
 		}
 	
-		public void exitTestCase(final ITestCase testCase) {
+		public void exitTestCase(ITestCase testCase) {
 			uiChangesCache.scheduleActionsUpdate();
 			uiChangesCache.scheduleProgressCountPanelUpdate();
 			uiChangesCache.scheduleTreeItemUpdate(testCase);
 		}
 	
-		private void addTestItem(final ITestSuite parent, final ITestItem child) {
-			uiChangesCache.scheduleTreeItemAdd(parent, child);
-		}
-
-		public void addTestSuite(ITestSuite parent, ITestSuite child) {
-			addTestItem(parent, child);
-		}
-	
-		public void addTestCase(ITestSuite parent, ITestCase child) {
-			addTestItem(parent, child);
+		public void childrenUpdate(ITestSuite parent) {
+			uiChangesCache.scheduleTreeItemRefresh(parent);
 		}
 
 		public void testingStarted() {

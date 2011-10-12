@@ -65,10 +65,6 @@ public class MockTestModelUpdater implements ITestModelUpdater {
 	}
 	
 	private class FakeTestSuite extends FakeTestItem implements ITestSuite {
-		public ITestSuite getTestSuite(String name) { unexpectedMethodCall(); return null;  }
-		public ITestSuite[] getTestSuites()         { unexpectedMethodCall(); return null;  }
-		public ITestCase getTestCase(String name)   { unexpectedMethodCall(); return null;  }
-		public ITestCase[] getTestCases()           { unexpectedMethodCall(); return null;  }
 	}
 	
 	

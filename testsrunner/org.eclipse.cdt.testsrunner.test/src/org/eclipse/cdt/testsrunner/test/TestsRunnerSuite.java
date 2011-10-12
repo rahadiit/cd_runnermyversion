@@ -14,6 +14,8 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.eclipse.cdt.testsrunner.core.TestModelManagerCasesReorderingTestCase;
+import org.eclipse.cdt.testsrunner.core.TestModelManagerSuitesReorderingTestCase;
 import org.eclipse.cdt.testsrunner.testsrunners.BoostTestCase;
 import org.eclipse.cdt.testsrunner.testsrunners.GoogleTestCase;
 import org.eclipse.cdt.testsrunner.testsrunners.QtTestCase;
@@ -37,6 +39,9 @@ public class TestsRunnerSuite extends TestSuite {
 
 	public static Test suite() {
 		final TestsRunnerSuite suite = new TestsRunnerSuite();
+		// Core
+		suite.addTestSuite(TestModelManagerSuitesReorderingTestCase.class);
+		suite.addTestSuite(TestModelManagerCasesReorderingTestCase.class);
 		// tests runners
 		suite.addTestSuite(BoostTestCase.class);
 		suite.addTestSuite(GoogleTestCase.class);

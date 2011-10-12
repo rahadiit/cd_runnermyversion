@@ -26,9 +26,7 @@ public interface ITestingSessionListener {
 	
 	public void exitTestCase(ITestCase testCase);
 
-	public void addTestSuite(ITestSuite parent, ITestSuite child);
-	
-	public void addTestCase(ITestSuite parent, ITestCase child);
+	public void childrenUpdate(ITestSuite testSuite);
 	
 	public void testingStarted();
 

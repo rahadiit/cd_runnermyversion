@@ -24,5 +24,6 @@ Import-Package: org.eclipse.cdt.internal.ui.viewsupport,
  org.eclipse.jface.text,
  org.eclipse.ui.ide,
  org.eclipse.ui.texteditor
-Export-Package: org.eclipse.cdt.testsrunner.launcher,
+Export-Package: org.eclipse.cdt.testsrunner.internal.model,
+ org.eclipse.cdt.testsrunner.launcher,
  org.eclipse.cdt.testsrunner.model
