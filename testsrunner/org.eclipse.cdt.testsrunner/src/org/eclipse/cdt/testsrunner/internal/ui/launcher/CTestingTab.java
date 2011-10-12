@@ -11,7 +11,6 @@
 package org.eclipse.cdt.testsrunner.internal.ui.launcher;
 
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
-import org.eclipse.cdt.launch.internal.ui.LaunchImages;
 import org.eclipse.cdt.launch.ui.CLaunchConfigurationTab;
 import org.eclipse.cdt.testsrunner.internal.Activator;
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager.TestsRunnerInfo;
@@ -184,7 +183,7 @@ public class CTestingTab extends CLaunchConfigurationTab {
 	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#getImage()
 	 */
 	public Image getImage() {
-		return LaunchImages.get(LaunchImages.IMG_VIEW_ARGUMENTS_TAB); // TODO: Add some image HERE!
+		return Activator.createAutoImage("obj16/test_notrun.gif"); //$NON-NLS-1$
 	}
 
 }
