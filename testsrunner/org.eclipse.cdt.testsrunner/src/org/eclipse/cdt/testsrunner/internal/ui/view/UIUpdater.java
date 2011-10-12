@@ -356,4 +356,9 @@ public class UIUpdater {
 			updateUIJob = null;
 		}
 	}
+
+	public void reapplyActiveSession() {
+		sessionsManagerListener.sessionActivated(sessionsManager.getActiveSession());
+	}
+
 }
