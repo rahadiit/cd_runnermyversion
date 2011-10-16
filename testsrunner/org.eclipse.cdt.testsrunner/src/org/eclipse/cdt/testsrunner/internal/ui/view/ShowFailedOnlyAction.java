@@ -11,7 +11,7 @@
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 
-import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.jface.action.Action;
 
 /**
@@ -27,7 +27,7 @@ public class ShowFailedOnlyAction extends Action {
 		this.resultsPanel = resultsPanel;
 		setText("Show &Failures Only");
 		setToolTipText("Show &Failures Only");
-		setImageDescriptor(Activator.getImageDescriptor("obj16/show_failed_only.gif")); //$NON-NLS-1$
+		setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("obj16/show_failed_only.gif")); //$NON-NLS-1$
 		setChecked(resultsPanel.getShowFailedOnly());
 	}
 

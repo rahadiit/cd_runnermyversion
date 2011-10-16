@@ -11,7 +11,7 @@
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 
-import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.jface.action.Action;
 
 /**
@@ -25,9 +25,9 @@ public class ShowPreviousFailureAction extends Action {
 		super("Previous Failure");
 		this.testsHierarchyViewer = testsHierarchyViewer;
 		setToolTipText("Previous Failed Test"); // TODO: Add detailed tooltip
-		setDisabledImageDescriptor(Activator.getImageDescriptor("dlcl16/show_previous.gif")); //$NON-NLS-1$
-		setHoverImageDescriptor(Activator.getImageDescriptor("elcl16/show_previous.gif")); //$NON-NLS-1$
-		setImageDescriptor(Activator.getImageDescriptor("elcl16/show_previous.gif")); //$NON-NLS-1$
+		setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/show_previous.gif")); //$NON-NLS-1$
+		setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/show_previous.gif")); //$NON-NLS-1$
+		setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/show_previous.gif")); //$NON-NLS-1$
 	}
 
 	/**

@@ -29,7 +29,7 @@ import org.eclipse.cdt.debug.core.cdi.ICDISession;
 import org.eclipse.cdt.debug.core.cdi.model.ICDIRuntimeOptions;
 import org.eclipse.cdt.debug.core.cdi.model.ICDITarget;
 import org.eclipse.cdt.launch.AbstractCLaunchDelegate;
-import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.internal.model.TestingSession;
 import org.eclipse.cdt.testsrunner.internal.ui.view.TestPathUtils;
 import org.eclipse.cdt.testsrunner.model.ITestsRunnerInfo;
@@ -96,7 +96,7 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			String[] commandArray = command.toArray(new String[command.size()]);
 			monitor.worked(5);
 			
-			TestingSession testingSession = Activator.getDefault().getTestingSessionsManager().newSession(launch);
+			TestingSession testingSession = TestsRunnerPlugin.getDefault().getTestingSessionsManager().newSession(launch);
 			
 			// Unpack tests filters
 			List<String> packedTestsFilter = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_FILTER, Collections.EMPTY_LIST);
@@ -222,8 +222,8 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 				public void run() {
 					IViewPart view;
 					try {
-						view = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.eclipse.cdt.testsrunner.resultsview");
-						Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
+						view = TestsRunnerPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.eclipse.cdt.testsrunner.resultsview");
+						TestsRunnerPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
 					} catch (PartInitException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -284,6 +284,6 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 	}
 
 	protected String getPluginID() {
-		return Activator.getUniqueIdentifier();
+		return TestsRunnerPlugin.getUniqueIdentifier();
 	}
 }

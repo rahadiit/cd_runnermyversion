@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: %pluginName
 Bundle-SymbolicName: org.eclipse.cdt.testsrunner;singleton:=true
 Bundle-Version: 7.0.0.qualifier
-Bundle-Activator: org.eclipse.cdt.testsrunner.internal.Activator
+Bundle-Activator: org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui,

@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
-import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
 import org.eclipse.cdt.testsrunner.model.ITestingSession;
 import org.eclipse.jface.action.Action;
@@ -85,8 +85,8 @@ public class ResultsView extends ViewPart {
 	
 	@Override
 	public void createPartControl(Composite parent) {
-		sessionsManager = Activator.getDefault().getTestingSessionsManager();
-		IWorkbench workbench = Activator.getDefault().getWorkbench();
+		sessionsManager = TestsRunnerPlugin.getDefault().getTestingSessionsManager();
+		IWorkbench workbench = TestsRunnerPlugin.getDefault().getWorkbench();
 		Clipboard clipboard = new Clipboard(parent.getDisplay());
 
 		this.parent = parent;

@@ -11,7 +11,7 @@
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 
-import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.jface.action.Action;
 
 /**
@@ -28,19 +28,19 @@ public class ToggleOrientationAction extends Action {
 		this.resultsView = resultsView;
 		if (orientation == ResultsView.Orientation.Horizontal) {
 			setText("&Horizontal");
-			setImageDescriptor(Activator.getImageDescriptor("elcl16/orientation_horizontal.gif")); //$NON-NLS-1$
-			setDisabledImageDescriptor(Activator.getImageDescriptor("dlcl16/orientation_horizontal.gif")); //$NON-NLS-1$
-			setHoverImageDescriptor(Activator.getImageDescriptor("elcl16/orientation_horizontal.gif")); //$NON-NLS-1$
+			setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/orientation_horizontal.gif")); //$NON-NLS-1$
+			setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/orientation_horizontal.gif")); //$NON-NLS-1$
+			setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/orientation_horizontal.gif")); //$NON-NLS-1$
 		} else if (orientation == ResultsView.Orientation.Vertical) {
 			setText("&Vertical");
-			setImageDescriptor(Activator.getImageDescriptor("elcl16/orientation_vertical.gif")); //$NON-NLS-1$
-			setDisabledImageDescriptor(Activator.getImageDescriptor("dlcl16/orientation_vertical.gif")); //$NON-NLS-1$
-			setHoverImageDescriptor(Activator.getImageDescriptor("elcl16/orientation_vertical.gif")); //$NON-NLS-1$
+			setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/orientation_vertical.gif")); //$NON-NLS-1$
+			setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/orientation_vertical.gif")); //$NON-NLS-1$
+			setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/orientation_vertical.gif")); //$NON-NLS-1$
 		} else if (orientation == ResultsView.Orientation.Auto) {
 			setText("&Automatic");
-			setImageDescriptor(Activator.getImageDescriptor("elcl16/orientation_auto.gif")); //$NON-NLS-1$
-			setDisabledImageDescriptor(Activator.getImageDescriptor("dlcl16/orientation_auto.gif")); //$NON-NLS-1$
-			setHoverImageDescriptor(Activator.getImageDescriptor("elcl16/orientation_auto.gif")); //$NON-NLS-1$
+			setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/orientation_auto.gif")); //$NON-NLS-1$
+			setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/orientation_auto.gif")); //$NON-NLS-1$
+			setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/orientation_auto.gif")); //$NON-NLS-1$
 		}
 		this.orientation = orientation;
 	}

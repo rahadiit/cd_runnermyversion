@@ -25,7 +25,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
-public class Activator extends AbstractUIPlugin {
+public class TestsRunnerPlugin extends AbstractUIPlugin {
 
 	public static final String PLUGIN_ID = "org.eclipse.cdt.testsrunner"; //$NON-NLS-1$
 	private static final IPath ICONS_PATH= new Path("$nl$/icons"); //$NON-NLS-1$
@@ -33,7 +33,7 @@ public class Activator extends AbstractUIPlugin {
 	/**
 	 * Launch UI plug-in instance
 	 */
-	private static Activator plugin;
+	private static TestsRunnerPlugin plugin;
 	
 	private TestsRunnersManager testsRunnersManager = new TestsRunnersManager();
 	private TestingSessionsManager testingSessionsManager = new TestingSessionsManager(testsRunnersManager);
@@ -43,7 +43,7 @@ public class Activator extends AbstractUIPlugin {
 	 * 
 	 * @param descriptor
 	 */
-	public Activator() {
+	public TestsRunnerPlugin() {
 		super();
 		plugin = this;
 	}
@@ -53,7 +53,7 @@ public class Activator extends AbstractUIPlugin {
 	 * 
 	 * @return the Java Debug UI plug-in instance
 	 */
-	public static Activator getDefault() {
+	public static TestsRunnerPlugin getDefault() {
 		return plugin;
 	}
 

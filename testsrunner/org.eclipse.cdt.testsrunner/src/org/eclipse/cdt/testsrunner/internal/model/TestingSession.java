@@ -17,7 +17,7 @@ import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
 
-import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager.TestsRunnerInfo;
 import org.eclipse.cdt.testsrunner.launcher.ITestsRunner;
 import org.eclipse.cdt.testsrunner.model.IModelVisitor;
@@ -218,7 +218,7 @@ public class TestingSession implements ITestingSession {
 				wasStopped = true;
 				statusMessage = "Testing was stopped by user";
 			} catch (DebugException e) {
-				Activator.log(e);
+				TestsRunnerPlugin.log(e);
 			}
 		}
 	}
