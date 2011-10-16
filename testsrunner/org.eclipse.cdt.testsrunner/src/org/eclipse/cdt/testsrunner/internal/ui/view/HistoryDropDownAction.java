@@ -22,7 +22,7 @@ import org.eclipse.cdt.internal.ui.wizards.dialogfields.IListAdapter;
 import org.eclipse.cdt.internal.ui.wizards.dialogfields.LayoutUtil;
 import org.eclipse.cdt.internal.ui.wizards.dialogfields.ListDialogField;
 import org.eclipse.cdt.internal.ui.wizards.dialogfields.StringDialogField;
-import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
 import org.eclipse.cdt.testsrunner.model.ITestingSession;
 import org.eclipse.core.runtime.IStatus;
@@ -357,9 +357,9 @@ public class HistoryDropDownAction extends Action {
 	public HistoryDropDownAction(TestingSessionsManager testingSessionsManager, Shell shell) {
 		super("History");
 		setToolTipText("Test Run History...");
-		setDisabledImageDescriptor(Activator.getImageDescriptor("dlcl16/history_list.gif")); //$NON-NLS-1$
-		setHoverImageDescriptor(Activator.getImageDescriptor("elcl16/history_list.gif")); //$NON-NLS-1$
-		setImageDescriptor(Activator.getImageDescriptor("elcl16/history_list.gif")); //$NON-NLS-1$
+		setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/history_list.gif")); //$NON-NLS-1$
+		setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/history_list.gif")); //$NON-NLS-1$
+		setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/history_list.gif")); //$NON-NLS-1$
 		this.testingSessionsManager = testingSessionsManager;
 		setMenuCreator(new HistoryMenuCreator());
 	}

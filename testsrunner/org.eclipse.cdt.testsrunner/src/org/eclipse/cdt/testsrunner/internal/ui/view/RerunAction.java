@@ -11,7 +11,7 @@
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 
-import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
 import org.eclipse.cdt.testsrunner.model.ITestingSession;
 import org.eclipse.debug.core.ILaunch;
@@ -28,9 +28,9 @@ public class RerunAction extends Action {
 	public RerunAction(TestingSessionsManager testingSessionsManager) {
 		super("Rerun");
 		setToolTipText("Rerun Test"); // TODO: Add detailed tooltip
-		setDisabledImageDescriptor(Activator.getImageDescriptor("dlcl16/rerun.gif")); //$NON-NLS-1$
-		setHoverImageDescriptor(Activator.getImageDescriptor("elcl16/rerun.gif")); //$NON-NLS-1$
-		setImageDescriptor(Activator.getImageDescriptor("elcl16/rerun.gif")); //$NON-NLS-1$
+		setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/rerun.gif")); //$NON-NLS-1$
+		setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/rerun.gif")); //$NON-NLS-1$
+		setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/rerun.gif")); //$NON-NLS-1$
 		this.testingSessionsManager = testingSessionsManager;
 	}
 

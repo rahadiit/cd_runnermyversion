@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
-import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager;
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager.TestsRunnerInfo;
 import org.eclipse.cdt.testsrunner.model.ITestingSession;
@@ -72,7 +72,7 @@ public class TestingSessionsManager {
 		if (testsRunnerInfo == null) {
 			throw new CoreException(
 				new Status(
-					IStatus.ERROR, Activator.getUniqueIdentifier(),
+					IStatus.ERROR, TestsRunnerPlugin.getUniqueIdentifier(),
 					"Tests Runner is not specified", null 
 				)
 			);

@@ -11,7 +11,7 @@
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 
-import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.jface.action.Action;
 
 /**
@@ -27,7 +27,7 @@ public class ShowTestsInHierarchyAction extends Action {
 		this.testsHierarchyViewer = testsHierarchyViewer;
 		setText("Show Tests in &Hierarchy");
 		setChecked(testsHierarchyViewer.showTime());
-		setImageDescriptor(Activator.getImageDescriptor("elcl16/show_tests_hierarchy.gif")); //$NON-NLS-1$
+		setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/show_tests_hierarchy.gif")); //$NON-NLS-1$
 	}
 
 	@Override

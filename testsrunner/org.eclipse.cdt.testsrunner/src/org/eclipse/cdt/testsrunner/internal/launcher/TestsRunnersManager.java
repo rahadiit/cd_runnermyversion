@@ -13,7 +13,7 @@ package org.eclipse.cdt.testsrunner.internal.launcher;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.launcher.ITestsRunner;
 import org.eclipse.cdt.testsrunner.model.ITestsRunnerInfo;
 import org.eclipse.core.runtime.CoreException;
@@ -68,7 +68,7 @@ public class TestsRunnersManager {
 					return (ITestsRunner)object;
 				}
 			} catch (CoreException e) {
-				Activator.log(e);
+				TestsRunnerPlugin.log(e);
 			}
 			return null;
 		}

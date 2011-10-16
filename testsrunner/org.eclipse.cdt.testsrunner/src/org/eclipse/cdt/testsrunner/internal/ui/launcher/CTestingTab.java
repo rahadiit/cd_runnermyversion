@@ -12,7 +12,7 @@ package org.eclipse.cdt.testsrunner.internal.ui.launcher;
 
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.cdt.launch.ui.CLaunchConfigurationTab;
-import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager.TestsRunnerInfo;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -66,7 +66,7 @@ public class CTestingTab extends CLaunchConfigurationTab {
 		testsRunnerCombo.setData("0", null); //$NON-NLS-1$
 		
 		// Add all the tests runners
-    	for (TestsRunnerInfo testsRunnerInfo : Activator.getDefault().getTestsRunnersManager().getTestsRunnersInfo()) {
+    	for (TestsRunnerInfo testsRunnerInfo : TestsRunnerPlugin.getDefault().getTestsRunnersManager().getTestsRunnersInfo()) {
     		testsRunnerCombo.setData(Integer.toString(testsRunnerCombo.getItemCount()), testsRunnerInfo);
     		testsRunnerCombo.add(testsRunnerInfo.getName());
     	}
@@ -141,7 +141,7 @@ public class CTestingTab extends CLaunchConfigurationTab {
 			testsRunnerCombo.select(comboIndex);
 			
 		} catch (CoreException e) {
-			Activator.log(e);
+			TestsRunnerPlugin.log(e);
 		}
 	}
 
@@ -183,7 +183,7 @@ public class CTestingTab extends CLaunchConfigurationTab {
 	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#getImage()
 	 */
 	public Image getImage() {
-		return Activator.createAutoImage("obj16/test_notrun.gif"); //$NON-NLS-1$
+		return TestsRunnerPlugin.createAutoImage("obj16/test_notrun.gif"); //$NON-NLS-1$
 	}
 
 }

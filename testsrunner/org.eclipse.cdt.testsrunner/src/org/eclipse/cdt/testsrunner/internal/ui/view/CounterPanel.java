@@ -11,7 +11,7 @@
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 
-import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestingSession;
 import org.eclipse.swt.SWT;
@@ -36,8 +36,8 @@ public class CounterPanel extends Composite {
 	private Label currentCounterLabel;
 	private boolean hasSkipped;
 
-	private final Image errorIcon= Activator.createAutoImage("ovr16/failed_counter.gif"); //$NON-NLS-1$
-	private final Image failureIcon= Activator.createAutoImage("ovr16/aborted_counter.gif"); //$NON-NLS-1$
+	private final Image errorIcon= TestsRunnerPlugin.createAutoImage("ovr16/failed_counter.gif"); //$NON-NLS-1$
+	private final Image failureIcon= TestsRunnerPlugin.createAutoImage("ovr16/aborted_counter.gif"); //$NON-NLS-1$
 
 	
 	public CounterPanel(Composite parent, ITestingSession testingSession) {

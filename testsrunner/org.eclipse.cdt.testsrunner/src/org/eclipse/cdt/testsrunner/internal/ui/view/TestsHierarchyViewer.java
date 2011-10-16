@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.cdt.internal.ui.viewsupport.ColoringLabelProvider;
-import org.eclipse.cdt.testsrunner.internal.Activator;
+import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
@@ -101,25 +101,25 @@ public class TestsHierarchyViewer {
 
 		private Map<ITestItem.Status, Image> testCaseImages = new HashMap<ITestItem.Status, Image>();
 		{
-			testCaseImages.put(ITestItem.Status.NotRun, Activator.createAutoImage("obj16/test_notrun.gif")); //$NON-NLS-1$
-			testCaseImages.put(ITestItem.Status.Skipped, Activator.createAutoImage("obj16/test_skipped.gif")); //$NON-NLS-1$
-			testCaseImages.put(ITestItem.Status.Passed, Activator.createAutoImage("obj16/test_passed.gif")); //$NON-NLS-1$
-			testCaseImages.put(ITestItem.Status.Failed, Activator.createAutoImage("obj16/test_failed.gif")); //$NON-NLS-1$
-			testCaseImages.put(ITestItem.Status.Aborted, Activator.createAutoImage("obj16/test_aborted.gif")); //$NON-NLS-1$
+			testCaseImages.put(ITestItem.Status.NotRun, TestsRunnerPlugin.createAutoImage("obj16/test_notrun.gif")); //$NON-NLS-1$
+			testCaseImages.put(ITestItem.Status.Skipped, TestsRunnerPlugin.createAutoImage("obj16/test_skipped.gif")); //$NON-NLS-1$
+			testCaseImages.put(ITestItem.Status.Passed, TestsRunnerPlugin.createAutoImage("obj16/test_passed.gif")); //$NON-NLS-1$
+			testCaseImages.put(ITestItem.Status.Failed, TestsRunnerPlugin.createAutoImage("obj16/test_failed.gif")); //$NON-NLS-1$
+			testCaseImages.put(ITestItem.Status.Aborted, TestsRunnerPlugin.createAutoImage("obj16/test_aborted.gif")); //$NON-NLS-1$
 		}
-		private Image testCaseRunImage = Activator.createAutoImage("obj16/test_run.gif"); //$NON-NLS-1$
+		private Image testCaseRunImage = TestsRunnerPlugin.createAutoImage("obj16/test_run.gif"); //$NON-NLS-1$
 
 
 		private Map<ITestItem.Status, Image> testSuiteImages = new HashMap<ITestItem.Status, Image>();
 		{
 			// NOTE: There is no skipped-icon for test suite, but it seems it is not a problem
-			testSuiteImages.put(ITestItem.Status.NotRun, Activator.createAutoImage("obj16/tsuite_notrun.gif")); //$NON-NLS-1$
-			testSuiteImages.put(ITestItem.Status.Skipped, Activator.createAutoImage("obj16/tsuite_notrun.gif")); //$NON-NLS-1$
-			testSuiteImages.put(ITestItem.Status.Passed, Activator.createAutoImage("obj16/tsuite_passed.gif")); //$NON-NLS-1$
-			testSuiteImages.put(ITestItem.Status.Failed, Activator.createAutoImage("obj16/tsuite_failed.gif")); //$NON-NLS-1$
-			testSuiteImages.put(ITestItem.Status.Aborted, Activator.createAutoImage("obj16/tsuite_aborted.gif")); //$NON-NLS-1$
+			testSuiteImages.put(ITestItem.Status.NotRun, TestsRunnerPlugin.createAutoImage("obj16/tsuite_notrun.gif")); //$NON-NLS-1$
+			testSuiteImages.put(ITestItem.Status.Skipped, TestsRunnerPlugin.createAutoImage("obj16/tsuite_notrun.gif")); //$NON-NLS-1$
+			testSuiteImages.put(ITestItem.Status.Passed, TestsRunnerPlugin.createAutoImage("obj16/tsuite_passed.gif")); //$NON-NLS-1$
+			testSuiteImages.put(ITestItem.Status.Failed, TestsRunnerPlugin.createAutoImage("obj16/tsuite_failed.gif")); //$NON-NLS-1$
+			testSuiteImages.put(ITestItem.Status.Aborted, TestsRunnerPlugin.createAutoImage("obj16/tsuite_aborted.gif")); //$NON-NLS-1$
 		}
-		private Image testSuiteRunImage = Activator.createAutoImage("obj16/tsuite_run.gif"); //$NON-NLS-1$
+		private Image testSuiteRunImage = TestsRunnerPlugin.createAutoImage("obj16/tsuite_run.gif"); //$NON-NLS-1$
 
 
 	    public Image getImage(Object element) {
