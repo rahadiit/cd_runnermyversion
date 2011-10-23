@@ -11,14 +11,20 @@
 package org.eclipse.cdt.testsrunner.internal;
 
 import java.net.URL;
+import java.util.HashSet;
 
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager;
 import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.ILaunchConfigurationType;
+import org.eclipse.debug.core.ILaunchDelegate;
+import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -107,6 +113,8 @@ public class TestsRunnerPlugin extends AbstractUIPlugin {
 	@Override
     public void start(BundleContext context) throws Exception {
 		super.start(context);
+		
+		setDefaultLaunchDelegates();
 	}
 
 	/*
@@ -173,6 +181,31 @@ public class TestsRunnerPlugin extends AbstractUIPlugin {
 			return ImageDescriptor.getMissingImageDescriptor();
 		}
 		return null;
+	}
+	
+	private void setDefaultLaunchDelegate(ILaunchConfigurationType cfgType, String delegateId, String mode) {
+		HashSet<String> debugSet = new HashSet<String>();
+		debugSet.add(mode);
+		try {
+			if (cfgType.getPreferredDelegate(debugSet) == null) {
+				ILaunchDelegate[] delegates = cfgType.getDelegates(debugSet);
+				for (ILaunchDelegate delegate : delegates) {
+					if (delegateId.equals(delegate.getId())) {
+						cfgType.setPreferredDelegate(debugSet, delegate);
+						break;
+					}
+				}
+			}
+		} catch (CoreException e) {
+		}
+	}
+	
+	private void setDefaultLaunchDelegates() {
+		ILaunchManager launchMgr = DebugPlugin.getDefault().getLaunchManager();
+		ILaunchConfigurationType configurationType = launchMgr.getLaunchConfigurationType("org.eclipse.cdt.testsrunner.launch.CTestsRunner");
+		
+		setDefaultLaunchDelegate(configurationType, "org.eclipse.cdt.testsrunner.launch.dsf.runTests", ILaunchManager.DEBUG_MODE);
+		setDefaultLaunchDelegate(configurationType, "org.eclipse.cdt.testsrunner.launch.runTests", ILaunchManager.RUN_MODE);
 	}
 	
 }

@@ -10,281 +10,151 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.launcher;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
-import org.eclipse.cdt.core.IBinaryParser.IBinaryObject;
-import org.eclipse.cdt.core.model.ICProject;
-import org.eclipse.cdt.debug.core.CDIDebugModel;
-import org.eclipse.cdt.debug.core.CDebugUtils;
 import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
-import org.eclipse.cdt.debug.core.ICDebugConfiguration;
-import org.eclipse.cdt.debug.core.cdi.CDIException;
-import org.eclipse.cdt.debug.core.cdi.ICDISession;
-import org.eclipse.cdt.debug.core.cdi.model.ICDIRuntimeOptions;
-import org.eclipse.cdt.debug.core.cdi.model.ICDITarget;
 import org.eclipse.cdt.launch.AbstractCLaunchDelegate;
 import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
-import org.eclipse.cdt.testsrunner.internal.model.TestingSession;
+import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager.TestsRunnerInfo;
 import org.eclipse.cdt.testsrunner.internal.ui.view.TestPathUtils;
-import org.eclipse.cdt.testsrunner.model.ITestsRunnerInfo;
+import org.eclipse.cdt.testsrunner.launcher.ITestsRunner;
 import org.eclipse.cdt.testsrunner.model.TestingException;
-import org.eclipse.cdt.launch.internal.ui.LaunchUIPlugin;
-import org.eclipse.cdt.utils.pty.PTY;
-import org.eclipse.cdt.utils.spawner.ProcessFactory;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationType;
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.core.ILaunchDelegate;
 import org.eclipse.debug.core.ILaunchManager;
-import org.eclipse.debug.core.IStatusHandler;
-import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.debug.core.model.ILaunchConfigurationDelegate2;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
 
 public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
-
+	
+    @Override
+    public ILaunch getLaunch(ILaunchConfiguration config, String mode) throws CoreException {
+        return getPreferredDelegate(config, mode).getLaunch(config, mode);
+    }
+	
 	public void launch(ILaunchConfiguration config, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		
-		if (monitor == null) {
-			monitor = new NullProgressMonitor();
-		}
-		if (mode.equals(ILaunchManager.RUN_MODE)) {
-			runTestModule(config, launch, monitor);
-		}
-// TODO: Support debug mode!
-//		if (mode.equals(ILaunchManager.DEBUG_MODE)) {
-//			debugTestModule(config, launch, monitor);
-//		}
-	}
+		if (mode.equals(ILaunchManager.RUN_MODE) || mode.equals(ILaunchManager.DEBUG_MODE)) {
 
-	private void runTestModule(ILaunchConfiguration config, ILaunch launch, IProgressMonitor monitor) throws CoreException {
-		monitor.beginTask("Launching Local C/C++ Test Module", 10); 
-		// check for cancellation
-		if (monitor.isCanceled()) {
-			return;
-		}
-		monitor.worked(1);
-		try {
-			// Allow test module running without a project specification
-			ICProject cProject = CDebugUtils.getCProject(config);
-			IPath exePath = CDebugUtils.verifyProgramPath(config, cProject == null);
-			String arguments[] = getProgramArgumentsArray(config);
-
-			// set the default source locator if required
-			setDefaultSourceLocator(launch, config);
-
-			File wd = getWorkingDirectory(config);
-			if (wd == null) {
-				wd = new File(System.getProperty("user.home", ".")); //$NON-NLS-1$ //$NON-NLS-2$
-			}
-			ArrayList<String> command = new ArrayList<String>(1 + arguments.length);
-			command.add(exePath.toOSString());
-			command.addAll(Arrays.asList(arguments));
-			String[] commandArray = command.toArray(new String[command.size()]);
-			monitor.worked(5);
+			// The ATTR_PROCESS_FACTORY_ID is got from the configuration that is referred by the launch.
+			// However if launch refers to the temporary working copy, the referred launch configuration 
+			// will not be added to the LaunchHistory and run last configuration will not work properly.
+			// So we just modify the existing configuration and revert all the changes after launch is done.
 			
-			TestingSession testingSession = TestsRunnerPlugin.getDefault().getTestingSessionsManager().newSession(launch);
-			
-			// Unpack tests filters
-			List<String> packedTestsFilter = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_FILTER, Collections.EMPTY_LIST);
-			String [][] testsFilter = TestPathUtils.unpackTestPaths(packedTestsFilter.toArray(new String[packedTestsFilter.size()]));
-			// Configure test module run parameters with Tests Runner 
+			ILaunchConfigurationWorkingCopy backupConfig = config.getWorkingCopy();
 			try {
-				commandArray = testingSession.configureLaunchParameters(commandArray, testsFilter);
-				Process process = exec(commandArray, getEnvironment(config), wd, testingSession);
-				monitor.worked(3);
-				DebugPlugin.newProcess(launch, process, renderProcessLabel(commandArray[0]));
-			} catch (TestingException e) {
-				// Do nothing, just do not run the process in case of error.
-				// Message showing is done in TestingSession.configureLaunchParameters()
+				// Changes launch configuration a bit and redirect it to the preferred C Application Launch delegate 
+				updatedLaunchConfiguration(config);
+				getPreferredDelegate(config, mode).launch(config, mode, launch, monitor);
 			}
+			finally {
+				backupConfig.doSave();
+			}
+			activateTestingView();
+		}
+	}
+	
+	private void updatedLaunchConfiguration(ILaunchConfiguration config) throws CoreException {
+		ILaunchConfigurationWorkingCopy newConfig = config.getWorkingCopy();
+		setProgramArguments(newConfig);
+		newConfig.doSave();
+	}
+	
+	private void setProgramArguments(ILaunchConfigurationWorkingCopy config) throws CoreException {
+		List<String> packedTestsFilter = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_FILTER, Collections.EMPTY_LIST);
+		String [][] testsFilter = TestPathUtils.unpackTestPaths(packedTestsFilter.toArray(new String[packedTestsFilter.size()]));
+
+		// Configure test module run parameters with a Tests Runner 
+		String[] params = null;
+		try {
+			params = getTestsRunner(config).getAdditionalLaunchParameters(testsFilter);
 			
-		} finally {
-			monitor.done();
-		}		
+		} catch (TestingException e) {
+			throw new CoreException(
+					new Status(
+						IStatus.ERROR, TestsRunnerPlugin.getUniqueIdentifier(),
+						e.getLocalizedMessage(), null 
+					)
+				);
+		}
+
+		// Rewrite ATTR_PROGRAM_ARGUMENTS attribute of launch configuration
+		if (params != null && params.length >= 1) {
+			StringBuilder sb = new StringBuilder();
+			sb.append(config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, "")); //$NON-NLS-1$
+			for (String param : params) {
+				sb.append(' ');
+				sb.append(param);
+			}
+			config.setAttribute(ICDTLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, sb.toString());
+		}
 	}
 	
-	private void debugTestModule(ILaunchConfiguration config, ILaunch launch, IProgressMonitor monitor) throws CoreException {
-		
-		IBinaryObject exeFile = null;
-		monitor.beginTask("Launching Local C/C++ Test Module", 10); 
-		if (monitor.isCanceled()) {
-			return;
+	private ITestsRunner getTestsRunner(ILaunchConfiguration config) throws CoreException {
+		TestsRunnerInfo testsRunnerInfo = TestsRunnerPlugin.getDefault().getTestsRunnersManager().getTestsRunner(config);
+		if (testsRunnerInfo == null) {
+			throw new CoreException(
+				new Status(
+					IStatus.ERROR, TestsRunnerPlugin.getUniqueIdentifier(),
+					"Tests Runner is not specified or invalid", null 
+				)
+			);
 		}
-		try {
-			monitor.worked(1);
-			IPath exePath = CDebugUtils.verifyProgramPath(config);
-			ICProject project = CDebugUtils.verifyCProject(config);
-			if (exePath != null) {
-				exeFile = verifyBinary(project, exePath);
+		ITestsRunner testsRunner = testsRunnerInfo.instantiateTestsRunner();
+		if (testsRunner == null) {
+			throw new CoreException(
+					new Status(
+						IStatus.ERROR, TestsRunnerPlugin.getUniqueIdentifier(),
+						"Tests Runner cannot be instantiated", null 
+					)
+				);
+		}
+		return testsRunner;
+	}
+
+	private ILaunchConfigurationDelegate2 getPreferredDelegate(ILaunchConfiguration config, String mode) throws CoreException {
+	    ILaunchManager launchMgr = DebugPlugin.getDefault().getLaunchManager();
+	    ILaunchConfigurationType localCfg =
+	            launchMgr.getLaunchConfigurationType(ICDTLaunchConfigurationConstants.ID_LAUNCH_C_APP);
+	    Set<String> modes = config.getModes();
+	    modes.add(mode);
+	    String preferredDelegateId = getPreferredDelegateId();
+		for (ILaunchDelegate delegate : localCfg.getDelegates(modes)) {
+			if (preferredDelegateId.equals(delegate.getId())) {
+				return (ILaunchConfigurationDelegate2) delegate.getDelegate();
 			}
-			String arguments[] = getProgramArgumentsArray(config);
+		}
+		return null;
+	}	
 
-			// set the default source locator if required
-			setDefaultSourceLocator(launch, config);
-
-			ICDebugConfiguration debugConfig = getDebugConfig(config);
-			ICDISession dsession = null;
-			String debugMode = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_DEBUGGER_START_MODE,
-					ICDTLaunchConfigurationConstants.DEBUGGER_MODE_RUN);
-			if (debugMode.equals(ICDTLaunchConfigurationConstants.DEBUGGER_MODE_RUN)) {
-				dsession = debugConfig.createDebugger().createDebuggerSession(launch, exeFile, new SubProgressMonitor(monitor, 8));
+    public String getPreferredDelegateId() {
+        return "org.eclipse.cdt.cdi.launch.localCLaunch";
+    }
+	
+	private void activateTestingView() {
+		Display.getDefault().syncExec(new Runnable() {
+			public void run() {
+				IViewPart view;
 				try {
-					try {
-						ICDITarget[] dtargets = dsession.getTargets();
-						for (int i = 0; i < dtargets.length; ++i) {
-							ICDIRuntimeOptions opt = dtargets[i].getRuntimeOptions();
-							opt.setArguments(arguments);
-							File wd = getWorkingDirectory(config);
-							if (wd != null) {
-								opt.setWorkingDirectory(wd.getAbsolutePath());
-							}
-							opt.setEnvironment(getEnvironmentAsProperty(config));
-						}
-					} catch (CDIException e) {
-						abort("Failed to set program arguments, environment or working directory.", e,
-								ICDTLaunchConfigurationConstants.ERR_INTERNAL_ERROR);
-					}
-					monitor.worked(1);
-					boolean stopInMain = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_DEBUGGER_STOP_AT_MAIN, false);
-					String stopSymbol = null;
-					if (stopInMain)
-						stopSymbol = launch.getLaunchConfiguration().getAttribute(
-								ICDTLaunchConfigurationConstants.ATTR_DEBUGGER_STOP_AT_MAIN_SYMBOL,
-								ICDTLaunchConfigurationConstants.DEBUGGER_STOP_AT_MAIN_SYMBOL_DEFAULT);
-
-					ICDITarget[] targets = dsession.getTargets();
-					for (int i = 0; i < targets.length; i++) {
-						Process process = targets[i].getProcess();
-						IProcess iprocess = null;
-						if (process != null) {
-							iprocess = DebugPlugin.newProcess(launch, process, renderProcessLabel(exePath.toOSString()), getDefaultProcessMap());
-						}
-						CDIDebugModel.newDebugTarget(launch, project.getProject(), targets[i], renderTargetLabel(debugConfig),
-								iprocess, exeFile, true, false, stopSymbol, true);
-					}
-				} catch (CoreException e) {
-					try {
-						dsession.terminate();
-					} catch (CDIException e1) {
-						// ignore
-					}
-					throw e;
+					view = TestsRunnerPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.eclipse.cdt.testsrunner.resultsview");
+					TestsRunnerPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
+				} catch (PartInitException e) {
+					TestsRunnerPlugin.log(e);
 				}
 			}
-		} finally {
-			monitor.done();
-		}		
-	}
-	
-	/**
-	 * Performs a runtime exec on the given command line in the context of the
-	 * specified working directory, and returns the resulting process. If the
-	 * current runtime does not support the specification of a working
-	 * directory, the status handler for error code
-	 * <code>ERR_WORKING_DIRECTORY_NOT_SUPPORTED</code> is queried to see if
-	 * the exec should be re-executed without specifying a working directory.
-	 * 
-	 * @param cmdLine
-	 *            the command line
-	 * @param workingDirectory
-	 *            the working directory, or <code>null</code>
-	 * @param testsRunnerId 
-	 * @return the resulting process or <code>null</code> if the exec is
-	 *         cancelled
-	 * @see Runtime
-	 */
-	protected Process exec(String[] cmdLine, String[] environ, File workingDirectory, TestingSession testingSession) throws CoreException {
-		Process p = null;
-		try {
-			if (workingDirectory == null) {
-				p = ProcessFactory.getFactory().exec(cmdLine, environ);
-			} else {
-				// NOTE: Pty should be used if possible to handle process output
-				p = (PTY.isSupported())
-					? ProcessFactory.getFactory().exec(cmdLine, environ, workingDirectory, new PTY())
-					: ProcessFactory.getFactory().exec(cmdLine, environ, workingDirectory);
-			}
-			Display.getDefault().syncExec(new Runnable() {
-				public void run() {
-					IViewPart view;
-					try {
-						view = TestsRunnerPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.eclipse.cdt.testsrunner.resultsview");
-						TestsRunnerPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
-					} catch (PartInitException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			});
-			class ThreadRunnable implements Runnable {
-
-				private TestingSession testingSession;
-				private InputStream iStream;
-				private ProcessWrapper processWrapper;
-				
-				ThreadRunnable(TestingSession testingSession, InputStream iStream, ProcessWrapper processWrapper) {
-					this.testingSession = testingSession;
-					this.iStream = iStream;
-					this.processWrapper = processWrapper;
-				}
-				
-				public void run() {
-					try {
-						testingSession.run(iStream);
-					}
-					finally {
-						processWrapper.allowStreamsClosing();
-					}
-				}
-				
-			}
-			ITestsRunnerInfo testsRunnerInfo = testingSession.getTestsRunnerInfo();
-			InputStream iStream = 
-					testsRunnerInfo.isOutputStreamRequired() ? p.getInputStream() :
-					testsRunnerInfo.isErrorStreamRequired() ? p.getErrorStream() : null;
-			ProcessWrapper processWrapper = new ProcessWrapper(p, testsRunnerInfo.isOutputStreamRequired(), testsRunnerInfo.isErrorStreamRequired());
-			Thread t = new Thread(new ThreadRunnable(testingSession, iStream, processWrapper));
-			t.start();
-			p = processWrapper;
-
-		} catch (IOException e) {
-			if (p != null) {
-				p.destroy();
-			}
-			abort("Error starting process", e, 
-					ICDTLaunchConfigurationConstants.ERR_INTERNAL_ERROR);
-		} catch (NoSuchMethodError e) {
-			//attempting launches on 1.2.* - no ability to set working
-			// directory
-
-			IStatus status = new Status(IStatus.ERROR, LaunchUIPlugin.getUniqueIdentifier(),
-					ICDTLaunchConfigurationConstants.ERR_WORKING_DIRECTORY_NOT_SUPPORTED,
-					"Eclipse runtime does not support working directory",
-					e);
-			IStatusHandler handler = DebugPlugin.getDefault().getStatusHandler(status);
-
-			if (handler != null) {
-				Object result = handler.handleStatus(status, this);
-				if (result instanceof Boolean && ((Boolean) result).booleanValue()) {
-					p = exec(cmdLine, environ, null, testingSession);
-				}
-			}
-		}
-		return p;
+		});
 	}
 
 	protected String getPluginID() {

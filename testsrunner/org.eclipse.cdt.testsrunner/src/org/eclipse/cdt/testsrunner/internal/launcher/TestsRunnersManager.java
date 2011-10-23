@@ -13,12 +13,14 @@ package org.eclipse.cdt.testsrunner.internal.launcher;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.launcher.ITestsRunner;
 import org.eclipse.cdt.testsrunner.model.ITestsRunnerInfo;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.debug.core.ILaunchConfiguration;
 
 /**
  * TODO: Add descriptions
@@ -132,6 +134,11 @@ public class TestsRunnersManager {
 			testsRunners = testsRunnersList.toArray(new TestsRunnerInfo[testsRunnersList.size()]);
 		}
 		return testsRunners;
+	}
+
+	public TestsRunnerInfo getTestsRunner(ILaunchConfiguration launchConf) throws CoreException {
+		String testsRunnerId = launchConf.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String)null);
+		return getTestsRunner(testsRunnerId);
 	}
 	
 	public TestsRunnerInfo getTestsRunner(String testsRunnerId) {

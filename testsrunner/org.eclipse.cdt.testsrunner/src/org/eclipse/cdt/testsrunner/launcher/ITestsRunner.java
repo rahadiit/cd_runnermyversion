@@ -22,7 +22,7 @@ import org.eclipse.cdt.testsrunner.model.TestingException;
  */
 public interface ITestsRunner {
 
-	public String[] configureLaunchParameters(String[] commandLine, String[][] testPaths) throws TestingException;
+	public String[] getAdditionalLaunchParameters(String[][] testPaths) throws TestingException;
 	
 	public void run(ITestModelUpdater modelUpdater, InputStream inputStream) throws TestingException;
 	

@@ -175,5 +175,10 @@ public class IGDBLaunchConfigurationConstants {
 	 */
 	public static final boolean DEBUGGER_DEBUG_ON_FORK_DEFAULT = false;
 
+	/**  
+	 * The default value of DebugPlugin.ATTR_PROCESS_FACTORY_ID.
+	 */
+	public static final String DEFAULT_DSF_PROCESS_FACTORY = "org.eclipse.cdt.dsf.gdb.InferiorRuntimeProcessFactory"; //$NON-NLS-1$
+	
 
 }

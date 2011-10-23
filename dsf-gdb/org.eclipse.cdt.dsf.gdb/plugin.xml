@@ -61,5 +61,12 @@
          contextId="org.eclipse.cdt.debug.ui.debugging"
          debugModelId="org.eclipse.cdt.dsf.gdb"/>
    </extension>
+   <extension
+         point="org.eclipse.debug.core.processFactories">
+      <processFactory
+            class="org.eclipse.cdt.dsf.gdb.launching.InferiorRuntimeProcessFactory"
+            id="org.eclipse.cdt.dsf.gdb.InferiorRuntimeProcessFactory">
+      </processFactory>
+   </extension>
    
 </plugin>

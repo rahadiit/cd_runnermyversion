@@ -15,6 +15,7 @@ import org.eclipse.cdt.launch.ui.CLaunchConfigurationTab;
 import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager.TestsRunnerInfo;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.swt.SWT;
@@ -44,8 +45,10 @@ public class CTestingTab extends CLaunchConfigurationTab {
 	 *   
 	 * @since 6.0
 	 */
-	private static final String TAB_ID = "org.eclipse.cdt.cdi.launch.testingTab"; //$NON-NLS-1$
+	private static final String TAB_ID = "org.eclipse.cdt.testsrunner.testingTab"; //$NON-NLS-1$
 
+	private static final String TESTING_PROCESS_FACTORY_ID = "org.eclipse.cdt.testsrunner.TestingProcessFactory"; //$NON-NLS-1$
+	
 	// Program arguments UI widgets
 	protected Label testsRunnerDescriptionLabel;
 	protected Combo testsRunnerCombo;
@@ -122,6 +125,7 @@ public class CTestingTab extends CLaunchConfigurationTab {
 	 */
 	public void setDefaults(ILaunchConfigurationWorkingCopy config) {
 		config.setAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String) null);
+		config.setAttribute(DebugPlugin.ATTR_PROCESS_FACTORY_ID, TESTING_PROCESS_FACTORY_ID);
 	}
 
 	/* (non-Javadoc)
@@ -152,6 +156,7 @@ public class CTestingTab extends CLaunchConfigurationTab {
 		TestsRunnerInfo testsRunnerInfo = getCurrentTestsRunnerInfo();
 		String testsRunnerId = testsRunnerInfo != null ? testsRunnerInfo.getId() : null;
 		configuration.setAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, testsRunnerId);
+		configuration.setAttribute(DebugPlugin.ATTR_PROCESS_FACTORY_ID, TESTING_PROCESS_FACTORY_ID);
 	}
 
 	@Override

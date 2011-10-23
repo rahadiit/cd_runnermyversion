@@ -9,19 +9,17 @@ import org.eclipse.cdt.testsrunner.model.TestingException;
 
 public class GoogleTestsRunner implements ITestsRunner {
 
-	public String[] configureLaunchParameters(String[] commandLine, String[][] testPaths) {
+	public String[] getAdditionalLaunchParameters(String[][] testPaths) {
 		final String[] gtestParameters = {
 			"--gtest_repeat=1", //$NON-NLS-1$
 			"--gtest_print_time=1", //$NON-NLS-1$
 			"--gtest_color=no", //$NON-NLS-1$
 		};
-		int resultSize = commandLine.length + gtestParameters.length;
+		String[] result = gtestParameters;
 
 		// Build tests filter
-		StringBuilder sb = null;
 		if (testPaths != null && testPaths.length >= 1) {
-			++resultSize;
-			sb = new StringBuilder("--gtest_filter="); //$NON-NLS-1$
+			StringBuilder sb = new StringBuilder("--gtest_filter="); //$NON-NLS-1$
 			boolean needTestPathDelimiter = false;
 			for (String[] testPath : testPaths) {
 				if (needTestPathDelimiter) {
@@ -41,15 +39,11 @@ public class GoogleTestsRunner implements ITestsRunner {
 				// If it is a test suite
 				if (testPath.length <= 1) {
 					sb.append(".*");
-				}				
+				}
 			}
-		}
-		
-		String[] result = new String[resultSize];
-		System.arraycopy(commandLine, 0, result, 0, commandLine.length);
-		System.arraycopy(gtestParameters, 0, result, commandLine.length, gtestParameters.length);
-		if (sb != null) {
-			result[resultSize-1] = sb.toString();
+			result = new String[gtestParameters.length + 1];
+			System.arraycopy(gtestParameters, 0, result, 0, gtestParameters.length);
+			result[gtestParameters.length] = sb.toString();
 		}
 		return result;
 	}

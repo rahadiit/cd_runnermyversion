@@ -18,6 +18,8 @@ import java.util.Map;
 import org.eclipse.cdt.internal.ui.viewsupport.ColoringLabelProvider;
 import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.internal.ui.view.actions.CopySelectedTestsAction;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.RedebugSelectedAction;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.RelaunchSelectedAction;
 import org.eclipse.cdt.testsrunner.internal.ui.view.actions.RerunSelectedAction;
 import org.eclipse.cdt.testsrunner.internal.ui.view.actions.TestsHierarchyCollapseAllAction;
 import org.eclipse.cdt.testsrunner.internal.ui.view.actions.TestsHierarchyExpandAllAction;
@@ -207,7 +209,8 @@ public class TestsHierarchyViewer {
 	private Action expandAllAction;
 	private Action collapseAllAction;
 	private Action copyAction;
-	private RerunSelectedAction rerunAction;
+	private RelaunchSelectedAction rerunAction;
+	private RelaunchSelectedAction redebugAction;
 
 	
 	public TestsHierarchyViewer(Composite parent, IViewSite viewSite, Clipboard clipboard) {
@@ -223,6 +226,7 @@ public class TestsHierarchyViewer {
 		collapseAllAction = new TestsHierarchyCollapseAllAction(treeViewer);
 		copyAction = new CopySelectedTestsAction(treeViewer, clipboard);
 		rerunAction = new RerunSelectedAction(testingSession, treeViewer);
+		redebugAction = new RedebugSelectedAction(testingSession, treeViewer);
 
 		MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
 		menuMgr.addMenuListener(new IMenuListener() {
@@ -234,8 +238,10 @@ public class TestsHierarchyViewer {
 		Menu menu = menuMgr.createContextMenu(treeViewer.getTree());
 		treeViewer.getTree().setMenu(menu);
 
-		menuMgr.add(rerunAction);
 		menuMgr.add(copyAction);
+		menuMgr.add(new Separator());
+		menuMgr.add(rerunAction);
+		menuMgr.add(redebugAction);
 		menuMgr.add(new Separator());
 		menuMgr.add(expandAllAction);
 		menuMgr.add(collapseAllAction);
@@ -247,11 +253,12 @@ public class TestsHierarchyViewer {
 	
 	private void handleMenuAboutToShow(IMenuManager manager) {
 		IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
-		rerunAction.setEnabled(
-			!selection.isEmpty() && 
-			(testingSession.getTestsRunnerInfo().isAllowedMultipleTestFilter() || (selection.size() == 1))
-		);
+		boolean isRelaunchEnabledForSelection = !selection.isEmpty() && 
+				(testingSession.getTestsRunnerInfo().isAllowedMultipleTestFilter() || (selection.size() == 1));
+		rerunAction.setEnabled(isRelaunchEnabledForSelection);
 		rerunAction.setTestingSession(testingSession);
+		redebugAction.setEnabled(isRelaunchEnabledForSelection);
+		redebugAction.setTestingSession(testingSession);
 		copyAction.setEnabled(!selection.isEmpty());
 
 		boolean hasAnything = treeViewer.getInput() != null;
