@@ -44,6 +44,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -65,7 +66,7 @@ public class GdbLaunchDelegate extends AbstractCLaunchDelegate2
 	private boolean fIsNonStopSession = false;
 	
     private final static String TRACING_FIRST_VERSION = "7.1.50"; //$NON-NLS-1$
-	
+    
 	public GdbLaunchDelegate() {
 		// We now fully support project-less debugging
 		// See bug 343861
@@ -86,9 +87,19 @@ public class GdbLaunchDelegate extends AbstractCLaunchDelegate2
 			monitor = new NullProgressMonitor();
 		}
 		if ( mode.equals( ILaunchManager.DEBUG_MODE ) ) {
+			setDefaultProcessFactory( config );
 			launchDebugger( config, launch, monitor );
 		}
 	}
+	
+    private void setDefaultProcessFactory( ILaunchConfiguration config ) throws CoreException {
+    	// For backward compatibility: setup default DSF Process Factory for already existent configurations
+        if (!config.hasAttribute(DebugPlugin.ATTR_PROCESS_FACTORY_ID)) {
+            ILaunchConfigurationWorkingCopy wc = config.getWorkingCopy();
+            wc.setAttribute(DebugPlugin.ATTR_PROCESS_FACTORY_ID, IGDBLaunchConfigurationConstants.DEFAULT_DSF_PROCESS_FACTORY);
+            wc.doSave();
+        }
+    }
 
 	private void launchDebugger( ILaunchConfiguration config, ILaunch launch, IProgressMonitor monitor ) throws CoreException {
 		monitor.beginTask(LaunchMessages.getString("GdbLaunchDelegate.0"), 10);  //$NON-NLS-1$

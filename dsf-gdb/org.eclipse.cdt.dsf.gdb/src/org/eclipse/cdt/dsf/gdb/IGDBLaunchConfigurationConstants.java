@@ -210,4 +210,9 @@ public class IGDBLaunchConfigurationConstants {
 	 */
 	public static final String DEBUGGER_TRACEPOINT_MODE_DEFAULT = DEBUGGER_TRACEPOINT_SLOW_ONLY;
 
+	/**  
+	 * The default value of DebugPlugin.ATTR_PROCESS_FACTORY_ID.
+	 */
+	public static final String DEFAULT_DSF_PROCESS_FACTORY = "org.eclipse.cdt.dsf.gdb.InferiorRuntimeProcessFactory"; //$NON-NLS-1$
+	
 }

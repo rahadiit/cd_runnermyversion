@@ -18,17 +18,17 @@ import org.eclipse.jface.viewers.TreeViewer;
 /**
  * TODO: Add description
  */
-public class RerunSelectedAction extends RelaunchSelectedAction {
+public class RedebugSelectedAction extends RelaunchSelectedAction {
 
-	public RerunSelectedAction(ITestingSession testingSession, TreeViewer treeViewer) {
+	public RedebugSelectedAction(ITestingSession testingSession, TreeViewer treeViewer) {
 		super(testingSession, treeViewer);
-		setText("Run");
-		setToolTipText("Rerun Selected Tests"); // TODO: Add detailed tooltip
+		setText("Debug");
+		setToolTipText("Restart Debug For Selected Tests"); // TODO: Add detailed tooltip
 	}
 
 	@Override
 	protected String getLaunchMode() {
-		return ILaunchManager.RUN_MODE;
+		return ILaunchManager.DEBUG_MODE;
 	}
 	
 }

@@ -15,14 +15,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
-import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager;
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager.TestsRunnerInfo;
 import org.eclipse.cdt.testsrunner.model.ITestingSession;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 
@@ -65,20 +61,7 @@ public class TestingSessionsManager {
 	}
 
 	public TestingSession newSession(ILaunch launch) throws CoreException {
-		// TODO: Handle incorrect tests runner somehow
-		ILaunchConfiguration launchConf = launch.getLaunchConfiguration();
-		String testsRunnerId = launchConf.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String)null);
-		TestsRunnerInfo testsRunnerInfo = testsRunnersManager.getTestsRunner(testsRunnerId);
-		if (testsRunnerInfo == null) {
-			throw new CoreException(
-				new Status(
-					IStatus.ERROR, TestsRunnerPlugin.getUniqueIdentifier(),
-					"Tests Runner is not specified", null 
-				)
-			);
-		}
-		// TODO: Maybe we should use not active but really the last session (case: if user switched to pre-last session and relaunch testing)
-		// TODO: Alternatively, we should implement smart "last" session selection here.
+		TestsRunnerInfo testsRunnerInfo = testsRunnersManager.getTestsRunner(launch.getLaunchConfiguration());
 		TestingSession previousSession = findActualPreviousSession(launch.getLaunchConfiguration(), testsRunnerInfo);
 		TestingSession newTestingSession = new TestingSession(launch, testsRunnerInfo, previousSession);
 		sessions.addFirst(newTestingSession);

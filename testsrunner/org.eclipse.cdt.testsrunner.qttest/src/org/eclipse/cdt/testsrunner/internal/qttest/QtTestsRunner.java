@@ -26,36 +26,39 @@ public class QtTestsRunner implements ITestsRunner {
 	
 	private int getNonSpecialTestsCount(String[][] testPaths) {
 		int result = 0;
-		if (testPaths != null) {
-			for (int i = 0; i < testPaths.length; i++) {
-				String[] testPath = testPaths[i];
-				result += isSpecialTestPath(testPath) ? 0 : 1;
-			}
+		for (int i = 0; i < testPaths.length; i++) {
+			String[] testPath = testPaths[i];
+			result += isSpecialTestPath(testPath) ? 0 : 1;
 		}
 		return result;
 	}
 	
-	public String[] configureLaunchParameters(String[] commandLine, String[][] testPaths) throws TestingException {
+	public String[] getAdditionalLaunchParameters(String[][] testPaths) throws TestingException {
 		final String[] qtParameters = {
 			"-xml", //$NON-NLS-1$
 			"-flush", //$NON-NLS-1$
 		};
+		String[] result = qtParameters;
 
-		int testPathsLength = getNonSpecialTestsCount(testPaths);
-		// If there is only special test cases were specified
-		if ((testPathsLength == 0) != (testPaths.length == 0)) {
-			throw new TestingException("There is no test cases to rerun (initialization and finalization test cases are not taken into account)");
-		}
-		String[] result = new String[commandLine.length + qtParameters.length + testPathsLength];
-		System.arraycopy(commandLine, 0, result, 0, commandLine.length);
-		System.arraycopy(qtParameters, 0, result, commandLine.length, qtParameters.length);
-		// Add test filters (if necessary)
-		int resultIdx = commandLine.length + qtParameters.length;
-		for (int i = 0; i < testPaths.length; i++) {
-			String[] testPath = testPaths[i];
-			if (!isSpecialTestPath(testPath)) {
-				result[resultIdx] = testPath[testPath.length-1];
-				resultIdx++;
+		if (testPaths != null) {
+			int testPathsLength = getNonSpecialTestsCount(testPaths);
+			// If there are only special test cases specified
+			if ((testPathsLength == 0) != (testPaths.length == 0)) {
+				throw new TestingException("There is no test cases to rerun (initialization and finalization test cases are not taken into account)");
+			}
+			
+			// Build tests filter
+			if (testPathsLength >= 1) {
+				result = new String[qtParameters.length + testPathsLength];
+				System.arraycopy(qtParameters, 0, result, 0, qtParameters.length);
+				int resultIdx = qtParameters.length;
+				for (int i = 0; i < testPaths.length; i++) {
+					String[] testPath = testPaths[i];
+					if (!isSpecialTestPath(testPath)) {
+						result[resultIdx] = testPath[testPath.length-1];
+						resultIdx++;
+					}
+				}
 			}
 		}
 		return result;
