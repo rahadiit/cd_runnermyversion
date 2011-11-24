@@ -8,26 +8,27 @@
  * Contributors:
  *     Anton Gorenkov - initial API and implementation
  *******************************************************************************/
-package org.eclipse.cdt.testsrunner.internal.ui.view;
+package org.eclipse.cdt.testsrunner.internal.ui.view.actions;
 
 
 import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
+import org.eclipse.cdt.testsrunner.internal.ui.view.TestsHierarchyViewer;
 import org.eclipse.jface.action.Action;
 
 /**
  * Toggles tests tree hierarchy auto-scroll
  */
-public class ShowPreviousFailureAction extends Action {
+public class ShowNextFailureAction extends Action {
 
 	private TestsHierarchyViewer testsHierarchyViewer;
 
-	public ShowPreviousFailureAction(TestsHierarchyViewer testsHierarchyViewer) {
-		super("Previous Failure");
+	public ShowNextFailureAction(TestsHierarchyViewer testsHierarchyViewer) {
+		super("Next Failure");
 		this.testsHierarchyViewer = testsHierarchyViewer;
-		setToolTipText("Previous Failed Test"); // TODO: Add detailed tooltip
-		setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/show_previous.gif")); //$NON-NLS-1$
-		setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/show_previous.gif")); //$NON-NLS-1$
-		setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/show_previous.gif")); //$NON-NLS-1$
+		setToolTipText("Next Failed Test"); // TODO: Add detailed tooltip
+		setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/show_next.gif")); //$NON-NLS-1$
+		setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/show_next.gif")); //$NON-NLS-1$
+		setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/show_next.gif")); //$NON-NLS-1$
 	}
 
 	/**
@@ -35,7 +36,7 @@ public class ShowPreviousFailureAction extends Action {
 	 */
 	@Override
 	public void run() {
-		testsHierarchyViewer.showPreviousFailure();
+		testsHierarchyViewer.showNextFailure();
 	}
 }
 

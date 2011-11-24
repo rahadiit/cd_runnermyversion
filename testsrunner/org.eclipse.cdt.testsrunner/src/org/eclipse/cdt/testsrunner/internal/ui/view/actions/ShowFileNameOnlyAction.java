@@ -8,32 +8,30 @@
  * Contributors:
  *     Anton Gorenkov - initial API and implementation
  *******************************************************************************/
-package org.eclipse.cdt.testsrunner.internal.ui.view;
+package org.eclipse.cdt.testsrunner.internal.ui.view.actions;
 
 
-import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
+import org.eclipse.cdt.testsrunner.internal.ui.view.MessagesPanel;
 import org.eclipse.jface.action.Action;
 
 /**
  *  TODO: Add description here (and check other actions)!
  */
-public class ShowFailedOnlyAction extends Action {
+public class ShowFileNameOnlyAction extends Action {
 
-	private ResultsPanel resultsPanel;
+	private MessagesPanel messagesPanel;
 
 
-	public ShowFailedOnlyAction(ResultsPanel resultsPanel) {
-		super("", AS_CHECK_BOX); //$NON-NLS-1$
-		this.resultsPanel = resultsPanel;
-		setText("Show &Failures Only");
-		setToolTipText("Show &Failures Only");
-		setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("obj16/show_failed_only.gif")); //$NON-NLS-1$
-		setChecked(resultsPanel.getShowFailedOnly());
+	public ShowFileNameOnlyAction(MessagesPanel messagesPanel) {
+		super("Show File Names Only", AS_CHECK_BOX); //$NON-NLS-1$
+		this.messagesPanel = messagesPanel;
+		setToolTipText("Show Only File Names in Message Locations");
+		setChecked(messagesPanel.getShowFileNameOnly());
 	}
 
 	@Override
 	public void run() {
-		resultsPanel.setShowFailedOnly(isChecked());
+		messagesPanel.setShowFileNameOnly(isChecked());
 	}
 
 }

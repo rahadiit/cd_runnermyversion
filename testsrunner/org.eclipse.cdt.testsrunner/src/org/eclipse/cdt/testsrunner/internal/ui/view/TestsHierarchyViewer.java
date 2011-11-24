@@ -17,6 +17,8 @@ import java.util.Map;
 
 import org.eclipse.cdt.internal.ui.viewsupport.ColoringLabelProvider;
 import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.CopySelectedTestsAction;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.RerunSelectedAction;
 import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
@@ -27,6 +29,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -224,7 +227,8 @@ public class TestsHierarchyViewer {
 		viewSite.registerContextMenu(menuMgr, treeViewer);
 		Menu menu = menuMgr.createContextMenu(treeViewer.getTree());
 		treeViewer.getTree().setMenu(menu);
-		
+
+		menuMgr.add(new Separator());
 		menuMgr.add(rerunAction);
 		menuMgr.add(copyAction);
 

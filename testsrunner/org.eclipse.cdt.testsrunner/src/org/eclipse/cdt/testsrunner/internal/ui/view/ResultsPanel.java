@@ -14,6 +14,8 @@ import java.util.Iterator;
 
 import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
 import org.eclipse.cdt.testsrunner.internal.ui.view.MessagesPanel.LevelFilter;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.MessageLevelFilterAction;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.MessagesOrderingAction;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;

@@ -8,9 +8,10 @@
  * Contributors:
  *     Anton Gorenkov - initial API and implementation
  *******************************************************************************/
-package org.eclipse.cdt.testsrunner.internal.ui.view;
+package org.eclipse.cdt.testsrunner.internal.ui.view.actions;
 
 
+import org.eclipse.cdt.testsrunner.internal.ui.view.MessagesPanel;
 import org.eclipse.jface.action.Action;
 import org.eclipse.ui.PlatformUI;
 

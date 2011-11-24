@@ -8,15 +8,16 @@
  * Contributors:
  *     Anton Gorenkov - initial API and implementation
  *******************************************************************************/
-package org.eclipse.cdt.testsrunner.internal.ui.view;
+package org.eclipse.cdt.testsrunner.internal.ui.view.actions;
 
 
 import java.util.Iterator;
 
+import org.eclipse.cdt.testsrunner.internal.ui.view.TestPathUtils;
+import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -25,16 +26,16 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 /**
  * TODO: add description
  */
-public class CopySelectedMessagesAction extends Action {
+public class CopySelectedTestsAction extends Action {
 
+	private TreeViewer treeViewer;
 	private Clipboard clipboard;
-	private TableViewer tableViewer;
 
-	public CopySelectedMessagesAction(TableViewer tableViewer, Clipboard clipboard) {
+	public CopySelectedTestsAction(TreeViewer treeViewer, Clipboard clipboard) {
 		super("Copy");
 		setToolTipText("Copy The Selected Tests To Clipboard");
 		setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
-		this.tableViewer = tableViewer;
+		this.treeViewer = treeViewer;
 		this.clipboard = clipboard;
 	}
 
@@ -43,19 +44,17 @@ public class CopySelectedMessagesAction extends Action {
 	 */
 	@Override
 	public void run() {
-		ITableLabelProvider labelProvider = (ITableLabelProvider)tableViewer.getLabelProvider();
-		IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
+		IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
 		if (!selection.isEmpty()) {
 			StringBuilder sb = new StringBuilder();
 			boolean needEOL = false;
 			for (Iterator it = selection.iterator(); it.hasNext();) {
-				Object item = it.next();
 				if (needEOL) {
 					sb.append(System.getProperty("line.separator")); //$NON-NLS-1$
 				} else {
 					needEOL = true;
 				}
-				sb.append(labelProvider.getColumnText(item, 0));
+				sb.append(TestPathUtils.getTestItemPath((ITestItem)it.next()));
 			}
 			clipboard.setContents(
 					new String[]{ sb.toString() },
