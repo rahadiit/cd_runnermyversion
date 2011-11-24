@@ -13,10 +13,10 @@ package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 import java.util.Iterator;
 
-import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -25,16 +25,16 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 /**
  * TODO: add description
  */
-public class CopySelectedTestsAction extends Action {
+public class CopySelectedMessagesAction extends Action {
 
-	private TreeViewer treeViewer;
 	private Clipboard clipboard;
+	private TableViewer tableViewer;
 
-	public CopySelectedTestsAction(TreeViewer treeViewer, Clipboard clipboard) {
+	public CopySelectedMessagesAction(TableViewer tableViewer, Clipboard clipboard) {
 		super("Copy");
 		setToolTipText("Copy The Selected Tests To Clipboard");
 		setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
-		this.treeViewer = treeViewer;
+		this.tableViewer = tableViewer;
 		this.clipboard = clipboard;
 	}
 
@@ -43,17 +43,19 @@ public class CopySelectedTestsAction extends Action {
 	 */
 	@Override
 	public void run() {
-		IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
+		ITableLabelProvider labelProvider = (ITableLabelProvider)tableViewer.getLabelProvider();
+		IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
 		if (!selection.isEmpty()) {
 			StringBuilder sb = new StringBuilder();
 			boolean needEOL = false;
 			for (Iterator it = selection.iterator(); it.hasNext();) {
+				Object item = it.next();
 				if (needEOL) {
 					sb.append(System.getProperty("line.separator")); //$NON-NLS-1$
 				} else {
 					needEOL = true;
 				}
-				sb.append(TestPathUtils.getTestItemPath((ITestItem)it.next()));
+				sb.append(labelProvider.getColumnText(item, 0));
 			}
 			clipboard.setContents(
 					new String[]{ sb.toString() },

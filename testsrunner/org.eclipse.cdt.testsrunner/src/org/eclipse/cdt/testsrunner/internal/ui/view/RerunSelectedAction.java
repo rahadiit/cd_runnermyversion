@@ -24,6 +24,7 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.TreeViewer;
 
 /**
  * Toggles tests tree hierarchy auto-scroll
@@ -31,16 +32,16 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 public class RerunSelectedAction extends Action {
 
 	private ITestingSession testingSession;
-	private IStructuredSelection selection;
+	private TreeViewer treeViewer;
 
-	public RerunSelectedAction(ITestingSession testingSession, IStructuredSelection selection) {
+	public RerunSelectedAction(ITestingSession testingSession, TreeViewer treeViewer) {
 		super("Run");
 		setToolTipText("Rerun Selected Tests"); // TODO: Add detailed tooltip
 //		setDisabledImageDescriptor(Activator.getImageDescriptor("dlcl16/rerun.gif")); //$NON-NLS-1$
 //		setHoverImageDescriptor(Activator.getImageDescriptor("elcl16/rerun.gif")); //$NON-NLS-1$
 //		setImageDescriptor(Activator.getImageDescriptor("elcl16/rerun.gif")); //$NON-NLS-1$
 		this.testingSession = testingSession;
-		this.selection = selection;
+		this.treeViewer = treeViewer;
 	}
 
 	/**
@@ -48,11 +49,12 @@ public class RerunSelectedAction extends Action {
 	 */
 	@Override
 	public void run() {
+		IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
 		if (testingSession != null) {
 			try {
 				ILaunch launch = testingSession.getLaunch();
 				ILaunchConfigurationWorkingCopy launchConf = launch.getLaunchConfiguration().getWorkingCopy();
-				List<String> testsFilterAttr = Arrays.asList(TestPathUtils.packTestPaths(getTestItems()));
+				List<String> testsFilterAttr = Arrays.asList(TestPathUtils.packTestPaths(getTestItems(selection)));
 				launchConf.setAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_FILTER, testsFilterAttr);
 				DebugUITools.launch(launchConf, launch.getLaunchMode());
 				return;
@@ -64,7 +66,7 @@ public class RerunSelectedAction extends Action {
 		setEnabled(false);
 	}
 	
-	private ITestItem[] getTestItems() {
+	private ITestItem[] getTestItems(IStructuredSelection selection) {
 		ITestItem[] result = new ITestItem[selection.size()];
 		int resultIndex = 0;
 		for (Iterator it = selection.iterator(); it.hasNext();) {

@@ -42,7 +42,9 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.actions.ActionFactory;
 
 /**
  * TODO: Add description here
@@ -197,40 +199,47 @@ public class TestsHierarchyViewer {
 	private FailedOnlyFilter failedOnlyFilter = null;
 	private boolean showTestsHierarchy = true;
 	private Clipboard clipboard;
+	private Action copyAction;
+	private Action rerunAction;
 
 	
-	public TestsHierarchyViewer(Composite parent, IWorkbenchPartSite site, Clipboard clipboard) {
+	public TestsHierarchyViewer(Composite parent, IViewSite viewSite, Clipboard clipboard) {
 		this.clipboard = clipboard;
 		treeViewer = new TreeViewer(parent, SWT.V_SCROLL | SWT.MULTI);
 		treeViewer.setContentProvider(new TestTreeContentProvider());
 		treeViewer.setLabelProvider(new ColoringLabelProvider(new TestLabelProvider()));
-		initContextMenu(site);
+		initContextMenu(viewSite);
 	}
 	
-	private void initContextMenu(IWorkbenchPartSite site) {
-		MenuManager menuMgr= new MenuManager("#PopupMenu"); //$NON-NLS-1$
-		menuMgr.setRemoveAllWhenShown(true);
+	private void initContextMenu(IViewSite viewSite) {
+		copyAction = new CopySelectedTestsAction(treeViewer, clipboard);
+		rerunAction = new RerunSelectedAction(testingSession, treeViewer);
+
+		MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
 		menuMgr.addMenuListener(new IMenuListener() {
 			public void menuAboutToShow(IMenuManager manager) {
 				handleMenuAboutToShow(manager);
 			}
 		});
-		site.registerContextMenu(menuMgr, treeViewer);
+		viewSite.registerContextMenu(menuMgr, treeViewer);
 		Menu menu = menuMgr.createContextMenu(treeViewer.getTree());
 		treeViewer.getTree().setMenu(menu);
+		
+		menuMgr.add(rerunAction);
+		menuMgr.add(copyAction);
+
+		IActionBars actionBars = viewSite.getActionBars();
+		actionBars.setGlobalActionHandler(ActionFactory.COPY.getId(), copyAction);
+		actionBars.updateActionBars();
 	}
 	
 	private void handleMenuAboutToShow(IMenuManager manager) {
 		IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
-		Action rerunAction = new RerunSelectedAction(testingSession, selection);
 		rerunAction.setEnabled(
 			!selection.isEmpty() && 
 			(testingSession.getTestsRunnerInfo().isAllowedMultipleTestFilter() || (selection.size() == 1))
 		);
-		Action copyAction = new CopySelectedTestsAction(selection, clipboard);
-		
-		manager.add(rerunAction);
-		manager.add(copyAction);
+		copyAction.setEnabled(!selection.isEmpty());
 	}
 
 	public void setTestingSession(ITestingSession testingSession) {

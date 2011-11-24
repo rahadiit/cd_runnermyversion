@@ -60,7 +60,7 @@ public class OpenInEditorAction extends Action {
 	private IWorkbench workbench;
 
 	public OpenInEditorAction(TableViewer tableViewer, TestingSessionsManager testingSessionsManager, IWorkbench workbench) {
-		super("Go to");
+		super("&Go to File");
 		this.messagesViewer = tableViewer;
 		this.testingSessionsManager = testingSessionsManager;
 		this.workbench = workbench;
