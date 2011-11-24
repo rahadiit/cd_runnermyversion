@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -198,12 +199,21 @@ public class MessagesPanel {
 	}
 
 	class MessagesLabelProvider extends LabelProvider implements ITableLabelProvider {
+		
+		private String getLocationFile(ITestLocation location) {
+			if (showFileNameOnly) {
+				return new File(location.getFile()).getName();
+			} else {
+				return location.getFile();
+			}
+		}
+		
 		public String getColumnText(Object obj, int index) {
 			StringBuilder sb = new StringBuilder();
 			ITestMessage message = (ITestMessage)obj;
 			ITestLocation location = message.getLocation();
 			if (location != null) {
-				sb.append(location.getFile());
+				sb.append(getLocationFile(location));
 				sb.append("(");
 				sb.append(location.getLine());
 				sb.append("): ");
@@ -264,6 +274,7 @@ public class MessagesPanel {
 	private IViewSite viewSite;
 	private Action copyAction;
 	private boolean showFailedOnly = false;
+	private boolean showFileNameOnly = false;
 	private Set<ITestMessage.Level> acceptedMessageLevels = new HashSet<ITestMessage.Level>();
 	private boolean orderingMode = false;
 
@@ -353,6 +364,17 @@ public class MessagesPanel {
 	public void setShowFailedOnly(boolean showFailedOnly) {
 		if (this.showFailedOnly != showFailedOnly) {
 			this.showFailedOnly = showFailedOnly;
+			forceRecollectMessages();
+		}
+	}
+
+	public boolean getShowFileNameOnly() {
+		return showFailedOnly;
+	}
+	
+	public void setShowFileNameOnly(boolean showFileNameOnly) {
+		if (this.showFileNameOnly != showFileNameOnly) {
+			this.showFileNameOnly = showFileNameOnly;
 			forceRecollectMessages();
 		}
 	}

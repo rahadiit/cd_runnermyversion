@@ -61,6 +61,7 @@ public class ResultsView extends ViewPart {
 	private Action showTestsInHierarchyAction;
 	private Action showTimeAction;
 	private Action scrollLockAction;
+	private Action showFileNameOnlyAction;
 
 	/**
 	 * The current orientation preference (Horizontal, Vertical, Auto).
@@ -80,6 +81,7 @@ public class ResultsView extends ViewPart {
 	static final String TAG_SHOW_TESTS_IN_HIERARCHY= "showTestsInHierarchy"; //$NON-NLS-1$
 	static final String TAG_SHOW_TIME= "showTime"; //$NON-NLS-1$
 	static final String TAG_SCROLL_LOCK= "scrollLock"; //$NON-NLS-1$
+	static final String TAG_SHOW_FILE_NAME_ONLY_ACTION = "showFileNameOnly"; //$NON-NLS-1$
 	static final String TAG_HISTORY_SIZE= "history_size"; //$NON-NLS-1$
 	
 	
@@ -140,6 +142,7 @@ public class ResultsView extends ViewPart {
 		showTestsInHierarchyAction = new ShowTestsInHierarchyAction(resultsPanel.getTestsHierarchyViewer());
 		showTimeAction = new ShowTimeAction(resultsPanel.getTestsHierarchyViewer());
 		scrollLockAction = new ScrollLockAction(uiUpdater);
+		showFileNameOnlyAction = new ShowFileNameOnlyAction(resultsPanel.getMessagesPanel());
 		rerunAction = new RerunAction(sessionsManager);
 		rerunAction.setEnabled(false);
 		stopAction = new StopAction(sessionsManager);
@@ -170,6 +173,7 @@ public class ResultsView extends ViewPart {
 		viewMenu.add(layoutSubMenu);
 		viewMenu.add(new Separator());
 		viewMenu.add(showFailedOnly);
+		viewMenu.add(showFileNameOnlyAction);
 	}
 
 	public void dispose() {
@@ -247,6 +251,7 @@ public class ResultsView extends ViewPart {
 			restoreActionChecked(memento, TAG_SHOW_TESTS_IN_HIERARCHY, showTestsInHierarchyAction);
 			restoreActionChecked(memento, TAG_SHOW_TIME, showTimeAction);
 			restoreActionChecked(memento, TAG_SCROLL_LOCK, scrollLockAction);
+			restoreActionChecked(memento, TAG_SHOW_FILE_NAME_ONLY_ACTION, showFileNameOnlyAction);
 			Integer historySize = memento.getInteger(TAG_HISTORY_SIZE);
 			if (historySize != null) {
 				sessionsManager.setHistorySize(historySize);
@@ -270,6 +275,7 @@ public class ResultsView extends ViewPart {
 		memento.putBoolean(TAG_SHOW_TESTS_IN_HIERARCHY, showTestsInHierarchyAction.isChecked());
 		memento.putBoolean(TAG_SHOW_TIME, showTimeAction.isChecked());
 		memento.putBoolean(TAG_SCROLL_LOCK, scrollLockAction.isChecked());
+		memento.putBoolean(TAG_SHOW_FILE_NAME_ONLY_ACTION, showFileNameOnlyAction.isChecked());
 		memento.putInteger(TAG_HISTORY_SIZE, sessionsManager.getHistorySize());
 	}
 
