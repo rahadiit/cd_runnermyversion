@@ -32,8 +32,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IMemento;
+import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPartSite;
 
 /**
  * TODO: Add description here
@@ -59,7 +59,7 @@ public class ResultsPanel {
 	Action infoFilterAction;
 
 
-	public ResultsPanel(Composite parent, TestingSessionsManager sessionsManager, IWorkbench workbench, IWorkbenchPartSite site, Clipboard clipboard) {
+	public ResultsPanel(Composite parent, TestingSessionsManager sessionsManager, IWorkbench workbench, IViewSite site, Clipboard clipboard) {
 		sashForm = new SashForm(parent, SWT.VERTICAL);
 
 		// Configure tests hierarchy viewer
@@ -78,7 +78,7 @@ public class ResultsPanel {
 
 		// Configure test messages viewer
 		ViewForm bottom = new ViewForm(sashForm, SWT.NONE);
-		messagesPanel = new MessagesPanel(bottom, sessionsManager, workbench);
+		messagesPanel = new MessagesPanel(bottom, sessionsManager, workbench, site, clipboard);
 		Composite topLeftPanel = new Composite(bottom, SWT.NONE);
 		RowLayout topLeftPanelLayout = new RowLayout(SWT.HORIZONTAL);
 		topLeftPanelLayout.spacing = 0;

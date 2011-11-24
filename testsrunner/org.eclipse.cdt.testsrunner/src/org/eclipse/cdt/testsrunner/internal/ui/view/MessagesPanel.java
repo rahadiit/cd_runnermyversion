@@ -25,7 +25,13 @@ import org.eclipse.cdt.testsrunner.model.ITestLocation;
 import org.eclipse.cdt.testsrunner.model.ITestMessage;
 import org.eclipse.cdt.testsrunner.model.ITestMessage.Level;
 import org.eclipse.cdt.testsrunner.model.ITestSuite;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.IOpenListener;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -34,11 +40,18 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.ActionFactory;
 
 
 /**
@@ -248,24 +261,76 @@ public class MessagesPanel {
 
 	private TableViewer tableViewer;
 	private OpenInEditorAction openInEditorAction;
+	private IViewSite viewSite;
+	private Action copyAction;
 	private boolean showFailedOnly = false;
 	private Set<ITestMessage.Level> acceptedMessageLevels = new HashSet<ITestMessage.Level>();
 	private boolean orderingMode = false;
 
 
-	public MessagesPanel(Composite parent, TestingSessionsManager sessionsManager, IWorkbench workbench) {
-		tableViewer = new TableViewer(parent, SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
+	public MessagesPanel(Composite parent,
+			TestingSessionsManager sessionsManager, IWorkbench workbench,
+			IViewSite viewSite, Clipboard clipboard) {
+		this.viewSite = viewSite;
+		tableViewer = new TableViewer(parent, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
 		tableViewer.setLabelProvider(new MessagesLabelProvider());
 		tableViewer.setContentProvider(new MessagesContentProvider());
-		
-		openInEditorAction = new OpenInEditorAction(tableViewer, sessionsManager, workbench);
+		tableViewer.addFilter(new MessageLevelFilter());
+		initContextMenu(viewSite, sessionsManager, workbench, clipboard);
 		tableViewer.addOpenListener(new IOpenListener() {
-			
 			public void open(OpenEvent event) {
 				openInEditorAction.run();
 			}
 		});
-		tableViewer.addFilter(new MessageLevelFilter());
+	}
+
+	private void initContextMenu(IViewSite viewSite, TestingSessionsManager sessionsManager, IWorkbench workbench,
+			Clipboard clipboard) {
+		openInEditorAction = new OpenInEditorAction(tableViewer, sessionsManager, workbench);
+		copyAction = new CopySelectedMessagesAction(tableViewer, clipboard);
+
+		MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
+		menuMgr.addMenuListener(new IMenuListener() {
+			public void menuAboutToShow(IMenuManager manager) {
+				handleMenuAboutToShow(manager);
+			}
+		});
+		viewSite.registerContextMenu(menuMgr, tableViewer);
+		Menu menu = menuMgr.createContextMenu(tableViewer.getTable());
+		tableViewer.getTable().setMenu(menu);
+
+		menuMgr.add(openInEditorAction);
+		menuMgr.add(copyAction);
+		configureCopy();
+	}
+	
+	private void configureCopy() {
+		getTableViewer().getTable().addFocusListener(new FocusListener() {
+        	IAction viewCopyHandler;
+
+        	public void focusLost(FocusEvent e) {
+        		if (viewCopyHandler != null) {
+        			switchTo(viewCopyHandler);
+        		}
+			}
+
+			public void focusGained(FocusEvent e) {
+				switchTo(copyAction);
+			}
+			
+			private void switchTo(IAction copyAction) {
+				IActionBars actionBars = viewSite.getActionBars();
+				viewCopyHandler = actionBars.getGlobalActionHandler(ActionFactory.COPY.getId());
+				actionBars.setGlobalActionHandler(ActionFactory.COPY.getId(), copyAction);
+				actionBars.updateActionBars();
+			}
+		});
+	}
+	
+	private void handleMenuAboutToShow(IMenuManager manager) {
+		ISelection selection = tableViewer.getSelection();
+		openInEditorAction.setEnabled(!selection.isEmpty());
+		copyAction.setEnabled(!selection.isEmpty());
 	}
 
 	public TableViewer getTableViewer() {
