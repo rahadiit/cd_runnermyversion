@@ -12,6 +12,17 @@ package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.HistoryDropDownAction;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.RerunAction;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.ScrollLockAction;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.ShowFailedOnlyAction;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.ShowFileNameOnlyAction;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.ShowNextFailureAction;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.ShowPreviousFailureAction;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.ShowTestsInHierarchyAction;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.ShowTimeAction;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.StopAction;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.ToggleOrientationAction;
 import org.eclipse.cdt.testsrunner.model.ITestingSession;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
@@ -38,7 +49,7 @@ import org.eclipse.ui.part.ViewPart;
  */
 public class ResultsView extends ViewPart {
 
-	enum Orientation {
+	public enum Orientation {
 		Horizontal,
 		Vertical,
 		Auto,

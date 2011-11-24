@@ -8,29 +8,27 @@
  * Contributors:
  *     Anton Gorenkov - initial API and implementation
  *******************************************************************************/
-package org.eclipse.cdt.testsrunner.internal.ui.view;
+package org.eclipse.cdt.testsrunner.internal.ui.view.actions;
 
 
 import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
 import org.eclipse.cdt.testsrunner.model.ITestingSession;
-import org.eclipse.debug.core.ILaunch;
-import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jface.action.Action;
 
 /**
- * Toggles tests tree hierarchy auto-scroll
+ * TODO: Add description here
  */
-public class RerunAction extends Action {
+public class StopAction extends Action {
 
 	private TestingSessionsManager testingSessionsManager;
 
-	public RerunAction(TestingSessionsManager testingSessionsManager) {
-		super("Rerun");
-		setToolTipText("Rerun Test"); // TODO: Add detailed tooltip
-		setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/rerun.gif")); //$NON-NLS-1$
-		setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/rerun.gif")); //$NON-NLS-1$
-		setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/rerun.gif")); //$NON-NLS-1$
+	public StopAction(TestingSessionsManager testingSessionsManager) {
+		super("Stop");
+		setToolTipText("Stop Test Run");
+		setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/stop.gif")); //$NON-NLS-1$
+		setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/stop.gif")); //$NON-NLS-1$
+		setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/stop.gif")); //$NON-NLS-1$
 		this.testingSessionsManager = testingSessionsManager;
 	}
 
@@ -41,11 +39,9 @@ public class RerunAction extends Action {
 	public void run() {
 		ITestingSession activeSession = testingSessionsManager.getActiveSession();
 		if (activeSession != null) {
-			ILaunch launch = activeSession.getLaunch();
-			DebugUITools.launch(launch.getLaunchConfiguration(), launch.getLaunchMode());
-		} else {
-			setEnabled(false);
+			activeSession.stop();
 		}
+		setEnabled(false);
 	}
 	
 }

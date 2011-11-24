@@ -8,7 +8,7 @@
  * Contributors:
  *     Anton Gorenkov - initial API and implementation
  *******************************************************************************/
-package org.eclipse.cdt.testsrunner.internal.ui.view;
+package org.eclipse.cdt.testsrunner.internal.ui.view.actions;
 
 
 import java.net.URI;

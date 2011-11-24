@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.eclipse.cdt.testsrunner.internal.model.TestingSessionsManager;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.CopySelectedMessagesAction;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.OpenInEditorAction;
 import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
@@ -61,7 +63,7 @@ import org.eclipse.ui.actions.ActionFactory;
  */
 public class MessagesPanel {
 
-	enum LevelFilter {
+	public enum LevelFilter {
 		Info(ISharedImages.IMG_OBJS_INFO_TSK, ITestMessage.Level.Info, ITestMessage.Level.Message),
 		Warning(ISharedImages.IMG_OBJS_WARN_TSK, ITestMessage.Level.Warning),
 		Error(ISharedImages.IMG_OBJS_ERROR_TSK, ITestMessage.Level.Error, ITestMessage.Level.FatalError, ITestMessage.Level.Exception);
