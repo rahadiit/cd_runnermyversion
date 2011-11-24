@@ -258,14 +258,27 @@ public class TestsHierarchyViewer {
 		if (selected == null) {
 			ITestItem rootSuite = (ITestItem)treeViewer.getInput();
 			// For next element we should also check its children, for previous shouldn't.
-			failedItem = findFailedChild(rootSuite, null, next, next);
+			failedItem = findFailedImpl(rootSuite, null, next, next);
 		} else {
 			// For next element we should also check its children, for previous shouldn't.
-			failedItem = findFailedChild(selected.getParent(), selected, next, next);
+			failedItem = findFailedImpl(selected.getParent(), selected, next, next);
 		}
 
 		if (failedItem != null)
 			getTreeViewer().setSelection(new StructuredSelection(failedItem), true);
+	}
+	
+	private ITestItem findFailedImpl(ITestItem parentItem, ITestItem currItem, boolean next, boolean checkCurrentChild) {
+		ITestItem result = findFailedChild(parentItem, currItem, next, checkCurrentChild);
+		if (result != null) {
+			return result;
+		}
+		// Nothing found at this level - try to step up
+		ITestSuite grandParentItem = parentItem.getParent();
+		if (grandParentItem != null) {
+			return findFailedImpl(grandParentItem, parentItem, next, false);
+		}
+		return null;
 	}
 	
 	private ITestItem findFailedChild(ITestItem parentItem, ITestItem currItem, boolean next, boolean checkCurrentChild) {
@@ -297,11 +310,6 @@ public class TestsHierarchyViewer {
 			if (!checkCurrentChild && item == currItem) {
 				doSearch = true;
 			}
-		}
-		// Nothing found at this level - try to step up
-		ITestSuite grandParentItem = parentItem.getParent();
-		if (grandParentItem != null) {
-			return findFailedChild(grandParentItem, parentItem, next, false);
 		}
 		return null;
 	}
