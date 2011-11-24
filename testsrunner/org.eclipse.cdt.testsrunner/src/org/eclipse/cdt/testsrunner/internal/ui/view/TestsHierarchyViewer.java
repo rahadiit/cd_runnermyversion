@@ -19,6 +19,8 @@ import org.eclipse.cdt.internal.ui.viewsupport.ColoringLabelProvider;
 import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.internal.ui.view.actions.CopySelectedTestsAction;
 import org.eclipse.cdt.testsrunner.internal.ui.view.actions.RerunSelectedAction;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.TestsHierarchyCollapseAllAction;
+import org.eclipse.cdt.testsrunner.internal.ui.view.actions.TestsHierarchyExpandAllAction;
 import org.eclipse.cdt.testsrunner.model.IModelVisitor;
 import org.eclipse.cdt.testsrunner.model.ITestCase;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
@@ -202,6 +204,8 @@ public class TestsHierarchyViewer {
 	private FailedOnlyFilter failedOnlyFilter = null;
 	private boolean showTestsHierarchy = true;
 	private Clipboard clipboard;
+	private Action expandAllAction;
+	private Action collapseAllAction;
 	private Action copyAction;
 	private Action rerunAction;
 
@@ -215,6 +219,8 @@ public class TestsHierarchyViewer {
 	}
 	
 	private void initContextMenu(IViewSite viewSite) {
+		expandAllAction = new TestsHierarchyExpandAllAction(treeViewer);
+		collapseAllAction = new TestsHierarchyCollapseAllAction(treeViewer);
 		copyAction = new CopySelectedTestsAction(treeViewer, clipboard);
 		rerunAction = new RerunSelectedAction(testingSession, treeViewer);
 
@@ -228,9 +234,11 @@ public class TestsHierarchyViewer {
 		Menu menu = menuMgr.createContextMenu(treeViewer.getTree());
 		treeViewer.getTree().setMenu(menu);
 
-		menuMgr.add(new Separator());
 		menuMgr.add(rerunAction);
 		menuMgr.add(copyAction);
+		menuMgr.add(new Separator());
+		menuMgr.add(expandAllAction);
+		menuMgr.add(collapseAllAction);
 
 		IActionBars actionBars = viewSite.getActionBars();
 		actionBars.setGlobalActionHandler(ActionFactory.COPY.getId(), copyAction);
@@ -244,6 +252,10 @@ public class TestsHierarchyViewer {
 			(testingSession.getTestsRunnerInfo().isAllowedMultipleTestFilter() || (selection.size() == 1))
 		);
 		copyAction.setEnabled(!selection.isEmpty());
+
+		boolean hasAnything = treeViewer.getInput() != null;
+		expandAllAction.setEnabled(hasAnything);
+		collapseAllAction.setEnabled(hasAnything);
 	}
 
 	public void setTestingSession(ITestingSession testingSession) {
