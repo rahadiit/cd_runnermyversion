@@ -15,7 +15,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager;
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnersManager.TestsRunnerInfo;
@@ -67,7 +66,7 @@ public class TestingSessionsManager {
 	public TestingSession newSession(ILaunch launch) throws CoreException {
 		// TODO: Handle incorrect tests runner somehow
 		ILaunchConfiguration launchConf = launch.getLaunchConfiguration();
-		String testsRunnerId = launchConf.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String)null);
+		String testsRunnerId = launchConf.getAttribute("org.eclipse.cdt.launch.TESTS_RUNNER", (String)null);
 		TestsRunnerInfo testsRunnerInfo = testsRunnersManager.getTestsRunner(testsRunnerId);
 		if (testsRunnerInfo == null) {
 			throw new CoreException(
