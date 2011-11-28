@@ -207,7 +207,7 @@ public class TestsHierarchyViewer {
 	private Action expandAllAction;
 	private Action collapseAllAction;
 	private Action copyAction;
-	private Action rerunAction;
+	private RerunSelectedAction rerunAction;
 
 	
 	public TestsHierarchyViewer(Composite parent, IViewSite viewSite, Clipboard clipboard) {
@@ -251,6 +251,7 @@ public class TestsHierarchyViewer {
 			!selection.isEmpty() && 
 			(testingSession.getTestsRunnerInfo().isAllowedMultipleTestFilter() || (selection.size() == 1))
 		);
+		rerunAction.setTestingSession(testingSession);
 		copyAction.setEnabled(!selection.isEmpty());
 
 		boolean hasAnything = treeViewer.getInput() != null;
