@@ -75,6 +75,10 @@ public class RerunSelectedAction extends Action {
 		}
 		return result;
 	}
+
+	public void setTestingSession(ITestingSession testingSession) {
+		this.testingSession = testingSession;
+	}
 	
 }
 
