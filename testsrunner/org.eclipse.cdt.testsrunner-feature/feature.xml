@@ -2,7 +2,7 @@
 <feature
       id="org.eclipse.cdt.testsrunner"
       label="C/C++ Tests Runner"
-      version="4.1.1.qualifier">
+      version="4.1.2.qualifier">
 
    <copyright>
       Copyright (c) 2002, 2010 QNX Software Systems and others.
