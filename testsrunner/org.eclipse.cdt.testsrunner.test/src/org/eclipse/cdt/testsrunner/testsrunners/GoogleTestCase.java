@@ -482,6 +482,35 @@ public class GoogleTestCase extends BaseTestCase {
 
 	
 	//Running main() from gtest_main.cc
+	//[==========] Running 1 test from 1 test case.
+	//[----------] Global test environment set-up.
+	//[----------] 1 test from Inst/DemoTestCase
+	//[ RUN      ] Inst/DemoTestCase.Test/0
+	//demo_file.cc:50: Failure
+	//Failed
+	//[  FAILED  ] Inst/DemoTestCase.Test/0, where GetParam() = 0x4f50cc (0 ms)
+	//[----------] 1 test from Inst/DemoTestCase (0 ms total)
+	//
+	//[----------] Global test environment tear-down
+	//[==========] 1 test from 1 test case ran. (0 ms total)
+	//[  PASSED  ] 0 tests.
+	//[  FAILED  ] 1 test, listed below:
+	//[  FAILED  ] Inst/DemoTestCase.Test/0, where GetParam() = 0x4f50cc
+	//
+	// 2 FAILED TESTS
+	public void testParametrizedTestsWithoutQuotesSupport() {
+		mockModelUpdater.enterTestSuite("Inst/DemoTestCase");
+		mockModelUpdater.enterTestCase("Test/0");
+		mockModelUpdater.addTestMessage("demo_file.cc", 50, ITestMessage.Level.Error, "Failed");
+		mockModelUpdater.addTestMessage(DEFAULT_LOCATION_FILE, DEFAULT_LOCATION_LINE, ITestMessage.Level.Info, "Instantiated with GetParam() = 0x4f50cc");
+		mockModelUpdater.setTestingTime(0);
+		mockModelUpdater.setTestStatus(ITestItem.Status.Failed);
+		mockModelUpdater.exitTestCase();
+		mockModelUpdater.exitTestSuite();
+	}
+
+	
+	//Running main() from gtest_main.cc
 	//[==========] Running 3 tests from 3 test cases.
 	//[----------] Global test environment set-up.
 	//[----------] 1 test from DemoTestCase/0, where TypeParam = char

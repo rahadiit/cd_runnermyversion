@@ -256,7 +256,7 @@ public class OutputHandler {
 						DEFAULT_LOCATION_FILE,
 						DEFAULT_LOCATION_LINE,
 						ITestMessage.Level.Info,
-						MessageFormat.format("Instantiated with GetParam() = \"{0}\"", getParamValue)
+						MessageFormat.format("Instantiated with GetParam() = {0}", getParamValue)
 					);
 				
 			}
@@ -327,7 +327,7 @@ public class OutputHandler {
 	private State stateTestTraceStart = new State(".*Google Test trace.*"); //$NON-NLS-1$
 	// NOTE: Use 8 groups instead of 7 cause we need to be consistent with ErrorMessageLocation (as we subclass it)
 	private State stateTestTrace = new TestTrace(regexLocation+"\\s+((.*))", 8); //$NON-NLS-1$
-	private State stateTestCaseEnd = new TestCaseEnd("\\[\\s*("+testStatusOk+"|"+testStatusFailed+")\\s*\\]\\s+"+regexTestName+regexParameterInstantiation+"(\\s*,\\s+where\\s+GetParam\\s*\\(\\s*\\)\\s*=\\s*\"([^\"]+)\")?\\s+\\("+regexTestTime+"\\)", 8); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+	private State stateTestCaseEnd = new TestCaseEnd("\\[\\s*("+testStatusOk+"|"+testStatusFailed+")\\s*\\]\\s+"+regexTestName+regexParameterInstantiation+"(\\s*,\\s+where\\s+GetParam\\s*\\(\\s*\\)\\s*=\\s*(.+))?\\s+\\("+regexTestTime+"\\)", 8); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 	private State stateTestSuiteEnd = new TestSuiteEnd("\\[-*\\]\\s+"+regexTestCount+"\\s+from\\s+"+regexTestSuiteName+"\\s+\\("+regexTestTime+"\\s+total\\)", 2); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 	private State stateFinal = new State(".*Global test environment tear-down.*"); //$NON-NLS-1$
 	// NOTE: This state is a special workaround for empty test modules (they haven't got global test environment set-up/tear-down). They should be always passed.
