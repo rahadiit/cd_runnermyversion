@@ -243,8 +243,12 @@ public class RunTestsLaunchDelegate extends AbstractCLaunchDelegate {
 				}
 				
 				public void run() {
-					testingSession.run(iStream);
-					processWrapper.allowStreamsClosing();
+					try {
+						testingSession.run(iStream);
+					}
+					finally {
+						processWrapper.allowStreamsClosing();
+					}
 				}
 				
 			}
