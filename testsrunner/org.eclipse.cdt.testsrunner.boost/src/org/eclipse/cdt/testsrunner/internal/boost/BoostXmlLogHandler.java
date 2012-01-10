@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.boost;
 
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -160,7 +161,7 @@ public class BoostXmlLogHandler extends DefaultHandler {
 
 		} else if (qName == XML_NODE_EXCEPTION) {
 			if (fileName != DEFAULT_LOCATION_FILE && !fileName.isEmpty() && lineNumber >= 0) {
-				elementDataStack.peek().append("\nLast check point was here.");
+				elementDataStack.peek().append(BoostTestsRunnerMessages.BoostXmlLogHandler_exception_suffix);
 			}
 			addCurrentMessage(ITestMessage.Level.Exception);
 
@@ -187,7 +188,9 @@ public class BoostXmlLogHandler extends DefaultHandler {
 	 * @throws SAXException the exception that will be thrown
 	 */
 	private void logAndThrowErrorForElement(String tagName) throws SAXException {
-		logAndThrowError("Invalid XML format: Element \""+tagName+"\" is not accepted!");
+		logAndThrowError(
+			MessageFormat.format(BoostTestsRunnerMessages.BoostXmlLogHandler_wrong_tag_name, tagName)
+		);
 	}
 	
 	/**

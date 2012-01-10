@@ -25,8 +25,8 @@ public class StopAction extends Action {
 
 
 	public StopAction(TestingSessionsManager testingSessionsManager) {
-		super("Stop");
-		setToolTipText("Stop Test Run");
+		super(ActionsMessages.StopAction_text);
+		setToolTipText(ActionsMessages.StopAction_tooltip);
 		setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/stop.gif")); //$NON-NLS-1$
 		setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/stop.gif")); //$NON-NLS-1$
 		setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/stop.gif")); //$NON-NLS-1$

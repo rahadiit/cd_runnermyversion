@@ -23,9 +23,9 @@ public class ShowTimeAction extends Action {
 
 
 	public ShowTimeAction(TestsHierarchyViewer testsHierarchyViewer) {
-		super("", AS_CHECK_BOX); //$NON-NLS-1$
+		super(ActionsMessages.ShowTimeAction_text, AS_CHECK_BOX);
 		this.testsHierarchyViewer = testsHierarchyViewer;
-		setText("Show Execution &Time");
+		setToolTipText(ActionsMessages.ShowTimeAction_tooltip);
 		setChecked(testsHierarchyViewer.showTime());
 	}
 

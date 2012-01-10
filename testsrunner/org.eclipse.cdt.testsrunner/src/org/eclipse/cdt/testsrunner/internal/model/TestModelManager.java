@@ -302,7 +302,7 @@ public class TestModelManager implements ITestModelUpdater, ITestModelAccessor {
 
 	
 	public TestModelManager(ITestSuite previousTestsHierarchy, boolean timeMeasurement) {
-		testSuitesStack.push(new TestSuite(ROOT_TEST_SUITE_NAME, null)); //$NON-NLS-1$
+		testSuitesStack.push(new TestSuite(ROOT_TEST_SUITE_NAME, null));
 		if (previousTestsHierarchy != null) {
 			// Copy tests hierarchy
 			this.timeMeasurement = false;

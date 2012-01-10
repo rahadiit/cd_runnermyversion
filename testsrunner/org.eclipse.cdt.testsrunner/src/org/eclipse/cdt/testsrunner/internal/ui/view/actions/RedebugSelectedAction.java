@@ -23,8 +23,8 @@ public class RedebugSelectedAction extends RelaunchSelectedAction {
 
 	public RedebugSelectedAction(ITestingSession testingSession, TreeViewer treeViewer) {
 		super(testingSession, treeViewer);
-		setText("Debug");
-		setToolTipText("Restart Debug For Selected Tests"); // TODO: Add detailed tooltip
+		setText(ActionsMessages.RedebugSelectedAction_text);
+		setToolTipText(ActionsMessages.RedebugSelectedAction_tooltip);
 	}
 
 	@Override

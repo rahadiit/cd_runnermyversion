@@ -25,9 +25,9 @@ public class ShowTestsInHierarchyAction extends Action {
 
 
 	public ShowTestsInHierarchyAction(TestsHierarchyViewer testsHierarchyViewer) {
-		super("Show Tests in &Hierarchy", AS_CHECK_BOX); //$NON-NLS-1$
+		super(ActionsMessages.ShowTestsInHierarchyAction_text, AS_CHECK_BOX);
 		this.testsHierarchyViewer = testsHierarchyViewer;
-		setText("Show Tests in &Hierarchy");
+		setToolTipText(ActionsMessages.ShowTestsInHierarchyAction_tooltip);
 		setChecked(testsHierarchyViewer.showTime());
 		setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/show_tests_hierarchy.gif")); //$NON-NLS-1$
 	}

@@ -99,7 +99,7 @@ public class OutputHandler {
 			if (!groupsCountOk) {
 				generateInternalError(
 					MessageFormat.format(
-						"State with pattern \"{0}\" should has {1} groups but has {2}.",
+						GoogleTestsRunnerMessages.OutputHandler_wrong_groups_count,
 						enterPattern.pattern(), matcher.groupCount(), groupCount 
 					)
 				);
@@ -207,7 +207,7 @@ public class OutputHandler {
 			if (!lastTestSuiteName.equals(currTestSuiteName)) {
 				generateInternalError(
 					MessageFormat.format(
-						"A test case \"{0}\" belongs to test suite \"{1}\", but the last started suite is \"{2}\".",
+						GoogleTestsRunnerMessages.OutputHandler_wrong_suite_name,
 						testCaseName, currTestSuiteName, lastTestSuiteName
 					)
 				);
@@ -259,7 +259,7 @@ public class OutputHandler {
 					messageLineNumber = Integer.parseInt(lineNumberVS.trim());
 				} else {
 					if (!modelUpdater.currentTestSuite().getName().equals(group(1))) {
-						generateInternalError("Unknown location format.");
+						generateInternalError(GoogleTestsRunnerMessages.OutputHandler_unknown_location_format);
 					}
 				}
 			} else if (fileNameIfLineAbsent != null) {
@@ -267,7 +267,7 @@ public class OutputHandler {
 					messageFileName = fileNameIfLineAbsent;
 					messageLineNumber = DEFAULT_LOCATION_LINE;
 				} else {
-					generateInternalError("Unknown location format.");
+					generateInternalError(GoogleTestsRunnerMessages.OutputHandler_unknown_location_format);
 				}
 			}
 			// Check special case when file is not known - reset location
@@ -406,7 +406,7 @@ public class OutputHandler {
 			if (!lastTestSuiteName.equals(currTestSuiteName)) {
 				generateInternalError(
 					MessageFormat.format(
-						"A test case \"{0}\" belongs to test suite \"{1}\", but the last started suite is \"{2}\".",
+						GoogleTestsRunnerMessages.OutputHandler_wrong_suite_name,
 						group(2), currTestSuiteName, lastTestSuiteName
 					)
 				);					
@@ -415,7 +415,7 @@ public class OutputHandler {
 			if (!lastTestCaseName.equals(group(3))) {
 				generateInternalError(
 						MessageFormat.format(
-							"End of test case \"{0}\" is not expected, because the last started case is \"{1}\".",
+							GoogleTestsRunnerMessages.OutputHandler_unexpected_case_end,
 							group(3), lastTestCaseName
 						)
 					);					
@@ -427,7 +427,7 @@ public class OutputHandler {
 			} else if (testStatusStr.equals(testStatusFailed)) {
 				testStatus = ITestItem.Status.Failed;
 			} else {
-				generateInternalError(MessageFormat.format("Test status value \"{0}\" is unknown.", testStatusStr));
+				generateInternalError(MessageFormat.format(GoogleTestsRunnerMessages.OutputHandler_unknown_test_status, testStatusStr));
 			}
 			String getParamValue = group(7);
 			if (getParamValue != null) {
@@ -435,7 +435,7 @@ public class OutputHandler {
 						DEFAULT_LOCATION_FILE,
 						DEFAULT_LOCATION_LINE,
 						ITestMessage.Level.Info,
-						MessageFormat.format("Instantiated with GetParam() = {0}", getParamValue)
+						MessageFormat.format(GoogleTestsRunnerMessages.OutputHandler_getparam_message, getParamValue)
 					);
 				
 			}
@@ -467,7 +467,7 @@ public class OutputHandler {
 			if (!lastTestSuiteName.equals(currTestSuiteName)) {
 				generateInternalError(
 					MessageFormat.format(
-						"End of test suite \"{0}\" is not expected, because the last started suite is \"{1}\".",
+						GoogleTestsRunnerMessages.OutputHandler_unexpected_suite_end,
 						currTestSuiteName, lastTestSuiteName
 					)
 				);					
@@ -598,7 +598,7 @@ public class OutputHandler {
     		finalizedProperly = true;
         }
         if (!finalizedProperly) {
-        	generateInternalError("Unexpected test module output.");
+        	generateInternalError(GoogleTestsRunnerMessages.OutputHandler_unexpected_output);
         }
 	}
 	
@@ -610,7 +610,7 @@ public class OutputHandler {
 	 */
 	private void generateInternalError(String additionalInfo) throws TestingException
 	{
-		throw new TestingException("Unknown error during parsing Google Test module output: "+additionalInfo);
+		throw new TestingException(GoogleTestsRunnerMessages.OutputHandler_unknown_error_prefix+additionalInfo);
 	}
 
 	/**

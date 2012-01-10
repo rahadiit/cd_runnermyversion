@@ -23,8 +23,8 @@ public class TestsHierarchyExpandAllAction extends Action {
 
 
 	public TestsHierarchyExpandAllAction(AbstractTreeViewer testsHierarchyTreeViewer) {
-		setText("Expand All");
-		setToolTipText("Expand All Nodes");
+		setText(ActionsMessages.TestsHierarchyExpandAllAction_text);
+		setToolTipText(ActionsMessages.TestsHierarchyExpandAllAction_tooltip);
 		this.testsHierarchyTreeViewer = testsHierarchyTreeViewer;
 	}
 

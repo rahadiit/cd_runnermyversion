@@ -26,8 +26,8 @@ public class MessagesOrderingAction extends Action {
 	public MessagesOrderingAction(MessagesViewer messagesViewer) {
 		super("", AS_CHECK_BOX); //$NON-NLS-1$
 		this.messagesViewer = messagesViewer;
-		setText("Messages &Ordering");
-		setToolTipText("Order Messages By Location, Skip Duplicates");
+		setText(ActionsMessages.MessagesOrderingAction_text);
+		setToolTipText(ActionsMessages.MessagesOrderingAction_tooltip);
 		setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/sort.gif")); //$NON-NLS-1$
 		setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/sort.gif")); //$NON-NLS-1$
 		setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/sort.gif")); //$NON-NLS-1$

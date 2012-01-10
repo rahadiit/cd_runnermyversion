@@ -34,8 +34,8 @@ public class CopySelectedTestsAction extends Action {
 
 
 	public CopySelectedTestsAction(TreeViewer treeViewer, Clipboard clipboard) {
-		super("Copy");
-		setToolTipText("Copy Selected Test Names To Clipboard");
+		super(ActionsMessages.CopySelectedTestsAction_text);
+		setToolTipText(ActionsMessages.CopySelectedTestsAction_tooltip);
 		setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
 		this.treeViewer = treeViewer;
 		this.clipboard = clipboard;

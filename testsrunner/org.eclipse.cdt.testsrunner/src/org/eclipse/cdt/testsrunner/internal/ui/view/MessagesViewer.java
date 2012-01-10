@@ -11,6 +11,7 @@
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -280,38 +281,18 @@ public class MessagesViewer {
 		}
 		
 		public String getColumnText(Object obj, int index) {
-			StringBuilder sb = new StringBuilder();
 			ITestMessage message = (ITestMessage)obj;
 			ITestLocation location = message.getLocation();
+			String locationString = ""; //$NON-NLS-1$
 			if (location != null) {
-				sb.append(getLocationFile(location));
-				sb.append("(");
-				sb.append(location.getLine());
-				sb.append("): ");
+				locationString = MessageFormat.format(
+						UIViewMessages.MessagesViewer_location_format, 
+						new Object[] { getLocationFile(location), location.getLine() }
+				);
 			}
-			switch (message.getLevel()) {
-				case Info:
-					sb.append("Info");
-					break;
-				case Message:
-					sb.append("Message");
-					break;
-				case Warning:
-					sb.append("Warning");
-					break;
-				case Error:
-					sb.append("Error");
-					break;
-				case FatalError:
-					sb.append("Fatal error");
-					break;
-				case Exception:			
-					sb.append("Exception");
-					break;
-			}
-			sb.append(": ");
-			sb.append(message.getText());
-			return sb.toString();
+			return MessageFormat.format(UIViewMessages.MessagesViewer_message_format, 
+					locationString, message.getLevel(), message.getText()
+			  );
 		}
 		
 		public Image getColumnImage(Object obj, int index) {

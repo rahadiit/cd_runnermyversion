@@ -12,6 +12,7 @@ package org.eclipse.cdt.testsrunner.internal.boost;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.MessageFormat;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -59,7 +60,7 @@ public class BoostTestsRunner implements ITestsRunner {
 		// Build tests filter
 		if (testPaths != null && testPaths.length >= 1) {
 			if (testPaths.length != 1) {
-				throw new TestingException("Only on test suite or test case should be specified to rerun");
+				throw new TestingException(BoostTestsRunnerMessages.BoostTestsRunner_wrong_tests_paths_count);
 			}
 			StringBuilder sb = new StringBuilder("--run_test="); //$NON-NLS-1$
 			String[] testPath = testPaths[0];
@@ -76,22 +77,34 @@ public class BoostTestsRunner implements ITestsRunner {
 		return result;
 	}
 	
+    /**
+     * Construct the error message from prefix and detailed description.
+     *
+     * @param prefix prefix
+     * @param description detailed description
+     * @return the full message
+     */
+	private String getErrorText(String prefix, String description) {
+		return MessageFormat.format(BoostTestsRunnerMessages.BoostTestsRunner_error_format, prefix, description);
+	}
+	
 	public void run(ITestModelUpdater modelUpdater, InputStream inputStream) throws TestingException {
 		try {
 			SAXParserFactory spf = SAXParserFactory.newInstance();
 			SAXParser sp = spf.newSAXParser();
 			sp.parse(inputStream, new BoostXmlLogHandler(modelUpdater));
+
 		} catch (IOException e) {
-			throw new TestingException("I/O Error: "+e.getLocalizedMessage());
+			throw new TestingException(getErrorText(BoostTestsRunnerMessages.BoostTestsRunner_io_error_prefix, e.getLocalizedMessage()));
 			
 		} catch (NumberFormatException e) {
-			throw new TestingException("XML parse error: Cannot convert integer value.");
+			throw new TestingException(getErrorText(BoostTestsRunnerMessages.BoostTestsRunner_xml_error_prefix, e.getLocalizedMessage()));
 
 		} catch (ParserConfigurationException e) {
-			throw new TestingException("XML parse error: "+e.getLocalizedMessage());
+			throw new TestingException(getErrorText(BoostTestsRunnerMessages.BoostTestsRunner_xml_error_prefix, e.getLocalizedMessage()));
 
 		} catch (SAXException e) {
-			throw new TestingException("XML parse error: "+e.getLocalizedMessage());
+			throw new TestingException(getErrorText(BoostTestsRunnerMessages.BoostTestsRunner_xml_error_prefix, e.getLocalizedMessage()));
 		}
 	}
 

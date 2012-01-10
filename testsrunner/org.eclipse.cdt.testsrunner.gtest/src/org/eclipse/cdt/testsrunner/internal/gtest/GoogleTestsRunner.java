@@ -12,6 +12,7 @@ package org.eclipse.cdt.testsrunner.internal.gtest;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.MessageFormat;
 
 import org.eclipse.cdt.testsrunner.launcher.ITestsRunner;
 import org.eclipse.cdt.testsrunner.model.ITestModelUpdater;
@@ -25,7 +26,12 @@ import org.eclipse.cdt.testsrunner.model.TestingException;
  * Runner Core.
  */
 public class GoogleTestsRunner implements ITestsRunner {
+	
+	private static final String TEST_PATHS_DELIMITED = ":"; //$NON-NLS-1$
+	private static final String TEST_PATH_PARTS_DELIMITED = "."; //$NON-NLS-1$
+	private static final String ALL_TESTS= ".*"; //$NON-NLS-1$
 
+	
 	public String[] getAdditionalLaunchParameters(String[][] testPaths) {
 		final String[] gtestParameters = {
 			"--gtest_repeat=1", //$NON-NLS-1$
@@ -40,14 +46,14 @@ public class GoogleTestsRunner implements ITestsRunner {
 			boolean needTestPathDelimiter = false;
 			for (String[] testPath : testPaths) {
 				if (needTestPathDelimiter) {
-					sb.append(":"); //$NON-NLS-1$
+					sb.append(TEST_PATHS_DELIMITED);
 				} else {
 					needTestPathDelimiter = true;
 				}
 				boolean needTestPathPartDelimiter = false;
 				for (String testPathPart : testPath) {
 					if (needTestPathPartDelimiter) {
-						sb.append("."); //$NON-NLS-1$
+						sb.append(TEST_PATH_PARTS_DELIMITED);
 					} else {
 						needTestPathPartDelimiter = true;
 					}
@@ -55,7 +61,7 @@ public class GoogleTestsRunner implements ITestsRunner {
 				}
 				// If it is a test suite
 				if (testPath.length <= 1) {
-					sb.append(".*");
+					sb.append(ALL_TESTS);
 				}
 			}
 			result = new String[gtestParameters.length + 1];
@@ -65,13 +71,24 @@ public class GoogleTestsRunner implements ITestsRunner {
 		return result;
 	}
 	
+	/**
+	 * Construct the error message from prefix and detailed description.
+	 * 
+	 * @param prefix prefix
+	 * @param description detailed description
+	 * @return the full message
+	 */
+	private String getErrorText(String prefix, String description) {
+		return MessageFormat.format(GoogleTestsRunnerMessages.GoogleTestsRunner_error_format, prefix, description);
+	}
+	
 	public void run(ITestModelUpdater modelUpdater, InputStream inputStream) throws TestingException {
 		
 		try {
 			OutputHandler ouputHandler = new OutputHandler(modelUpdater);
 			ouputHandler.run(inputStream);
 		} catch (IOException e) {
-			throw new TestingException("I/O Error: "+e.getLocalizedMessage());
+			throw new TestingException(getErrorText(GoogleTestsRunnerMessages.GoogleTestsRunner_io_error_prefix, e.getLocalizedMessage()));
 		}
 	}
 

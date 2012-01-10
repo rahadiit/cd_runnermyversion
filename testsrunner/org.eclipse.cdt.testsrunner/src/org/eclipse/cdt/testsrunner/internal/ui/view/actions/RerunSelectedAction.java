@@ -23,8 +23,8 @@ public class RerunSelectedAction extends RelaunchSelectedAction {
 
 	public RerunSelectedAction(ITestingSession testingSession, TreeViewer treeViewer) {
 		super(testingSession, treeViewer);
-		setText("Run");
-		setToolTipText("Rerun Selected Tests"); // TODO: Add detailed tooltip
+		setText(ActionsMessages.RerunSelectedAction_text);
+		setToolTipText(ActionsMessages.RerunSelectedAction_tooltip);
 	}
 
 	@Override

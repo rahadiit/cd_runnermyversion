@@ -30,14 +30,14 @@ public class MessageLevelFilterAction extends Action {
 		this.levelFilter = levelFilter;
 		this.messagesViewer = messagePanel;
 		if (levelFilter == MessagesViewer.LevelFilter.Info) {
-			setText("&Info");
-			setToolTipText("Show information messages");
+			setText(ActionsMessages.MessageLevelFilterAction_infos_text);
+			setToolTipText(ActionsMessages.MessageLevelFilterAction_infos_tooltip);
 		} else if (levelFilter == MessagesViewer.LevelFilter.Warning) {
-			setText("&Warning");
-			setToolTipText("Show warning messages");
+			setText(ActionsMessages.MessageLevelFilterAction_warnings_text);
+			setToolTipText(ActionsMessages.MessageLevelFilterAction_warnings_tooltip);
 		} else if (levelFilter == MessagesViewer.LevelFilter.Error) {
-			setText("&Errors");
-			setToolTipText("Show error messages");
+			setText(ActionsMessages.MessageLevelFilterAction_errors_text);
+			setToolTipText(ActionsMessages.MessageLevelFilterAction_errors_tooltip);
 		}
 		setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(levelFilter.getImageId()));
 		setChecked(checked);

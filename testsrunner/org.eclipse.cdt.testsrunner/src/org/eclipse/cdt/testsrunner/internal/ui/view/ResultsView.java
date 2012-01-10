@@ -202,7 +202,7 @@ public class ResultsView extends ViewPart {
 		viewMenu.add(showTestsInHierarchyAction);
 		viewMenu.add(showTimeAction);
 		viewMenu.add(new Separator());
-		MenuManager layoutSubMenu = new MenuManager("&Layout");
+		MenuManager layoutSubMenu = new MenuManager(UIViewMessages.ResultsView_layout_menu_text);
 		for (int i = 0; i < toggleOrientationActions.length; ++i) {
 			layoutSubMenu.add(toggleOrientationActions[i]);
 		}

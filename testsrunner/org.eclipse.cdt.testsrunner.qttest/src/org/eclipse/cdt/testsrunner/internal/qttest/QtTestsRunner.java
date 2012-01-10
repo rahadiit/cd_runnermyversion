@@ -12,6 +12,7 @@ package org.eclipse.cdt.testsrunner.internal.qttest;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.MessageFormat;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -74,7 +75,7 @@ public class QtTestsRunner implements ITestsRunner {
 			int testPathsLength = getNonSpecialTestsCount(testPaths);
 			// If there are only special test cases specified
 			if ((testPathsLength == 0) != (testPaths.length == 0)) {
-				throw new TestingException("There is no test cases to rerun (initialization and finalization test cases are not taken into account)");
+				throw new TestingException(QtTestsRunnerMessages.QtTestsRunner_no_test_cases_to_rerun);
 			}
 			
 			// Build tests filter
@@ -94,20 +95,33 @@ public class QtTestsRunner implements ITestsRunner {
 		return result;
 	}
 	
+    /**
+     * Construct the error message from prefix and detailed description.
+     *
+     * @param prefix prefix
+     * @param description detailed description
+     * @return the full message
+     */
+	private String getErrorText(String prefix, String description) {
+		return MessageFormat.format(QtTestsRunnerMessages.QtTestsRunner_error_format, prefix, description);
+	}
+	
 	public void run(ITestModelUpdater modelUpdater, InputStream inputStream) throws TestingException {
 		try {
 			SAXParserFactory spf = SAXParserFactory.newInstance();
 			SAXParser sp = spf.newSAXParser();
 			sp.parse(inputStream, new QtXmlLogHandler(modelUpdater));
+			
 		} catch (IOException e) {
-			throw new TestingException("I/O Error: "+e.getLocalizedMessage());
+			throw new TestingException(getErrorText(QtTestsRunnerMessages.QtTestsRunner_io_error_prefix, e.getLocalizedMessage()));
 			
 		} catch (ParserConfigurationException e) {
-			throw new TestingException("XML parse error: "+e.getLocalizedMessage());
+			throw new TestingException(getErrorText(QtTestsRunnerMessages.QtTestsRunner_xml_error_prefix, e.getLocalizedMessage()));
 
 		} catch (SAXException e) {
-			throw new TestingException("XML parse error: "+e.getLocalizedMessage());
+			throw new TestingException(getErrorText(QtTestsRunnerMessages.QtTestsRunner_xml_error_prefix, e.getLocalizedMessage()));
 		}
+		
 	}
 
 }

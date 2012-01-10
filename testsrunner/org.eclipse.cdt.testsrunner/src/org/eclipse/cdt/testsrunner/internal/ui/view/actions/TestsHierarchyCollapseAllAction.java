@@ -23,8 +23,8 @@ public class TestsHierarchyCollapseAllAction extends Action {
 
 
 	public TestsHierarchyCollapseAllAction(AbstractTreeViewer testsHierarchyTreeViewer) {
-		setText("Collapse All");
-		setToolTipText("Collapse All Nodes");
+		setText(ActionsMessages.TestsHierarchyCollapseAllAction_text);
+		setToolTipText(ActionsMessages.TestsHierarchyCollapseAllAction_tooltip);
 		this.testsHierarchyTreeViewer = testsHierarchyTreeViewer;
 	}
 

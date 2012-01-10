@@ -88,7 +88,7 @@ public class HistoryDropDownAction extends Action {
 		private HistoryListDialog(Shell shell) {
 			super(shell);
 			setHelpAvailable(false);
-			setTitle("Test Runs");
+			setTitle(ActionsMessages.HistoryAction_dialog_title);
 
 			createHistoryList();
 			createHistorySizeLimitField();
@@ -115,10 +115,10 @@ public class HistoryDropDownAction extends Action {
 					doDoubleClicked();
 				}
 			};
-			String[] buttonLabels = new String[] { "&Remove", "Remove &All" };
+			String[] buttonLabels = new String[] { ActionsMessages.HistoryAction_dialog_button_remove, ActionsMessages.HistoryAction_dialog_button_remove_all };
 			LabelProvider labelProvider = new TestRunLabelProvider();
 			historyList = new ListDialogField<ITestingSession>(adapter, buttonLabels, labelProvider);
-			historyList.setLabelText("Select a test run:");
+			historyList.setLabelText(ActionsMessages.HistoryAction_dialog_list_title);
 
 			historyList.setElements(testingSessionsManager.getSessions());
 			Object currentEntry = testingSessionsManager.getActiveSession();
@@ -131,7 +131,7 @@ public class HistoryDropDownAction extends Action {
 		 */
 		private void createHistorySizeLimitField() {
 			historySizeLimitField = new StringDialogField();
-			historySizeLimitField.setLabelText("&Maximum count of remembered test runs:");
+			historySizeLimitField.setLabelText(ActionsMessages.HistoryAction_dialog_limit_label);
 			historySizeLimitField.setDialogFieldListener(new IDialogFieldListener() {
 				public void dialogFieldChanged(DialogField field) {
 					String maxString = historySizeLimitField.getText();
@@ -143,8 +143,8 @@ public class HistoryDropDownAction extends Action {
 						valid = false;
 					}
 					IStatus status = valid ? StatusInfo.OK_STATUS : new StatusInfo(IStatus.ERROR, 
-							MessageFormat.format("Please enter a positive integer smaller than {0}.", 
-									Integer.toString(MAX_HISTORY_SIZE_LIMIT)
+							MessageFormat.format(ActionsMessages.HistoryAction_dialog_limit_label_error, 
+								Integer.toString(MAX_HISTORY_SIZE_LIMIT)
 							)
 						);
 					updateStatus(status);
@@ -281,7 +281,7 @@ public class HistoryDropDownAction extends Action {
 	private class HistoryListAction extends Action {
 
 		public HistoryListAction() {
-			super("History...", AS_RADIO_BUTTON);
+			super(ActionsMessages.HistoryAction_history_item_show_text, AS_RADIO_BUTTON);
 		}
 
 		@Override
@@ -299,7 +299,7 @@ public class HistoryDropDownAction extends Action {
 	private class ClearAction extends Action {
 		
 		public ClearAction() {
-			setText("&Clear Terminated");
+			setText(ActionsMessages.HistoryAction_history_item_clear_text);
 
 			boolean enabled = false;
 			for (ITestingSession testingSession : testingSessionsManager.getSessions()) {
@@ -409,8 +409,8 @@ public class HistoryDropDownAction extends Action {
 
 	
 	public HistoryDropDownAction(TestingSessionsManager testingSessionsManager, Shell shell) {
-		super("History");
-		setToolTipText("Test Run History...");
+		super(ActionsMessages.HistoryAction_history_text);
+		setToolTipText(ActionsMessages.HistoryAction_history_tooltip);
 		setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/history_list.gif")); //$NON-NLS-1$
 		setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/history_list.gif")); //$NON-NLS-1$
 		setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/history_list.gif")); //$NON-NLS-1$

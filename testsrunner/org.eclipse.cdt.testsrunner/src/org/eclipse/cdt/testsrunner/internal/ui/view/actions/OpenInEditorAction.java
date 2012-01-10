@@ -62,11 +62,11 @@ public class OpenInEditorAction extends Action {
 
 
 	public OpenInEditorAction(TableViewer tableViewer, TestingSessionsManager testingSessionsManager, IWorkbench workbench) {
-		super("&Go to File");
+		super(ActionsMessages.OpenInEditorAction_text);
 		this.messagesViewer = tableViewer;
 		this.testingSessionsManager = testingSessionsManager;
 		this.workbench = workbench;
-		setToolTipText("Go to file pointed by the message"); // TODO: Add detailed tooltip
+		setToolTipText(ActionsMessages.OpenInEditorAction_tooltip);
 	}
 
 	@Override
