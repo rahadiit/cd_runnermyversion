@@ -32,8 +32,8 @@ public class CopySelectedMessagesAction extends Action {
 
 
 	public CopySelectedMessagesAction(TableViewer tableViewer, Clipboard clipboard) {
-		super("Copy");
-		setToolTipText("Copy Selected Messages To Clipboard");
+		super(ActionsMessages.CopySelectedMessagesAction_text);
+		setToolTipText(ActionsMessages.CopySelectedMessagesAction_tooltip);
 		setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
 		this.tableViewer = tableViewer;
 		this.clipboard = clipboard;

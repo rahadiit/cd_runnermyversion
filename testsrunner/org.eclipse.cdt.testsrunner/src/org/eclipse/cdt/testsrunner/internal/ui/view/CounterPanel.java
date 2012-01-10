@@ -58,9 +58,9 @@ public class CounterPanel extends Composite {
 		gridLayout.marginWidth = 0;
 		setLayout(gridLayout);
 
-		currentCounterLabel = createLabel("Runs: ", null);
-		abortedCounterLabel = createLabel("Errors: ", errorIcon);
-		failedCounterLabel = createLabel("Failures: ", failureIcon);
+		currentCounterLabel = createLabel(UIViewMessages.CounterPanel_tests_run, null);
+		abortedCounterLabel = createLabel(UIViewMessages.CounterPanel_tests_erred, errorIcon);
+		failedCounterLabel = createLabel(UIViewMessages.CounterPanel_tests_failed, failureIcon);
 		setTestingSession(testingSession);
 	}
 
@@ -139,10 +139,9 @@ public class CounterPanel extends Composite {
 		if (!hasSkipped && skippedValue != 0) {
 			layout();
 		}
-		String currentCounterStr = Integer.toString(currentValue);
 		String runString = (skippedValue == 0)
-				? currentCounterStr
-				: MessageFormat.format("{0} ({1} ignored)", new String[] { currentCounterStr, Integer.toString(skippedValue) });
+				? Integer.toString(currentValue)
+				: MessageFormat.format(UIViewMessages.CounterPanel_tests_skipped, currentValue, skippedValue);
 		currentCounterLabel.setText(runString);
 	}
 	

@@ -93,7 +93,7 @@ public class TestingSession implements ITestingSession {
 	private boolean finished = false;
 	
 	/** Stores current status of the testing session. */
-	private String statusMessage = "Starting...";
+	private String statusMessage = ModelMessages.TestingSession_starting_status;
 	
 	/** Stores the time when the testing session was created. */
 	private long startTime;
@@ -180,7 +180,7 @@ public class TestingSession implements ITestingSession {
 			// If testing session was stopped, the status is set in stop()
 			if (!wasStopped()) {
 				double testingTime = getModelAccessor().getRootSuite().getTestingTime();
-				statusMessage = MessageFormat.format("Finished after {0} seconds", testingTime/1000.0);
+				statusMessage = MessageFormat.format(ModelMessages.TestingSession_finished_status, testingTime/1000.0);
 			}
 		} catch (TestingException e) {
 			// If testing session was stopped, the status is set in stop()
@@ -237,7 +237,7 @@ public class TestingSession implements ITestingSession {
 	public String getName() {
 		String launchConfName = launch.getLaunchConfiguration().getName();
 		String startTimeStr = DateFormat.getDateTimeInstance().format(new Date(startTime));
-		return MessageFormat.format("{0} ({1})", launchConfName, startTimeStr);
+		return MessageFormat.format(ModelMessages.TestingSession_name_format, launchConfName, startTimeStr);
 	}
 
 	public void stop() {
@@ -245,7 +245,7 @@ public class TestingSession implements ITestingSession {
 			try {
 				launch.terminate();
 				wasStopped = true;
-				statusMessage = "Testing was stopped by user";
+				statusMessage = ModelMessages.TestingSession_stopped_status;
 			} catch (DebugException e) {
 				TestsRunnerPlugin.log(e);
 			}

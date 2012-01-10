@@ -27,8 +27,8 @@ public class RerunAction extends Action {
 
 
 	public RerunAction(TestingSessionsManager testingSessionsManager) {
-		super("Rerun");
-		setToolTipText("Rerun Test"); // TODO: Add detailed tooltip
+		super(ActionsMessages.RerunAction_text);
+		setToolTipText(ActionsMessages.RerunAction_tooltip);
 		setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/rerun.gif")); //$NON-NLS-1$
 		setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/rerun.gif")); //$NON-NLS-1$
 		setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/rerun.gif")); //$NON-NLS-1$

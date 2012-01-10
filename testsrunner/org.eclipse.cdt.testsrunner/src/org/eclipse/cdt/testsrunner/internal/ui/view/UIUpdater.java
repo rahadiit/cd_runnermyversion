@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.view;
 
+import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -216,8 +217,11 @@ public class UIUpdater {
 				// View caption update
 				if (testItemForNewViewCaption != null) {
 					resultsView.setCaption(
-							testItemForNewViewCaption.getName()+" - "+
-							TestPathUtils.getTestItemPath(testItemForNewViewCaption.getParent())
+							MessageFormat.format(
+								UIViewMessages.UIUpdater_view_caption_format, 
+									testItemForNewViewCaption.getName(),
+									TestPathUtils.getTestItemPath(testItemForNewViewCaption.getParent())
+							)
 						);
 				}
 				// Tree view update
@@ -275,7 +279,7 @@ public class UIUpdater {
 		private boolean isRunning = true;
 
 		public UpdateUIJob() {
-			super("Update C/C++ Tests Runner");
+			super(UIViewMessages.UIUpdater_update_ui_job);
 			setSystem(true);
 		}
 
@@ -404,7 +408,7 @@ public class UIUpdater {
 					public void run() {
 						progressCountPanel.setTestingSession(testingSession);
 						testsHierarchyViewer.setTestingSession(testingSession);
-						resultsView.setCaption(testingSession != null ? testingSession.getStatusMessage() : "");
+						resultsView.setCaption(testingSession != null ? testingSession.getStatusMessage() : ""); //$NON-NLS-1$
 					}
 				});
 				if (newTestingSession != null && !newTestingSession.isFinished()) {

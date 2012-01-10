@@ -99,7 +99,7 @@ public class ResultsPanel {
 		leftMessagesToolBarManager.add(messagesOrderingAction);
 		leftMessagesToolBarManager.update(true);
 		CLabel label = new CLabel(topLeftPanel, SWT.NONE);
-		label.setText("Messages");
+		label.setText(UIViewMessages.MessagesPanel_label);
 		bottom.setTopLeft(topLeftPanel);
 		ToolBar rightMessagesToolBar = new ToolBar(bottom, SWT.FLAT | SWT.WRAP);
 		ToolBarManager rightMessagesToolBarManager = new ToolBarManager(rightMessagesToolBar);

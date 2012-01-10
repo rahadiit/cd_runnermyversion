@@ -24,9 +24,9 @@ public class ShowNextFailureAction extends Action {
 	private TestsHierarchyViewer testsHierarchyViewer;
 
 	public ShowNextFailureAction(TestsHierarchyViewer testsHierarchyViewer) {
-		super("Next Failure");
+		super(ActionsMessages.ShowNextFailureAction_text);
 		this.testsHierarchyViewer = testsHierarchyViewer;
-		setToolTipText("Next Failed Test"); // TODO: Add detailed tooltip
+		setToolTipText(ActionsMessages.ShowNextFailureAction_tooltip);
 		setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/show_next.gif")); //$NON-NLS-1$
 		setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/show_next.gif")); //$NON-NLS-1$
 		setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/show_next.gif")); //$NON-NLS-1$

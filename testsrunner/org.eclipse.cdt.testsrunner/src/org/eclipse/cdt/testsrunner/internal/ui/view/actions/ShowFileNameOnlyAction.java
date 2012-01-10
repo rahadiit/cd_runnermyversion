@@ -24,9 +24,9 @@ public class ShowFileNameOnlyAction extends Action {
 
 
 	public ShowFileNameOnlyAction(MessagesViewer messagesViewer) {
-		super("Show File Names Only", AS_CHECK_BOX); //$NON-NLS-1$
+		super(ActionsMessages.ShowFileNameOnlyAction_text, AS_CHECK_BOX); 
 		this.messagesViewer = messagesViewer;
-		setToolTipText("Show Only File Names in Message Locations");
+		setToolTipText(ActionsMessages.ShowFileNameOnlyAction_tooltip);
 		setChecked(messagesViewer.getShowFileNameOnly());
 	}
 

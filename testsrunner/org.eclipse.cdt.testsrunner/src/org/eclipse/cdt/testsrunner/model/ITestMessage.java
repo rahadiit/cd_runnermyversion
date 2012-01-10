@@ -22,12 +22,22 @@ public interface ITestMessage {
 	 * The level of the test message.
 	 */
 	public enum Level {
-		Info,
-		Message,
-		Warning,
-		Error,
-		FatalError,
-		Exception,
+		Info(ModelMessages.MessageLevel_info),
+		Message(ModelMessages.MessageLevel_message),
+		Warning(ModelMessages.MessageLevel_warning),
+		Error(ModelMessages.MessageLevel_error),
+		FatalError(ModelMessages.MessageLevel_fatal_error),
+		Exception(ModelMessages.MessageLevel_exception);
+		
+		String stringRepr;
+		
+		Level(String stringRepr) {
+			this.stringRepr = stringRepr;
+		}
+		
+		public String toString() {
+			return stringRepr;
+		}
 	}
 	
 	/**

@@ -123,10 +123,10 @@ public class QtXmlLogHandler extends DefaultHandler {
     private static final Map<String, String> XML_METRICS_TO_UNIT_NAME;
     static {
         Map<String,String> aMap = new HashMap<String, String>();
-        aMap.put("events", "events");
-        aMap.put("callgrind", "instr.");
-        aMap.put("walltime", "msec");
-        aMap.put("cputicks", "ticks");
+        aMap.put("events", QtTestsRunnerMessages.QtXmlLogHandler_metrics_unit_events); //$NON-NLS-1$
+        aMap.put("callgrind", QtTestsRunnerMessages.QtXmlLogHandler_metrics_unit_instructions); //$NON-NLS-1$
+        aMap.put("walltime", QtTestsRunnerMessages.QtXmlLogHandler_metrics_unit_msec); //$NON-NLS-1$
+        aMap.put("cputicks", QtTestsRunnerMessages.QtXmlLogHandler_metrics_unit_ticks); //$NON-NLS-1$
         // NOTE: Exception node is processed separately
         XML_METRICS_TO_UNIT_NAME = Collections.unmodifiableMap(aMap);
     }
@@ -187,7 +187,7 @@ public class QtXmlLogHandler extends DefaultHandler {
 		if (!lastDataTag.equals(currentDataTag)) {
 			exitTestCaseIfNecessary();
 			currentDataTag = lastDataTag;
-			String suffix = !currentDataTag.equals("") ? "("+currentDataTag+")" : "";
+			String suffix = !currentDataTag.isEmpty() ? MessageFormat.format(QtTestsRunnerMessages.QtXmlLogHandler_datatag_format, currentDataTag) : ""; //$NON-NLS-1$
 			modelUpdater.enterTestCase(testCaseName+suffix);
 			testCaseAdded = true;
 		}
@@ -228,7 +228,7 @@ public class QtXmlLogHandler extends DefaultHandler {
 	private String getUnitsByBenchmarkMetric(String benchmarkMetric) throws SAXException {
 		String units = XML_METRICS_TO_UNIT_NAME.get(benchmarkMetric);
 		if (units == null) {
-			logAndThrowError("Benchmarck metric value \""+benchmarkMetric+"\" is not supported!");
+			logAndThrowError(MessageFormat.format(QtTestsRunnerMessages.QtXmlLogHandler_unknown_benchmarck_metric, benchmarkMetric));
 		}
 		return units;
 	}
@@ -244,7 +244,7 @@ public class QtXmlLogHandler extends DefaultHandler {
 	private ITestMessage.Level getMessageLevel(Map<String, ITestMessage.Level> map, String incidentTypeStr) throws SAXException {
 		Level result = map.get(incidentTypeStr);
 		if (result == null) {
-			logAndThrowError("String \""+incidentTypeStr+"\" cannot be converted to a message level!");
+			logAndThrowError(MessageFormat.format(QtTestsRunnerMessages.QtXmlLogHandler_unknown_message_level, incidentTypeStr));
 		}
 		return result;
 	}
@@ -261,7 +261,7 @@ public class QtXmlLogHandler extends DefaultHandler {
 			// NOTE: Terminology mapping: Qt Test Function is actually a Test Case
 			testCaseName = attrs.getValue(XML_ATTR_TEST_FUNCTION_NAME);
 			currentDataTag = null;
-			lastDataTag = "";
+			lastDataTag = ""; //$NON-NLS-1$
 			testCaseAdded = false;
 			testCaseStatus = ITestItem.Status.Passed;
 
@@ -289,14 +289,14 @@ public class QtXmlLogHandler extends DefaultHandler {
 			int benchmarkResultIteratations = Integer.parseInt(attrs.getValue(XML_ATTR_BENCHMARK_ITERATIONS).trim());
 			float benchmarkResultValue = Integer.parseInt(attrs.getValue(XML_ATTR_BENCHMARK_VALUE).trim());
 			String units = getUnitsByBenchmarkMetric(attrs.getValue(XML_ATTR_BENCHMARK_METRIC).trim());
-			modelUpdater.addTestMessage("", 0, ITestMessage.Level.Info,
-				MessageFormat.format("{0,number,#.####} {1} per iteration (total: {2}, iterations: {3})", 
+			modelUpdater.addTestMessage("", 0, ITestMessage.Level.Info, //$NON-NLS-1$
+				MessageFormat.format(QtTestsRunnerMessages.QtXmlLogHandler_benchmark_result_message, 
 					benchmarkResultValue/benchmarkResultIteratations, units, benchmarkResultValue, benchmarkResultIteratations
 				)
 			);
 
 		} else if (qName == XML_NODE_DATATAG) {
-			lastDataTag = "";
+			lastDataTag = ""; //$NON-NLS-1$
 
 		} else if (qName == XML_NODE_DESCRIPTION
 				|| qName == XML_NODE_ENVIRONMENT
@@ -330,7 +330,7 @@ public class QtXmlLogHandler extends DefaultHandler {
 			addTestMessageIfNecessary();
 
 		} else if (qName == XML_NODE_DESCRIPTION) {
-			messageText = elementData == null || elementData.isEmpty() ? "" : elementData;
+			messageText = elementData == null || elementData.isEmpty() ? "" : elementData; //$NON-NLS-1$
 
 		} else if (qName == XML_NODE_ENVIRONMENT
 				|| qName == XML_NODE_QTVERSION
@@ -352,7 +352,6 @@ public class QtXmlLogHandler extends DefaultHandler {
 		elementData = sb.toString();
 	}
 	
-
 	/**
 	 * Throws the testing exception for the specified XML tag.
 	 * 
@@ -360,7 +359,9 @@ public class QtXmlLogHandler extends DefaultHandler {
 	 * @throws SAXException the exception that will be thrown
 	 */
 	private void logAndThrowErrorForElement(String tagName) throws SAXException {
-		logAndThrowError("Invalid XML format: Element \""+tagName+"\" is not accepted!");
+		logAndThrowError(
+			MessageFormat.format(QtTestsRunnerMessages.QtXmlLogHandler_wrong_tag_name, tagName)
+		);
 	}
 	
 	/**
@@ -374,7 +375,6 @@ public class QtXmlLogHandler extends DefaultHandler {
 		throw new SAXException(message);
 	}
 
-	
 	public void warning(SAXParseException ex) throws SAXException {
 		QtTestsRunnerPlugin.logErrorMessage("XML warning: "+ex.getMessage()); //$NON-NLS-1$
 	}

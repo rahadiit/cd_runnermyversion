@@ -26,8 +26,8 @@ public class ShowFailedOnlyAction extends Action {
 	public ShowFailedOnlyAction(ResultsPanel resultsPanel) {
 		super("", AS_CHECK_BOX); //$NON-NLS-1$
 		this.resultsPanel = resultsPanel;
-		setText("Show &Failures Only");
-		setToolTipText("Show &Failures Only");
+		setText(ActionsMessages.ShowFailedOnlyAction_text);
+		setToolTipText(ActionsMessages.ShowFailedOnlyAction_tooltip);
 		setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("obj16/show_failed_only.gif")); //$NON-NLS-1$
 		setChecked(resultsPanel.getShowFailedOnly());
 	}

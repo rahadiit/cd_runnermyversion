@@ -24,9 +24,9 @@ public class ScrollLockAction extends Action {
 
 
 	public ScrollLockAction(UIUpdater modelSyncronizer) {
-		super("Scroll Lock");
+		super(ActionsMessages.ScrollLockAction_name);
 		this.modelSyncronizer = modelSyncronizer;
-		setToolTipText("Scroll Lock"); // TODO: Add detailed tooltip
+		setToolTipText(ActionsMessages.ScrollLockAction_tooltip);
 		setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/scroll_lock.gif")); //$NON-NLS-1$
 		setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/scroll_lock.gif")); //$NON-NLS-1$
 		setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/scroll_lock.gif")); //$NON-NLS-1$

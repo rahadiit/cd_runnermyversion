@@ -133,7 +133,7 @@ public abstract class BaseTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			throw new CoreException(
 				new Status(
 					IStatus.ERROR, TestsRunnerPlugin.getUniqueIdentifier(),
-					"Tests Runner is not specified or invalid", null 
+					LauncherMessages.BaseTestsLaunchDelegate_invalid_tests_runner, null 
 				)
 			);
 		}
@@ -142,7 +142,7 @@ public abstract class BaseTestsLaunchDelegate extends AbstractCLaunchDelegate {
 			throw new CoreException(
 					new Status(
 						IStatus.ERROR, TestsRunnerPlugin.getUniqueIdentifier(),
-						"Tests Runner cannot be instantiated", null 
+						LauncherMessages.BaseTestsLaunchDelegate_tests_runner_load_failed, null 
 					)
 				);
 		}

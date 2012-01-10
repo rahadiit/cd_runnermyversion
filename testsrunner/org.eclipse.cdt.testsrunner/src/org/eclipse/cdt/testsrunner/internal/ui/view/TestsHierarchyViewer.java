@@ -212,13 +212,15 @@ public class TestsHierarchyViewer {
 		 * @param testItem specified test item
 		 */
 		private void appendTestItemPath(StringBuilder sb, ITestItem testItem) {
-			sb.append(" - ");
 			ITestSuite testItemParent = testItem.getParent();
 			if (lastTestItemCache != testItemParent) {
 				lastTestItemCache = testItemParent;
 				lastTestItemPathCache = TestPathUtils.getTestItemPath(lastTestItemCache);
 			}
-			sb.append(lastTestItemPathCache);
+			sb.append(MessageFormat.format(
+					UIViewMessages.TestsHierarchyViewer_test_path_format, 
+					new Object[] { lastTestItemPathCache }
+			));
 		}
 		
 		/**
@@ -229,8 +231,8 @@ public class TestsHierarchyViewer {
 		 */
 		private String getTestingTimeString(Object element) {
 			return (element instanceof ITestItem)
-				? MessageFormat.format(" ({0} s)", Double.toString(((ITestItem)element).getTestingTime()/1000.0))
-				: "";
+				? MessageFormat.format(UIViewMessages.TestsHierarchyViewer_test_time_format, Double.toString(((ITestItem)element).getTestingTime()/1000.0))
+				: ""; //$NON-NLS-1$
 		}
 		
 	}

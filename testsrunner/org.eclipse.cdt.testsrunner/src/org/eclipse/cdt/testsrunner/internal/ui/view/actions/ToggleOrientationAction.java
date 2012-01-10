@@ -28,17 +28,17 @@ public class ToggleOrientationAction extends Action {
 		super("", AS_RADIO_BUTTON); //$NON-NLS-1$
 		this.resultsView = resultsView;
 		if (orientation == ResultsView.Orientation.Horizontal) {
-			setText("&Horizontal");
+			setText(ActionsMessages.ToggleOrientationAction_horizontal_text);
 			setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/orientation_horizontal.gif")); //$NON-NLS-1$
 			setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/orientation_horizontal.gif")); //$NON-NLS-1$
 			setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/orientation_horizontal.gif")); //$NON-NLS-1$
 		} else if (orientation == ResultsView.Orientation.Vertical) {
-			setText("&Vertical");
+			setText(ActionsMessages.ToggleOrientationAction_vertical_text);
 			setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/orientation_vertical.gif")); //$NON-NLS-1$
 			setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/orientation_vertical.gif")); //$NON-NLS-1$
 			setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/orientation_vertical.gif")); //$NON-NLS-1$
 		} else if (orientation == ResultsView.Orientation.Auto) {
-			setText("&Automatic");
+			setText(ActionsMessages.ToggleOrientationAction_automatic_text);
 			setImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/orientation_auto.gif")); //$NON-NLS-1$
 			setDisabledImageDescriptor(TestsRunnerPlugin.getImageDescriptor("dlcl16/orientation_auto.gif")); //$NON-NLS-1$
 			setHoverImageDescriptor(TestsRunnerPlugin.getImageDescriptor("elcl16/orientation_auto.gif")); //$NON-NLS-1$

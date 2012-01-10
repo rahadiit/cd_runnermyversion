@@ -65,7 +65,7 @@ public class CTestingTab extends CLaunchConfigurationTab {
 		pageComposite.setLayout(pageCompositeLayout);
 
 		// Create a tests runner selector
-		new Label(pageComposite, SWT.NONE).setText("Tests Runner");
+		new Label(pageComposite, SWT.NONE).setText(UILauncherMessages.CTestingTab_tests_runner_label);
 		testsRunnerCombo = new Combo(pageComposite, SWT.READ_ONLY | SWT.DROP_DOWN);
 		testsRunnerCombo.add("<not set>"); //$NON-NLS-1$
 		testsRunnerCombo.setData("0", null); //$NON-NLS-1$
@@ -127,7 +127,7 @@ public class CTestingTab extends CLaunchConfigurationTab {
 		if (testsRunnerInfo != null) {
 			return testsRunnerInfo.getDescription();
 		} else {
-			return "Select a tests runner...";
+			return UILauncherMessages.CTestingTab_no_tests_runner_label;
 		}
 	}
 
@@ -171,14 +171,14 @@ public class CTestingTab extends CLaunchConfigurationTab {
 	}
 
 	public String getName() {
-		return "C/C++ Testing"; 
+		return UILauncherMessages.CTestingTab_tab_name; 
 	}
 
 	public String getErrorMessage() {
 		String m = super.getErrorMessage();
 		if (m == null) {
 			if (getCurrentTestsRunnerInfo()==null) {
-				return "Tests runner is not selected";
+				return UILauncherMessages.CTestingTab_no_tests_runner_error;
 			}
 		}
 		return m;
