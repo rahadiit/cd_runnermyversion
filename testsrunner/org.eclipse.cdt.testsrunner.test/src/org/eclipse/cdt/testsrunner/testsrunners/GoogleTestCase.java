@@ -209,18 +209,18 @@ public class GoogleTestCase extends BaseTestCase {
 		mockModelUpdater.setTestStatus(ITestItem.Status.Passed);
 		mockModelUpdater.exitTestCase();
 		mockModelUpdater.enterTestCase("TestFail");
-		mockModelUpdater.addTestMessage("demo_file.cc", 38, ITestMessage.Level.Error, "Value of: 2\nExpected: 1");
+		mockModelUpdater.addTestMessage("demo_file.cc", 38, ITestMessage.Level.Error, "Value of: 2"+EOL+"Expected: 1");
 		mockModelUpdater.setTestStatus(ITestItem.Status.Failed);
 		mockModelUpdater.exitTestCase();
 		mockModelUpdater.enterTestCase("TestAFewFails");
-		mockModelUpdater.addTestMessage("demo_file.cc", 42, ITestMessage.Level.Error, "Value of: 2\nExpected: 1");
-		mockModelUpdater.addTestMessage("demo_file.cc", 43, ITestMessage.Level.Error, "Value of: 2\nExpected: 1");
+		mockModelUpdater.addTestMessage("demo_file.cc", 42, ITestMessage.Level.Error, "Value of: 2"+EOL+"Expected: 1");
+		mockModelUpdater.addTestMessage("demo_file.cc", 43, ITestMessage.Level.Error, "Value of: 2"+EOL+"Expected: 1");
 		mockModelUpdater.setTestStatus(ITestItem.Status.Failed);
 		mockModelUpdater.exitTestCase();
 		mockModelUpdater.enterTestCase("TestCustomFails");
-		mockModelUpdater.addTestMessage("demo_file.cc", 47, ITestMessage.Level.Error, "Failed\nCustom fatal fail!");
-		mockModelUpdater.addTestMessage("demo_file.cc", 48, ITestMessage.Level.Error, "Failed\nAnother custom fatal fail!");
-		mockModelUpdater.addTestMessage("demo_file.cc", 49, ITestMessage.Level.Error, "Failed\nYet another custom fatal fail!");
+		mockModelUpdater.addTestMessage("demo_file.cc", 47, ITestMessage.Level.Error, "Failed"+EOL+"Custom fatal fail!");
+		mockModelUpdater.addTestMessage("demo_file.cc", 48, ITestMessage.Level.Error, "Failed"+EOL+"Another custom fatal fail!");
+		mockModelUpdater.addTestMessage("demo_file.cc", 49, ITestMessage.Level.Error, "Failed"+EOL+"Yet another custom fatal fail!");
 		mockModelUpdater.setTestStatus(ITestItem.Status.Failed);
 		mockModelUpdater.exitTestCase();
 	}
@@ -268,14 +268,14 @@ public class GoogleTestCase extends BaseTestCase {
 		mockModelUpdater.skipCalls("setTestStatus");
 
 		mockModelUpdater.enterTestCase("TestWithSimpleTrace");
-		mockModelUpdater.addTestMessage("demo_file.cc", 36, ITestMessage.Level.Error, "Value of: 2\nExpected: 1");
+		mockModelUpdater.addTestMessage("demo_file.cc", 36, ITestMessage.Level.Error, "Value of: 2"+EOL+"Expected: 1");
 		mockModelUpdater.addTestMessage("demo_file.cc", 41, ITestMessage.Level.Info, "Trace point #2 in TestWithSimpleTrace");
 		mockModelUpdater.addTestMessage("demo_file.cc", 40, ITestMessage.Level.Info, "Trace point #1 in TestWithSimpleTrace");
 		mockModelUpdater.exitTestCase();
 		mockModelUpdater.enterTestCase("TestTraceForMultipleFails");
-		mockModelUpdater.addTestMessage("demo_file.cc", 36, ITestMessage.Level.Error, "Value of: 2\nExpected: 1");
+		mockModelUpdater.addTestMessage("demo_file.cc", 36, ITestMessage.Level.Error, "Value of: 2"+EOL+"Expected: 1");
 		mockModelUpdater.addTestMessage("demo_file.cc", 46, ITestMessage.Level.Info, "Trace point #1 in TestTraceForMultipleFails");
-		mockModelUpdater.addTestMessage("demo_file.cc", 36, ITestMessage.Level.Error, "Value of: 2\nExpected: 1");
+		mockModelUpdater.addTestMessage("demo_file.cc", 36, ITestMessage.Level.Error, "Value of: 2"+EOL+"Expected: 1");
 		mockModelUpdater.addTestMessage("demo_file.cc", 48, ITestMessage.Level.Info, "Trace point #2 in TestTraceForMultipleFails");
 		mockModelUpdater.addTestMessage("demo_file.cc", 46, ITestMessage.Level.Info, "Trace point #1 in TestTraceForMultipleFails");
 		mockModelUpdater.exitTestCase();
@@ -390,7 +390,7 @@ public class GoogleTestCase extends BaseTestCase {
 		mockModelUpdater.skipCalls("setTestStatus");
 
 		mockModelUpdater.enterTestCase("TestMultiLineMessage");
-		mockModelUpdater.addTestMessage("demo_file.cc", 40, ITestMessage.Level.Error, "Line 1\nLine 2\nLine 3");
+		mockModelUpdater.addTestMessage("demo_file.cc", 40, ITestMessage.Level.Error, "Line 1"+EOL+"Line 2"+EOL+"Line 3");
 		mockModelUpdater.exitTestCase();
 	}
 	
@@ -461,7 +461,7 @@ public class GoogleTestCase extends BaseTestCase {
 	public void testParametrizedTestsSupport() {
 		mockModelUpdater.enterTestSuite("Inst/DemoTestCase");
 		mockModelUpdater.enterTestCase("Test/0");
-		mockModelUpdater.addTestMessage("demo_file.cc", 50, ITestMessage.Level.Error, "Failed\nParam1");
+		mockModelUpdater.addTestMessage("demo_file.cc", 50, ITestMessage.Level.Error, "Failed"+EOL+"Param1");
 		mockModelUpdater.addTestMessage(DEFAULT_LOCATION_FILE, DEFAULT_LOCATION_LINE, ITestMessage.Level.Info, "Instantiated with GetParam() = \"Param1\"");
 		mockModelUpdater.setTestingTime(0);
 		mockModelUpdater.setTestStatus(ITestItem.Status.Failed);
@@ -471,7 +471,7 @@ public class GoogleTestCase extends BaseTestCase {
 		mockModelUpdater.setTestStatus(ITestItem.Status.Passed);
 		mockModelUpdater.exitTestCase();
 		mockModelUpdater.enterTestCase("Test/2");
-		mockModelUpdater.addTestMessage("demo_file.cc", 50, ITestMessage.Level.Error, "Failed\nParam3");
+		mockModelUpdater.addTestMessage("demo_file.cc", 50, ITestMessage.Level.Error, "Failed"+EOL+"Param3");
 		mockModelUpdater.addTestMessage(DEFAULT_LOCATION_FILE, DEFAULT_LOCATION_LINE, ITestMessage.Level.Info, "Instantiated with GetParam() = \"Param3\"");
 		mockModelUpdater.setTestingTime(0);
 		mockModelUpdater.setTestStatus(ITestItem.Status.Failed);
@@ -544,7 +544,7 @@ public class GoogleTestCase extends BaseTestCase {
 	public void testTypedTestsSupport() {
 		mockModelUpdater.enterTestSuite("DemoTestCase/0(char)");
 		mockModelUpdater.enterTestCase("Test");
-		mockModelUpdater.addTestMessage("demo_file.cc", 60, ITestMessage.Level.Error, "Failed\nchar type");
+		mockModelUpdater.addTestMessage("demo_file.cc", 60, ITestMessage.Level.Error, "Failed"+EOL+"char type");
 		mockModelUpdater.setTestingTime(0);
 		mockModelUpdater.setTestStatus(ITestItem.Status.Failed);
 		mockModelUpdater.exitTestCase();
@@ -557,7 +557,7 @@ public class GoogleTestCase extends BaseTestCase {
 		mockModelUpdater.exitTestSuite();
 		mockModelUpdater.enterTestSuite("DemoTestCase/2(unsigned int)");
 		mockModelUpdater.enterTestCase("Test");
-		mockModelUpdater.addTestMessage("demo_file.cc", 60, ITestMessage.Level.Error, "Failed\nunsigned int type");
+		mockModelUpdater.addTestMessage("demo_file.cc", 60, ITestMessage.Level.Error, "Failed"+EOL+"unsigned int type");
 		mockModelUpdater.setTestingTime(0);
 		mockModelUpdater.setTestStatus(ITestItem.Status.Failed);
 		mockModelUpdater.exitTestCase();

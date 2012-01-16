@@ -30,6 +30,8 @@ import org.eclipse.core.runtime.Plugin;
 @SuppressWarnings("nls")
 public abstract class BaseTestCase extends TestCase {
 
+	protected static final String EOL = System.getProperty("line.separator");
+
 	protected MockTestModelUpdater mockModelUpdater = new MockTestModelUpdater();
 	protected ITestsRunner testsRunner = createTestsRunner();
 	protected boolean expectTestingException = false;
