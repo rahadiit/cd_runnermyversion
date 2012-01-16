@@ -68,9 +68,7 @@ public class CDebuggerTab extends CLaunchConfigurationTab {
 
 	private final static String LOCAL_DEBUGGER_ID = "gdb";//$NON-NLS-1$
 	private final static String REMOTE_DEBUGGER_ID = "gdbserver";//$NON-NLS-1$
-	
-	private final static String INFERIOR_RUNTIME_PROCESS_FACTORY = "org.eclipse.cdt.dsf.gdb.launching.InferiorRuntimeProcessFactory"; //$NON-NLS-1$
-	
+
 	protected ILaunchConfiguration fLaunchConfiguration;
 	protected ILaunchConfigurationWorkingCopy fWorkingCopy;
 	protected String fDebuggerId;
@@ -204,7 +202,7 @@ public class CDebuggerTab extends CLaunchConfigurationTab {
 		try {
 			// Allow to override process factory attribute if necessary
 			if (!config.hasAttribute(DebugPlugin.ATTR_PROCESS_FACTORY_ID)) {
-				config.setAttribute(DebugPlugin.ATTR_PROCESS_FACTORY_ID, INFERIOR_RUNTIME_PROCESS_FACTORY);
+				config.setAttribute(DebugPlugin.ATTR_PROCESS_FACTORY_ID, IGDBLaunchConfigurationConstants.DEFAULT_DSF_PROCESS_FACTORY);
 			}
 		} catch (CoreException e) {}
 	}

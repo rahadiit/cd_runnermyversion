@@ -66,7 +66,7 @@ public class GdbLaunchDelegate extends AbstractCLaunchDelegate2
 	private boolean fIsNonStopSession = false;
 	
     private final static String TRACING_FIRST_VERSION = "7.1.50"; //$NON-NLS-1$
-    
+	
 	public GdbLaunchDelegate() {
 		// We now fully support project-less debugging
 		// See bug 343861
