@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.cdt.testsrunner.internal.ui.launcher;
 
-import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.cdt.launch.ui.CLaunchConfigurationTab;
 import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
+import org.eclipse.cdt.testsrunner.internal.launcher.ITestsLaunchConfigurationConstants;
 import org.eclipse.cdt.testsrunner.internal.launcher.TestsRunnerInfo;
 import org.eclipse.cdt.testsrunner.launcher.ITestsRunnerInfo;
 import org.eclipse.core.runtime.CoreException;
@@ -136,13 +136,13 @@ public class CTestingTab extends CLaunchConfigurationTab {
 	}
 
 	public void setDefaults(ILaunchConfigurationWorkingCopy config) {
-		config.setAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String) null);
+		config.setAttribute(ITestsLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String) null);
 		config.setAttribute(DebugPlugin.ATTR_PROCESS_FACTORY_ID, TESTING_PROCESS_FACTORY_ID);
 	}
 
 	public void initializeFrom(ILaunchConfiguration configuration) {
 		try {
-			String testsRunnerId = configuration.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String) null);
+			String testsRunnerId = configuration.getAttribute(ITestsLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String) null);
 			int comboIndex = 0;
 			for (int i = 1; i < testsRunnerCombo.getItemCount(); i++) {
 				ITestsRunnerInfo testsRunnerInfo = getTestsRunnerInfo(i);
@@ -161,7 +161,7 @@ public class CTestingTab extends CLaunchConfigurationTab {
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
 		ITestsRunnerInfo testsRunnerInfo = getCurrentTestsRunnerInfo();
 		String testsRunnerId = testsRunnerInfo != null ? testsRunnerInfo.getId() : null;
-		configuration.setAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, testsRunnerId);
+		configuration.setAttribute(ITestsLaunchConfigurationConstants.ATTR_TESTS_RUNNER, testsRunnerId);
 		configuration.setAttribute(DebugPlugin.ATTR_PROCESS_FACTORY_ID, TESTING_PROCESS_FACTORY_ID);
 	}
 

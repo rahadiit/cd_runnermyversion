@@ -15,8 +15,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.cdt.testsrunner.internal.TestsRunnerPlugin;
+import org.eclipse.cdt.testsrunner.internal.launcher.ITestsLaunchConfigurationConstants;
 import org.eclipse.cdt.testsrunner.internal.ui.view.TestPathUtils;
 import org.eclipse.cdt.testsrunner.model.ITestItem;
 import org.eclipse.cdt.testsrunner.model.ITestingSession;
@@ -57,7 +57,7 @@ public abstract class RelaunchSelectedAction extends Action {
 				ILaunch launch = testingSession.getLaunch();
 				ILaunchConfigurationWorkingCopy launchConf = launch.getLaunchConfiguration().getWorkingCopy();
 				List<String> testsFilterAttr = Arrays.asList(TestPathUtils.packTestPaths(getSelectedTestItems()));
-				launchConf.setAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_FILTER, testsFilterAttr);
+				launchConf.setAttribute(ITestsLaunchConfigurationConstants.ATTR_TESTS_FILTER, testsFilterAttr);
 				DebugUITools.launch(launchConf, getLaunchMode());
 				return;
 			} catch (CoreException e) {

@@ -13,7 +13,6 @@ package org.eclipse.cdt.testsrunner.internal.launcher;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
@@ -57,7 +56,7 @@ public class TestsRunnersManager {
 	 * @return tests runner plug-in descriptor
 	 */
 	public TestsRunnerInfo getTestsRunner(ILaunchConfiguration launchConf) throws CoreException {
-		String testsRunnerId = launchConf.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String)null);
+		String testsRunnerId = launchConf.getAttribute(ITestsLaunchConfigurationConstants.ATTR_TESTS_RUNNER, (String)null);
 		return getTestsRunner(testsRunnerId);
 	}
 	

@@ -92,7 +92,7 @@ public abstract class BaseTestsLaunchDelegate extends AbstractCLaunchDelegate {
 	 * @param config launch configuration
 	 */
 	private void setProgramArguments(ILaunchConfigurationWorkingCopy config) throws CoreException {
-		List<?> packedTestsFilter = config.getAttribute(ICDTLaunchConfigurationConstants.ATTR_TESTS_FILTER, Collections.EMPTY_LIST);
+		List<?> packedTestsFilter = config.getAttribute(ITestsLaunchConfigurationConstants.ATTR_TESTS_FILTER, Collections.EMPTY_LIST);
 		String [][] testsFilter = TestPathUtils.unpackTestPaths(packedTestsFilter.toArray(new String[packedTestsFilter.size()]));
 
 		// Configure test module run parameters with a Tests Runner 

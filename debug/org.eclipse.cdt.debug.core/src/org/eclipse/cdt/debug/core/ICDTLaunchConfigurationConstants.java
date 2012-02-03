@@ -274,18 +274,6 @@ public interface ICDTLaunchConfigurationConstants {
 	public static final String ATTR_DEBUGGER_MEMORY_BLOCKS = CDT_LAUNCH_ID + ".MEMORY_BLOCKS"; //$NON-NLS-1$
 
 	/**
-	 * Launch configuration attribute key. The value is a string specifying
-	 * tests runner string unique identifier
-	 */
-	public static final String ATTR_TESTS_RUNNER = CDT_LAUNCH_ID + ".TESTS_RUNNER"; //$NON-NLS-1$
-
-	/**
-	 * Launch configuration attribute key. The value is a string list specifying
-	 * tests paths to run
-	 */
-	public static final String ATTR_TESTS_FILTER = CDT_LAUNCH_ID + ".TESTS_FILTER"; //$NON-NLS-1$
-
-	/**
 	 * Launch configuration attribute value. The key is
 	 * ATTR_DEBUGGER_STOP_AT_MAIN.
 	 */
