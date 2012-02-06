@@ -29,6 +29,11 @@ public interface IGdbDebugConstants {
      */
     public static final String INFERIOR_GROUPID_ATTR = PREFIX + "inferiorGroupId"; //$NON-NLS-1$
 
+    /**
+     * Attribute key to be passed to IProcessFactory.newProcess to require InferiorRuntimeProcess
+     * creation instead of RuntimeProcess (that is used by default).
+     */
+    public static final String CREATE_INFERIOR_PROCESS_ATTR = PREFIX + "inferiorProcess"; //$NON-NLS-1$
 
 }
 

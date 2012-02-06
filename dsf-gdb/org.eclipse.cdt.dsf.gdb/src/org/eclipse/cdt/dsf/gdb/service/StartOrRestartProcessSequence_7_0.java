@@ -353,7 +353,9 @@ public class StartOrRestartProcessSequence_7_0 extends ReflectionSequence {
 				}
 
 				// Add the inferior
-				IProcess runtimeInferior = DebugPlugin.newProcess(launch, inferior, label, null);
+				Map<String, ?> attributes = new HashMap<String, Object>();
+				attributes.put(IGdbDebugConstants.CREATE_INFERIOR_PROCESS_ATTR, null);
+				IProcess runtimeInferior = DebugPlugin.newProcess(launch, inferior, label, attributes);
 				runtimeInferior.setAttribute(IGdbDebugConstants.INFERIOR_GROUPID_ATTR, groupId);
 				launch.addProcess(runtimeInferior);
 

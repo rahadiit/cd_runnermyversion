@@ -530,7 +530,9 @@ public class GDBProcesses extends MIProcesses implements IGDBProcesses {
 						}
 
 						// Add the inferior
-						IProcess runtimeInferior = DebugPlugin.newProcess(launch, inferior, label, null);
+						Map<String, ?> attributes = new HashMap<String, Object>();
+						attributes.put(IGdbDebugConstants.CREATE_INFERIOR_PROCESS_ATTR, null);
+						IProcess runtimeInferior = DebugPlugin.newProcess(launch, inferior, label, attributes);
 			            runtimeInferior.setAttribute(IGdbDebugConstants.INFERIOR_GROUPID_ATTR, MIProcesses.UNIQUE_GROUP_ID);
 						launch.addProcess(runtimeInferior);
 
