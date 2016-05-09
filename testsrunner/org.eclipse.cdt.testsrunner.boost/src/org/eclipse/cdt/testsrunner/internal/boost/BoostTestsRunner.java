@@ -51,7 +51,7 @@ public class BoostTestsRunner implements ITestsRunner {
 
 	public String[] getAdditionalLaunchParameters(String[][] testPaths) throws TestingException {
 		final String[] boostParameters = {
-			"--output_format=xml", //$NON-NLS-1$
+			"--output_format=XML", //$NON-NLS-1$
 			"--log_level=all", //$NON-NLS-1$
 			"--report_level=no" //$NON-NLS-1$
 		};
